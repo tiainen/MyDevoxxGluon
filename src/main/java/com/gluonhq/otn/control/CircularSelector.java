@@ -11,12 +11,12 @@ import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 import javafx.util.Duration;
 
-public class CircularSelector extends Control {
+public class CircularSelector<T> extends Control {
 
-    private ObservableList<Item> items = FXCollections.observableArrayList();
+    private ObservableList<T> items = FXCollections.observableArrayList();
 
     public CircularSelector() {
-        getStyleClass().add("timeline-view");
+        getStyleClass().add("circular-selector");
     }
 
     @Override
@@ -27,6 +27,18 @@ public class CircularSelector extends Control {
     @Override
     public Skin<CircularSelector> createDefaultSkin() {
         return new CircularSelectorSkin(this);
+    }
+
+    // selectedItemProperty
+    private final ObjectProperty<T> selectedItemProperty = new SimpleObjectProperty<>(this, "selectedItem");
+    public final ObjectProperty<T> selectedItemProperty() {
+       return selectedItemProperty;
+    }
+    public final T getSelectedItem() {
+       return selectedItemProperty.get();
+    }
+    public final void setSelectedItem(T value) {
+        selectedItemProperty.set(value);
     }
 
     // mainCircleRadiusProperty
@@ -56,7 +68,7 @@ public class CircularSelector extends Control {
     }
 
     // selector items
-    public ObservableList<Item> getItems() {
+    public ObservableList<T> getItems() {
         return items;
     }
 
@@ -71,10 +83,6 @@ public class CircularSelector extends Control {
     }
     public final void setTransitionDuration(Duration value) {
         transitionDurationProperty.set(value);
-    }
-
-    public static class Item {
-        // add picture, url and more properties
     }
 
 }

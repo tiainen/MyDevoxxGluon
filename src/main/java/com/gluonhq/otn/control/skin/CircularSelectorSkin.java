@@ -12,7 +12,7 @@ import javafx.scene.transform.Translate;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-public class CircularSelectorSkin extends SkinBase<CircularSelector> {
+public class CircularSelectorSkin<T> extends SkinBase<CircularSelector<T>> {
 
     private Group group = new Group();
     private Circle mainCircle = new Circle();
@@ -48,6 +48,7 @@ public class CircularSelectorSkin extends SkinBase<CircularSelector> {
         for (int i = 0; i < confCount; i++) {
 
             Circle c = new Circle();
+            c.setUserData(getSkinnable().getItems().get(i));
             c.getStyleClass().add("selector-circle");
             c.setRadius(getSkinnable().getSelectorCircleRadius());
 
@@ -68,6 +69,7 @@ public class CircularSelectorSkin extends SkinBase<CircularSelector> {
                 transition.setByAngle((-absoluteAngle.get() - cangle) % 360);
                 absoluteAngle.set(-cangle);
 
+                transition.setOnFinished( ae -> getSkinnable().setSelectedItem((T) c.getUserData()));
                 transition.play();
             });
 

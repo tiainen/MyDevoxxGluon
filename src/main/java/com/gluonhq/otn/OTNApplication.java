@@ -51,6 +51,7 @@ import javafx.stage.Stage;
 import java.util.Locale;
 
 import static com.gluonhq.otn.OTNView.SEARCH;
+import com.gluonhq.otn.model.DevoxxService;
 import com.gluonhq.otn.util.OTNLogging;
 import com.gluonhq.otn.util.OTNNotifications;
 import javafx.stage.Window;
@@ -62,7 +63,7 @@ public class OTNApplication extends MobileApplication {
     public static final String POPUP_FILTER_SESSIONS_MENU = "FilterSessionsMenu";
 
     private static final GluonInstanceProvider instanceSupplier = new GluonInstanceProvider() {{
-        bindProvider(Service.class, CloudLinkService::new);
+        bindProvider(Service.class, DevoxxService::new);
         bindProvider(OTNSearch.class, OTNSearch::new);
         bindProvider(OTNNotifications.class, OTNNotifications::new);
         bindProvider(SessionVisuals.class, SessionVisuals::new);

@@ -50,6 +50,8 @@ public class Session implements Searchable, Mergeable<Session> {
     private String type;
     private String experienceLevel;
     private List<String> speakersUuid;
+    private Talk talk;
+
 
     static {
         for (int i = 0; i < CONFERENCE_DAYS_NUMBER; ++i) {
@@ -72,6 +74,14 @@ public class Session implements Searchable, Mergeable<Session> {
         this.type = type;
         this.experienceLevel = experienceLevel;
         this.speakersUuid = speakersUuid;
+    }
+    
+    public Talk getTalk() {
+        return talk;
+    }
+
+    public void setTalk(Talk talk) {
+        this.talk = talk;
     }
 
     public static ZoneId getConferenceZoneId() {

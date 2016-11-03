@@ -119,14 +119,15 @@ public class SessionVisuals {
     public String formatMultilineInfo(Session session) {
         ZonedDateTime startDate = session.getStartDate();
         ZonedDateTime endDate = session.getEndDate();
-        return String.format(OTNBundle.getString("OTN.VISUALS.FORMAT.MULTILINE", 
-                session.getTrack().getTitle(),
+        return String.format(OTNBundle.getString("OTN.VISUALS.FORMAT.MULTILINE",
+                session.getTalk().getTrack(),
                 session.getConferenceDayIndex(),
                 startDate.format(OTNSettings.TIME_FORMATTER),
                 endDate.format(OTNSettings.TIME_FORMATTER),
-                session.getLocation())
+                session.getRoomName())
         );
     }
+
 
     public String formatOneLineInfo(Session session) {
         ZonedDateTime startDate = session.getStartDate();

@@ -71,7 +71,7 @@ public class SpeakersPresenter extends GluonPresenter<OTNApplication> {
         speakersListView.setItems(service.retrieveSpeakers());
         speakersListView.setComparator(new SpeakerComparator());
            
-        speakersListView.setHeadersFunction(speaker -> speaker.getFullName().substring(0, 1).toLowerCase());
+        speakersListView.setHeadersFunction(speaker -> speaker.getFirstName().substring(0, 1).toLowerCase());
         
         speakersListView.setConverter(new StringConverter<String>() {
 

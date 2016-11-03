@@ -68,7 +68,7 @@ public class SpeakerCell extends CharmListCell<Speaker> {
         //To keep height of the tile same for all cases we add "one space text instead of nulls
         List<String> lines = new ArrayList<>(Arrays.asList(
                 speaker.getFullName() == null? " ": speaker.getFullName(),
-                speaker.getJobTitle() == null? " ": speaker.getJobTitle(),
+//                speaker.getJobTitle() == null? " ": speaker.getJobTitle(),
                 speaker.getCompany()  == null? " ": speaker.getCompany()));
         lines.removeAll(Arrays.asList("", null));
         for (int i = 0; i < 3 - lines.size(); i++) {

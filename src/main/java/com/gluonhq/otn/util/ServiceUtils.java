@@ -55,41 +55,41 @@ public class ServiceUtils {
         return new Exhibitor(uuid, name, location, summary, description, picture, url, booth);
     }
 
-    public static Session mapJsonToSession(JsonObject jsonObject) {
-        int capacity = jsonObject.containsKey("capacity") ? jsonObject.getInt("capacity") : 0;
-        long endTime = jsonObject.containsKey("endTime") ? jsonObject.getJsonNumber("endTime").longValue() : 0L;
-        String experienceLevel = jsonObject.containsKey("experienceLevel") ? jsonObject.getString("experienceLevel") : "";
-        String location = jsonObject.containsKey("location") ? jsonObject.getString("location") : "";
-        int registered = jsonObject.containsKey("registered") ? jsonObject.getInt("registered") : 0;
-        List<String> speakersUuid = new ArrayList<>();
-        if (jsonObject.containsKey("speakersUuid")) {
-            JsonObject speakersObject = jsonObject.getJsonObject("speakersUuid");
-            for (JsonString jsonString : speakersObject.getJsonArray("items").getValuesAs(JsonString.class)) {
-                speakersUuid.add(jsonString.getString());
-            }
-        }
-        long startTime = jsonObject.containsKey("startTime") ? jsonObject.getJsonNumber("startTime").longValue() : 0L;
-        String summary = jsonObject.containsKey("summary") ? jsonObject.getString("summary") : "";
-        String title = jsonObject.containsKey("title") ? jsonObject.getString("title") : "";
-        Track track = jsonObject.containsKey("track") ? Track.valueOf(jsonObject.getString("track")) : null;
-        String type = jsonObject.containsKey("type") ? jsonObject.getString("type") : "";
-        String uuid = jsonObject.containsKey("uuid") ? jsonObject.getString("uuid") : "";
-        return new Session(uuid, title, summary, location, capacity, registered, startTime, endTime,
-                track, type, experienceLevel, speakersUuid);
-    }
+//    public static Session mapJsonToSession(JsonObject jsonObject) {
+//        int capacity = jsonObject.containsKey("capacity") ? jsonObject.getInt("capacity") : 0;
+//        long endTime = jsonObject.containsKey("endTime") ? jsonObject.getJsonNumber("endTime").longValue() : 0L;
+//        String experienceLevel = jsonObject.containsKey("experienceLevel") ? jsonObject.getString("experienceLevel") : "";
+//        String location = jsonObject.containsKey("location") ? jsonObject.getString("location") : "";
+//        int registered = jsonObject.containsKey("registered") ? jsonObject.getInt("registered") : 0;
+//        List<String> speakersUuid = new ArrayList<>();
+//        if (jsonObject.containsKey("speakersUuid")) {
+//            JsonObject speakersObject = jsonObject.getJsonObject("speakersUuid");
+//            for (JsonString jsonString : speakersObject.getJsonArray("items").getValuesAs(JsonString.class)) {
+//                speakersUuid.add(jsonString.getString());
+//            }
+//        }
+//        long startTime = jsonObject.containsKey("startTime") ? jsonObject.getJsonNumber("startTime").longValue() : 0L;
+//        String summary = jsonObject.containsKey("summary") ? jsonObject.getString("summary") : "";
+//        String title = jsonObject.containsKey("title") ? jsonObject.getString("title") : "";
+//        Track track = jsonObject.containsKey("track") ? Track.valueOf(jsonObject.getString("track")) : null;
+//        String type = jsonObject.containsKey("type") ? jsonObject.getString("type") : "";
+//        String uuid = jsonObject.containsKey("uuid") ? jsonObject.getString("uuid") : "";
+//        return new Session(uuid, title, summary, location, capacity, registered, startTime, endTime,
+//                track, type, experienceLevel, speakersUuid);
+//    }
 
-    public static Speaker mapJsonToSpeaker(JsonObject jsonObject) {
-        String company = jsonObject.containsKey("company") ? jsonObject.getString("company") : "";
-        String firstName = jsonObject.containsKey("firstName") ? jsonObject.getString("firstName") : "";
-        String fullName = jsonObject.containsKey("fullName") ? jsonObject.getString("fullName") : "";
-        String jobTitle = jsonObject.containsKey("jobTitle") ? jsonObject.getString("jobTitle") : "";
-        String lastName = jsonObject.containsKey("lastName") ? jsonObject.getString("lastName") : "";
-        String picture = jsonObject.containsKey("picture") ? jsonObject.getString("picture") : "";
-        String summary = jsonObject.containsKey("summary") ? jsonObject.getString("summary") : "";
-        String thumbnail = jsonObject.containsKey("thumbnail") ? jsonObject.getString("thumbnail") : "";
-        String uuid = jsonObject.containsKey("uuid") ? jsonObject.getString("uuid") : "";
-        return new Speaker(uuid, fullName, firstName, lastName, summary, picture, company, jobTitle, thumbnail);
-    }
+//    public static Speaker mapJsonToSpeaker(JsonObject jsonObject) {
+//        String company = jsonObject.containsKey("company") ? jsonObject.getString("company") : "";
+//        String firstName = jsonObject.containsKey("firstName") ? jsonObject.getString("firstName") : "";
+//        String fullName = jsonObject.containsKey("fullName") ? jsonObject.getString("fullName") : "";
+//        String jobTitle = jsonObject.containsKey("jobTitle") ? jsonObject.getString("jobTitle") : "";
+//        String lastName = jsonObject.containsKey("lastName") ? jsonObject.getString("lastName") : "";
+//        String picture = jsonObject.containsKey("picture") ? jsonObject.getString("picture") : "";
+//        String summary = jsonObject.containsKey("summary") ? jsonObject.getString("summary") : "";
+//        String thumbnail = jsonObject.containsKey("thumbnail") ? jsonObject.getString("thumbnail") : "";
+//        String uuid = jsonObject.containsKey("uuid") ? jsonObject.getString("uuid") : "";
+//        return new Speaker(uuid, fullName, firstName, lastName, summary, picture, company, jobTitle, thumbnail);
+//    }
 
     public static Sponsor mapJsonToSponsor(JsonObject jsonObject) {
         boolean banner = jsonObject.containsKey("banner") && jsonObject.getBoolean("banner");

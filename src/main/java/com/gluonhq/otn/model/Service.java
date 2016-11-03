@@ -70,6 +70,14 @@ public interface Service {
     ReadOnlyListProperty<Speaker> retrieveSpeakers();
 
     /**
+     * Returns a speaker detail for the specified UUID
+     *
+     * @param uuid UUID of the Speaker
+     * @return
+     */
+    ReadOnlyObjectProperty<Speaker> retrieveSpeaker(String uuid);
+
+    /**
      * Returns a list of exhibitors at the conference.
      *
      * @return

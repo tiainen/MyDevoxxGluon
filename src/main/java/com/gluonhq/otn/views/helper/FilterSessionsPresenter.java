@@ -205,36 +205,38 @@ public class FilterSessionsPresenter extends GluonPresenter<OTNApplication> {
     }
 
     private boolean checkTrack(Session session) {
-        if (session.getTrack()== null) {
+        if (session.getTalk() == null || session.getTalk().getTrack() == null) {
             return false;
         }
 
-        return (track1.isSelected() && session.getTrack().getTitle().equals(track1.getText())) ||
-               (track2.isSelected() && session.getTrack().getTitle().equals(track2.getText())) ||
-               (track3.isSelected() && session.getTrack().getTitle().equals(track3.getText())) ||
-               (track4.isSelected() && session.getTrack().getTitle().equals(track4.getText())) ||
-               (track5.isSelected() && session.getTrack().getTitle().equals(track5.getText())) ||
-               (track6.isSelected() && session.getTrack().getTitle().equals(track6.getText())) ||
-               (track7.isSelected() && session.getTrack().getTitle().equals(track7.getText()));
+        return (track1.isSelected() && session.getTalk().getTrack().equals(track1.getText())) ||
+               (track2.isSelected() && session.getTalk().getTrack().equals(track2.getText())) ||
+               (track3.isSelected() && session.getTalk().getTrack().equals(track3.getText())) ||
+               (track4.isSelected() && session.getTalk().getTrack().equals(track4.getText())) ||
+               (track5.isSelected() && session.getTalk().getTrack().equals(track5.getText())) ||
+               (track6.isSelected() && session.getTalk().getTrack().equals(track6.getText())) ||
+               (track7.isSelected() && session.getTalk().getTrack().equals(track7.getText()));
     }
+
 
     private boolean considerTrackFilter() {
         return track1.isSelected() || track2.isSelected() || track3.isSelected() || track4.isSelected() ||
                track5.isSelected() || track6.isSelected() || track7.isSelected();
     }
 
+  
     private boolean checkType(Session session) {
-        if (session.getType()== null || session.getType().isEmpty()) {
+        if (session.getTalk() == null || session.getTalk().getTalkType() == null) {
             return false;
         }
 
-        return (type1.isSelected() && session.getType().equals(type1.getText())) ||
-               (type2.isSelected() && session.getType().equals(type2.getText())) ||
-               (type3.isSelected() && session.getType().equals(type3.getText())) ||
-               (type4.isSelected() && session.getType().equals(type4.getText())) ||
-               (type5.isSelected() && session.getType().equals(type5.getText())) ||
-               (type6.isSelected() && session.getType().equals(type6.getText())) ||
-               (type7.isSelected() && session.getType().equals(type7.getText()));
+        return (type1.isSelected() && session.getTalk().getTalkType().equals(type1.getText())) ||
+               (type2.isSelected() && session.getTalk().getTalkType().equals(type2.getText())) ||
+               (type3.isSelected() && session.getTalk().getTalkType().equals(type3.getText())) ||
+               (type4.isSelected() && session.getTalk().getTalkType().equals(type4.getText())) ||
+               (type5.isSelected() && session.getTalk().getTalkType().equals(type5.getText())) ||
+               (type6.isSelected() && session.getTalk().getTalkType().equals(type6.getText())) ||
+               (type7.isSelected() && session.getTalk().getTalkType().equals(type7.getText()));
     }
 
     private boolean considerTypeFilter() {

@@ -94,27 +94,27 @@ public class ScheduleCell extends CharmListCell<Session> {
             setGraphic(null);
         }
     }
-    
     private void updateVBox() {
         listTile.textProperty().clear();
-        listTile.textProperty().add(session.getTitle());
-
-        String trackTitle = session.getTrack().getTitle();
+        if ((session != null) && (session.getTalk().getTitle() != null)) {
+            listTile.textProperty().add(session.getTalk().getTitle());
+        }
+        String trackTitle = session.getTalk().getTrack();
         if (trackTitle == null || trackTitle.isEmpty()) {
-            listTile.textProperty().add(session.getType());
+            listTile.textProperty().add(session.getTalk().getTalkType());
         } else {
             listTile.textProperty().add(trackTitle);
         }
 
-        listTile.textProperty().add(OTNBundle.getString("OTN.SCHEDULE.IN_AT", session.getLocation(),
+        listTile.textProperty().add(OTNBundle.getString("OTN.SCHEDULE.IN_AT", session.getRoomName(),
                         OTNSettings.TIME_FORMATTER.format(session.getStartDate()))
                         + (showDate? "\n" + OTNSettings.DATE_FORMATTER.format(session.getStartDate()) : ""));
 
-        changePseudoClass(session.getTrack().getPseudoClass());
+//        changePseudoClass(session.getTrack().getPseudoClass());
 
 
     }
-
+   
     private void changePseudoClass(PseudoClass pseudoClass) {
         pseudoClassStateChanged(oldPseudoClass, false);
         pseudoClassStateChanged(pseudoClass, true);

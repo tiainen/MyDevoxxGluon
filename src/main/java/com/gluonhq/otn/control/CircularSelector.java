@@ -7,16 +7,22 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.Node;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 import javafx.util.Duration;
 
+import java.util.Objects;
+import java.util.function.Function;
+
 public class CircularSelector<T> extends Control {
 
     private ObservableList<T> items = FXCollections.observableArrayList();
+    private Function<T,Node> cellFactory = item -> null;
 
-    public CircularSelector() {
+    public CircularSelector(Function<T,Node> cellFactory) {
         getStyleClass().add("circular-selector");
+        this.cellFactory = Objects.requireNonNull(cellFactory);
     }
 
     @Override
@@ -25,8 +31,12 @@ public class CircularSelector<T> extends Control {
     }
 
     @Override
-    public Skin<CircularSelector> createDefaultSkin() {
-        return new CircularSelectorSkin(this);
+    public Skin<CircularSelector<T>> createDefaultSkin() {
+        return new CircularSelectorSkin<T>(this);
+    }
+
+    public final Function<T,Node> getCellFactory() {
+        return cellFactory;
     }
 
     // selectedItemProperty
@@ -43,7 +53,7 @@ public class CircularSelector<T> extends Control {
 
     // mainCircleRadiusProperty
     private final DoubleProperty mainCircleRadiusProperty =
-            new SimpleDoubleProperty(this, "mainCircleRadius", 150);
+            new SimpleDoubleProperty(this, "mainCircleRadius", 130);
     public final DoubleProperty mainCircleRadiusProperty() {
         return mainCircleRadiusProperty;
     }
@@ -56,7 +66,7 @@ public class CircularSelector<T> extends Control {
 
     // selectorCircleRadiusProperty
     private final DoubleProperty selectorCircleRadiusProperty =
-            new SimpleDoubleProperty(this, "selectorCircleRadius", 40);
+            new SimpleDoubleProperty(this, "selectorCircleRadius", 30);
     public final DoubleProperty selectorCircleRadiusProperty() {
         return selectorCircleRadiusProperty;
     }

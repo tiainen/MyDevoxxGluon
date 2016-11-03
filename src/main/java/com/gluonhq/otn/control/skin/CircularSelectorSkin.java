@@ -4,8 +4,12 @@ package com.gluonhq.otn.control.skin;
 import com.gluonhq.otn.control.CircularSelector;
 import javafx.animation.RotateTransition;
 import javafx.beans.InvalidationListener;
+import javafx.geometry.Bounds;
 import javafx.scene.Group;
+import javafx.scene.Node;
+import javafx.scene.control.Label;
 import javafx.scene.control.SkinBase;
+import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Circle;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Translate;
@@ -33,47 +37,61 @@ public class CircularSelectorSkin<T> extends SkinBase<CircularSelector<T>> {
 
     }
 
+
     private void rebuild() {
 
         group.getChildren().clear();
         group.getChildren().add(mainCircle);
 
-        int confCount = getSkinnable().getItems().size();
+        Node centerDecoration = getSkinnable().getCellFactory().apply(null);
+        if ( centerDecoration != null ) {
 
-        if (confCount < 1) return; // nothing to do
+            Bounds b = centerDecoration.getBoundsInParent();
+            Translate t = new Translate();
+            t.xProperty().bind(mainCircle.centerXProperty().subtract(b.getWidth()/2));
+            t.yProperty().bind(mainCircle.centerYProperty().subtract(b.getHeight()/2));
+            centerDecoration.getTransforms().add(t);
+            group.getChildren().add(centerDecoration);
 
-        double angle = 360 / confCount;
+        }
+
+        int itemCount = getSkinnable().getItems().size();
+        if (itemCount < 1) return; // nothing to do
+
+        double angle = 360 / itemCount;
         AtomicReference<Double> absoluteAngle = new AtomicReference<>(0d);
 
-        for (int i = 0; i < confCount; i++) {
+        final double selectorRadius = getSkinnable().getSelectorCircleRadius();
 
-            Circle c = new Circle();
-            c.setUserData(getSkinnable().getItems().get(i));
-            c.getStyleClass().add("selector-circle");
-            c.setRadius(getSkinnable().getSelectorCircleRadius());
+        for (int i = 0; i < itemCount; i++) {
 
-            Translate t = new Translate(0, -getSkinnable().getMainCircleRadius());
+            T item = getSkinnable().getItems().get(i);
+            final Node itemGraphic = getSkinnable().getCellFactory().apply(item);
+            if (itemGraphic == null) continue;
 
+            Label itemLabel = new Label( null, itemGraphic);
+            itemLabel.setUserData(item);
+
+            Translate t = new Translate(-selectorRadius, -getSkinnable().getMainCircleRadius()-selectorRadius);
             Rotate r = new Rotate(i * angle);
-            r.pivotYProperty().bind(mainCircle.layoutXProperty().add(mainCircle.radiusProperty()));
-            r.pivotYProperty().bind(mainCircle.layoutYProperty().add(mainCircle.radiusProperty()));
+            r.setPivotX(selectorRadius);
+            r.pivotYProperty().bind( mainCircle.radiusProperty().add(selectorRadius));
+
             r.axisProperty().setValue(Rotate.Z_AXIS);
 
-            c.getTransforms().addAll(t, r);
+            itemLabel.getTransforms().addAll(t, r);
 
             final double cangle = i * angle;
 
-            c.setOnMouseClicked(e -> {
-//                System.out.println(absoluteAngle.get());
+            itemLabel.setOnMouseClicked(e -> {
                 RotateTransition transition = new RotateTransition(getSkinnable().getTransitionDuration(), group);
                 transition.setByAngle((-absoluteAngle.get() - cangle) % 360);
                 absoluteAngle.set(-cangle);
-
-                transition.setOnFinished( ae -> getSkinnable().setSelectedItem((T) c.getUserData()));
+                transition.setOnFinished(ae -> getSkinnable().setSelectedItem((T) itemLabel.getUserData()));
                 transition.play();
             });
 
-            group.getChildren().add(c);
+            group.getChildren().add(itemLabel);
 
         }
 

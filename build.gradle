@@ -78,7 +78,7 @@ dependencies {
 
     compile 'com.gluonhq:connect:1.1.0'
     compile 'com.google.zxing:core:3.2.1'
-    compile 'com.gluonhq:maps:1.0.1-SNAPSHOT'
+    compile 'com.gluonhq:maps:1.0.1'
     compile 'com.gluonhq:glisten-labs:1.0.0-b6'
     compile name: 'images'
 //    compile name: 'ScenicView'

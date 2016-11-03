@@ -36,6 +36,7 @@ import com.gluonhq.otn.OTNView;
 import com.gluonhq.otn.model.Service;
 import com.gluonhq.otn.model.Session;
 import com.gluonhq.otn.model.Speaker;
+import com.gluonhq.otn.model.Talk;
 import com.gluonhq.otn.util.OTNBundle;
 import com.gluonhq.otn.views.cell.ScheduleCell;
 import com.gluonhq.otn.views.helper.SpeakerCard;
@@ -51,6 +52,7 @@ import javafx.scene.control.ToggleButton;
 
 import javax.inject.Inject;
 import java.time.LocalDate;
+import java.util.List;
 
 public class SpeakerPresenter extends GluonPresenter<OTNApplication> {
 
@@ -128,15 +130,19 @@ public class SpeakerPresenter extends GluonPresenter<OTNApplication> {
         return bottomNavigation;
     }
     
+    
     private ObservableList<Session> fetchSessions(Speaker activeSpeaker) {
-        ObservableList<Session> sessions = FXCollections.observableArrayList();
-        for (Session session : service.retrieveSessions()) {
-            if (session.getSpeakersUuid() != null && 
-                    session.getSpeakersUuid().contains(activeSpeaker.getUuid())) {
-                sessions.add(session);
+        ObservableList<Session> speakerSessions = FXCollections.observableArrayList();
+        List<Session> sessions = service.retrieveSessions();
+        List<Talk> acceptedTalks = activeSpeaker.getAcceptedTalks();
+        for (Talk acceptedTalk : acceptedTalks) {
+            for (Session session : sessions) {
+                if(acceptedTalk.getId().equals(session.getTalk().getId())) {
+                    speakerSessions.add(session);
+                }
             }
         }
-        return sessions;
+        return speakerSessions;
     }
     
     private CharmListView<Session, LocalDate> createSessionsListView(Speaker activeSpeaker) {

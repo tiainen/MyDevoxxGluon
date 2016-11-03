@@ -134,7 +134,7 @@ public class CloudLinkService extends BaseService {
                 .build();
 
         retrieveLatestClearVotes();
-        loadData();
+   //     loadData();
     }
 
     @Override
@@ -513,31 +513,31 @@ public class CloudLinkService extends BaseService {
             }
         }
     }
-
-    private void loadData() {
-        GluonObservableList<Exhibitor> localExhibitors = loadEntities("exhibitors", Exhibitor.class, ServiceUtils::mapJsonToExhibitor);
-        exhibitors = new ReadOnlyListWrapper<>(localExhibitors);
-        GluonObservableList<Session> localSessions = loadEntities("sessions", Session.class, ServiceUtils::mapJsonToSession);
-        sessions = new ReadOnlyListWrapper<>(localSessions);
-        localSessions.initializedProperty().addListener(new InvalidationListener() {
-            @Override
-            public void invalidated(javafx.beans.Observable observable) {
-                if (localSessions.isInitialized()) {
-                    // now that we have started retrieving the list of sessions we can
-                    // call retrieveAuthenticatedUser as sessions won't be empty
-                    localSessions.initializedProperty().removeListener(this);
-                    retrieveAuthenticatedUser();
-                }
-            }
-        });
-
-        GluonObservableList<Speaker> localSpeakers = loadEntities("speakers", Speaker.class, ServiceUtils::mapJsonToSpeaker);
-        speakers = new ReadOnlyListWrapper<>(localSpeakers);
-        GluonObservableList<Sponsor> localSponsors = loadEntities("sponsors", Sponsor.class, ServiceUtils::mapJsonToSponsor);
-        sponsors = new ReadOnlyListWrapper<>(localSponsors);
-        GluonObservableList<Venue> localVenues = loadEntities("venues", Venue.class, ServiceUtils::mapJsonToVenue);
-        venues = new ReadOnlyListWrapper<>(localVenues);
-    }
+//
+//    private void loadData() {
+//        GluonObservableList<Exhibitor> localExhibitors = loadEntities("exhibitors", Exhibitor.class, ServiceUtils::mapJsonToExhibitor);
+//        exhibitors = new ReadOnlyListWrapper<>(localExhibitors);
+//        GluonObservableList<Session> localSessions = loadEntities("sessions", Session.class, ServiceUtils::mapJsonToSession);
+//        sessions = new ReadOnlyListWrapper<>(localSessions);
+//        localSessions.initializedProperty().addListener(new InvalidationListener() {
+//            @Override
+//            public void invalidated(javafx.beans.Observable observable) {
+//                if (localSessions.isInitialized()) {
+//                    // now that we have started retrieving the list of sessions we can
+//                    // call retrieveAuthenticatedUser as sessions won't be empty
+//                    localSessions.initializedProperty().removeListener(this);
+//                    retrieveAuthenticatedUser();
+//                }
+//            }
+//        });
+//
+//        GluonObservableList<Speaker> localSpeakers = loadEntities("speakers", Speaker.class, ServiceUtils::mapJsonToSpeaker);
+//        speakers = new ReadOnlyListWrapper<>(localSpeakers);
+//        GluonObservableList<Sponsor> localSponsors = loadEntities("sponsors", Sponsor.class, ServiceUtils::mapJsonToSponsor);
+//        sponsors = new ReadOnlyListWrapper<>(localSponsors);
+//        GluonObservableList<Venue> localVenues = loadEntities("venues", Venue.class, ServiceUtils::mapJsonToVenue);
+//        venues = new ReadOnlyListWrapper<>(localVenues);
+//    }
 
     private <E extends Mergeable<E>> GluonObservableList<E> loadEntities(String identifier, Class<E> targetClass, Function<JsonObject, E> mapper) {
         GluonObservableList<E> local = DataProvider.retrieveList(localGluonClient.createListDataReader(identifier, targetClass, new SyncFlag[]{}));
@@ -634,5 +634,10 @@ public class CloudLinkService extends BaseService {
                 }
             });
         }
+    }
+
+    @Override
+    public ReadOnlyObjectProperty<Speaker> retrieveSpeaker(String uuid) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

@@ -35,10 +35,12 @@ import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import com.gluonhq.impl.charm.glisten.control.skin.AvatarPaneSkin;
 import com.gluonhq.otn.OTNApplication;
 import com.gluonhq.otn.OTNView;
+import com.gluonhq.otn.model.Link;
 import com.gluonhq.otn.views.dialog.VoteDialog;
 import com.gluonhq.otn.model.Service;
 import com.gluonhq.otn.model.Session;
 import com.gluonhq.otn.model.Speaker;
+import com.gluonhq.otn.model.TalkSpeaker;
 import com.gluonhq.otn.model.Vote;
 import com.gluonhq.otn.util.OTNBundle;
 import com.gluonhq.otn.util.OTNSettings;
@@ -66,6 +68,7 @@ import javafx.scene.layout.VBox;
 import javax.inject.Inject;
 import java.time.ZonedDateTime;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javafx.beans.property.ReadOnlyObjectProperty;
 
 public class SessionPresenter extends GluonPresenter<OTNApplication> {
 
@@ -213,7 +216,7 @@ public class SessionPresenter extends GluonPresenter<OTNApplication> {
         });
         noteButton.setUserData(Pane.NOTE);
 
-        if (session.getSpeakersUuid() == null || session.getSpeakersUuid().isEmpty()) {
+        if (session.getTalk() == null || session.getTalk().getSpeakers() == null) {
             bottomNavigation.getActionItems().addAll(infoButton, noteButton);
         } else {
             bottomNavigation.getActionItems().addAll(infoButton, speakerButton, noteButton);
@@ -255,15 +258,24 @@ public class SessionPresenter extends GluonPresenter<OTNApplication> {
         sessionView.setCenter(sessionNotesEditor);
     }
 
+    
     private ObservableList<Speaker> fetchSpeakers(Session activeSession) {
         ObservableList<Speaker> speakers = FXCollections.observableArrayList();
-        if (activeSession.getSpeakersUuid() != null) {
-            for (String speakerUuid : activeSession.getSpeakersUuid()) {
-                for (Speaker speaker : service.retrieveSpeakers()) {
-                    if (speakerUuid.equals(speaker.getUuid())) {
-                        speakers.add(speaker);
-                        break;
-                    }
+        if (activeSession.getTalk().getSpeakers() != null) {
+            for (TalkSpeaker talkSpeaker : activeSession.getTalk().getSpeakers()) {
+                Link link = talkSpeaker.getLink();
+                if (link != null && link.getHref() != null && !link.getHref().isEmpty()) {
+                    String speakerUUID = link.getHref().substring(link.getHref().lastIndexOf('/') + 1);
+                    ReadOnlyObjectProperty<Speaker> speaker = service.retrieveSpeaker(speakerUUID);
+                    speaker.addListener((observable, oldValue, newValue) -> {
+                        if(newValue != null) {
+                            speakers.add(newValue);
+                            // select the first speaker when one becomes available
+                            if (speakers.size() == 1) {
+                                speakerAvatarPane.setValue(newValue);
+                            }
+                        }
+                    });
                 }
             }
         }
@@ -281,10 +293,10 @@ public class SessionPresenter extends GluonPresenter<OTNApplication> {
             name.setWrapText(true);
             GridPane.setHgrow(name, Priority.ALWAYS);
 
-            Label jobTitle = new Label(speaker.getJobTitle());
-            jobTitle.getStyleClass().add("job-title");
-            jobTitle.setWrapText(true);
-            GridPane.setHgrow(jobTitle, Priority.ALWAYS);
+//            Label jobTitle = new Label(speaker.getJobTitle());
+//            jobTitle.getStyleClass().add("job-title");
+//            jobTitle.setWrapText(true);
+//            GridPane.setHgrow(jobTitle, Priority.ALWAYS);
 
             Label company = new Label(speaker.getCompany());
             company.getStyleClass().add("company");
@@ -310,7 +322,7 @@ public class SessionPresenter extends GluonPresenter<OTNApplication> {
             GridPane gridPane = new GridPane();
             gridPane.getStyleClass().add("content-box");
             gridPane.add(name, 0, 0);
-            gridPane.add(jobTitle, 0, 1);
+//            gridPane.add(jobTitle, 0, 1);
             gridPane.add(company, 0, 2);
             gridPane.add(speakerBtn, 1, 0, 1, 3);
             gridPane.add(summary, 0, 3, 2, 1);

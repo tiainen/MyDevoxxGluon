@@ -25,39 +25,49 @@
  */
 package com.gluonhq.otn.model;
 
+import java.util.List;
 import java.util.Locale;
 
-public class Speaker implements Searchable, Mergeable<Speaker> {
+public class Speaker implements Searchable {
     private String uuid;
-    private String fullName;
+    private String bio;
+    private String bioAsHtml;
     private String firstName;
     private String lastName;
-    private String summary;
-    private String picture;
+    private String avatarURL;
     private String company;
-    private String jobTitle;
+    private String blog;
+    private String twitter;
+    private String lang;
+    private List<Talk> acceptedTalks;
 
-    public Speaker() {}
-
-    public Speaker(String uuid, String fullName, String firstName, String lastName, String summary, String picture,
-                   String company, String jobTitle, String thumbnail) {
-        this.uuid = uuid;
-        this.fullName = fullName;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.summary = summary;
-        this.picture = picture;
-        this.company = company;
-        this.jobTitle = jobTitle;
+    public Speaker() {
     }
 
-    @Override
+    public Speaker(String uuid, String bio, String bioAsHtml, String firstName, String lastName, String avatarURL, String company, String blog, String twitter, String lang, List<Talk> acceptedTalks) {
+        this.uuid = uuid;
+        this.bio = bio;
+        this.bioAsHtml = bioAsHtml;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.avatarURL = avatarURL;
+        this.company = company;
+        this.blog = blog;
+        this.twitter = twitter;
+        this.lang = lang;
+        this.acceptedTalks = acceptedTalks;
+    }
+
     public String getUuid() {
         return uuid;
     }
 
-    public String getFullName() {
-        return fullName;
+    public String getBio() {
+        return bio;
+    }
+
+    public String getBioAsHtml() {
+        return bioAsHtml;
     }
 
     public String getFirstName() {
@@ -68,79 +78,113 @@ public class Speaker implements Searchable, Mergeable<Speaker> {
         return lastName;
     }
 
-    public String getSummary() {
-        return summary;
+    public String getAvatarURL() {
+        return avatarURL;
     }
-
+    
     public String getPicture() {
-        return picture;
+        return getAvatarURL();
     }
 
     public String getCompany() {
         return company;
     }
 
-    public String getJobTitle() {
-        return jobTitle;
+    public String getBlog() {
+        return blog;
+    }
+
+    public String getTwitter() {
+        return twitter;
+    }
+
+    public String getLang() {
+        return lang;
+    }
+
+    public List<Talk> getAcceptedTalks() {
+        return acceptedTalks;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
+    public void setBio(String bio) {
+        this.bio = bio;
+    }
+
+    public void setBioAsHtml(String bioAsHtml) {
+        this.bioAsHtml = bioAsHtml;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public void setAvatarURL(String avatarURL) {
+        this.avatarURL = avatarURL;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
+    }
+
+    public void setBlog(String blog) {
+        this.blog = blog;
+    }
+
+    public void setTwitter(String twitter) {
+        this.twitter = twitter;
+    }
+
+    public void setLang(String lang) {
+        this.lang = lang;
+    }
+
+    public void setAcceptedTalks(List<Talk> acceptedTalks) {
+        this.acceptedTalks = acceptedTalks;
     }
 
     @Override
     public boolean contains(String keyword) {
         if (keyword == null || keyword.isEmpty()) {
             return false;
-        } 
+        }
         String lowerKeyword = keyword.toLowerCase(Locale.ROOT);
-        return ((getFullName() != null && getFullName().toLowerCase(Locale.ROOT).contains(lowerKeyword)) || 
-                (getJobTitle() != null && getJobTitle().toLowerCase(Locale.ROOT).contains(lowerKeyword)) || 
-                (getCompany()!= null && getCompany().toLowerCase(Locale.ROOT).contains(lowerKeyword)) ||
-                (getSummary() != null && getSummary().toLowerCase(Locale.ROOT).contains(lowerKeyword)));
+        return (getFirstName().toLowerCase(Locale.ROOT).contains(lowerKeyword)) ||
+                (getLastName().toLowerCase(Locale.ROOT).contains(lowerKeyword)) ||
+                (getCompany() != null && getCompany().toLowerCase(Locale.ROOT).contains(lowerKeyword)) ||
+                (getBio() != null && getBio().toLowerCase(Locale.ROOT).contains(lowerKeyword));
     }
 
     @Override
-    public boolean merge(Speaker other) {
-        boolean changed = false;
-        if ((other.fullName == null && this.fullName != null) ||
-                (other.fullName != null && this.fullName == null) ||
-                (other.fullName != null && !other.fullName.equals(this.fullName))) {
-            changed = true;
-            this.fullName = other.fullName;
-        }
-        if ((other.firstName == null && this.firstName != null) ||
-                (other.firstName != null && this.firstName == null) ||
-                (other.firstName != null && !other.firstName.equals(this.firstName))) {
-            changed = true;
-            this.firstName = other.firstName;
-        }
-        if ((other.lastName == null && this.lastName != null) ||
-                (other.lastName != null && this.lastName == null) ||
-                (other.lastName != null && !other.lastName.equals(this.lastName))) {
-            changed = true;
-            this.lastName = other.lastName;
-        }
-        if ((other.summary == null && this.summary != null) ||
-                (other.summary != null && this.summary == null) ||
-                (other.summary != null && !other.summary.equals(this.summary))) {
-            changed = true;
-            this.summary = other.summary;
-        }
-        if ((other.picture == null && this.picture != null) ||
-                (other.picture != null && this.picture == null) ||
-                (other.picture != null && !other.picture.equals(this.picture))) {
-            changed = true;
-            this.picture = other.picture;
-        }
-        if ((other.company == null && this.company != null) ||
-                (other.company != null && this.company == null) ||
-                (other.company != null && !other.company.equals(this.company))) {
-            changed = true;
-            this.company = other.company;
-        }
-        if ((other.jobTitle == null && this.jobTitle != null) ||
-                (other.jobTitle != null && this.jobTitle == null) ||
-                (other.jobTitle != null && !other.jobTitle.equals(this.jobTitle))) {
-            changed = true;
-            this.jobTitle = other.jobTitle;
-        }
-        return changed;
+    public String toString() {
+        return "Speaker{" +
+                "uuid='" + uuid + '\'' +
+                ", bio='" + bio + '\'' +
+                ", bioAsHtml='" + bioAsHtml + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", avatarURL='" + avatarURL + '\'' +
+                ", company='" + company + '\'' +
+                ", blog='" + blog + '\'' +
+                ", twitter='" + twitter + '\'' +
+                ", lang='" + lang + '\'' +
+                ", acceptedTalks=" + acceptedTalks +
+                '}';
     }
+
+    public String getSummary() {
+        return getBio();
+    }
+
+    public String getFullName() {
+        return getFirstName() + " " + getLastName();
+    }
+
 }

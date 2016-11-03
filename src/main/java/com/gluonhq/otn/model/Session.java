@@ -26,32 +26,30 @@
 package com.gluonhq.otn.model;
 
 
+
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
 
-public class Session implements Searchable, Mergeable<Session> {
+public class Session implements Searchable {
     //TODO Eventually we have to replace it with the data coming from the API
-    private static final ZoneId CONFERENCE_ZONE_ID = ZoneId.of("America/Los_Angeles");
+    private static final ZoneId CONFERENCE_ZONE_ID = ZoneId.of("Europe/Brussels");
     private static final int CONFERENCE_DAYS_NUMBER = 5;
     private static final ZonedDateTime[] CONFERENCE_DATES = new ZonedDateTime[CONFERENCE_DAYS_NUMBER];
     // 2016 September 18th
-    public static final ZonedDateTime CONFERENCE_START_DATE = ZonedDateTime.of(2016, 9, 18, 0, 0, 0, 0, CONFERENCE_ZONE_ID);
+    public static final ZonedDateTime CONFERENCE_START_DATE = ZonedDateTime.of(2016, 11, 7, 0, 0, 0, 0, CONFERENCE_ZONE_ID);
 
-    private String uuid;
-    private String title;
-    private String summary;
-    private String location;
-    private int capacity;
-    private long startTime;
-    private long endTime;
-    private Track track;
-    private String type;
-    private String experienceLevel;
-    private List<String> speakersUuid;
+    private String slotId;
+    private String roomId;
+    private String roomName;
+    private String day;
+    private String fromTime;
+    private long fromTimeMillis;
+    private String toTime;
+    private long toTimeMillis;
+    private Break aBreak;
     private Talk talk;
-
 
     static {
         for (int i = 0; i < CONFERENCE_DAYS_NUMBER; ++i) {
@@ -61,21 +59,91 @@ public class Session implements Searchable, Mergeable<Session> {
 
     public Session() {}
 
-    public Session(String uuid, String title, String summary, String location, int capacity, int registered, long startTime,
-                   long endTime, Track track, String type, String experienceLevel, List<String> speakersUuid) {
-        this.uuid = uuid;
-        this.title = title;
-        this.summary = summary;
-        this.location = location;
-        this.capacity = capacity;
-        this.startTime = startTime;
-        this.endTime = endTime;
-        this.track = track;
-        this.type = type;
-        this.experienceLevel = experienceLevel;
-        this.speakersUuid = speakersUuid;
+    public Session(String uuid, String roomId, String roomName, String day, String fromTime, long fromTimeMillis, String toTime, long toTimeMillis, Break aBreak, Talk talk) {
+        this.slotId = uuid;
+        this.roomId = roomId;
+        this.roomName = roomName;
+        this.day = day;
+        this.fromTime = fromTime;
+        this.fromTimeMillis = fromTimeMillis;
+        this.toTime = toTime;
+        this.toTimeMillis = toTimeMillis;
+        this.aBreak = aBreak;
+        this.talk = talk;
     }
-    
+
+    public String getUuid() {
+        return slotId;
+    }
+
+    public void setSlotId(String slotId) {
+        this.slotId = slotId;
+    }
+
+    public String getRoomId() {
+        return roomId;
+    }
+
+    public void setRoomId(String roomId) {
+        this.roomId = roomId;
+    }
+
+    public String getRoomName() {
+        return roomName;
+    }
+
+    public void setRoomName(String roomName) {
+        this.roomName = roomName;
+    }
+
+    public String getDay() {
+        return day;
+    }
+
+    public void setDay(String day) {
+        this.day = day;
+    }
+
+    public String getFromTime() {
+        return fromTime;
+    }
+
+    public void setFromTime(String fromTime) {
+        this.fromTime = fromTime;
+    }
+
+    public long getFromTimeMillis() {
+        return fromTimeMillis;
+    }
+
+    public void setFromTimeMillis(long fromTimeMillis) {
+        this.fromTimeMillis = fromTimeMillis;
+    }
+
+    public String getToTime() {
+        return toTime;
+    }
+
+    public void setToTime(String toTime) {
+        this.toTime = toTime;
+    }
+
+    public long getToTimeMillis() {
+        return toTimeMillis;
+    }
+
+    public void setToTimeMillis(long toTimeMillis) {
+        this.toTimeMillis = toTimeMillis;
+    }
+
+    public Break getaBreak() {
+        return aBreak;
+    }
+
+    public void setaBreak(Break aBreak) {
+        this.aBreak = aBreak;
+    }
+
     public Talk getTalk() {
         return talk;
     }
@@ -96,57 +164,12 @@ public class Session implements Searchable, Mergeable<Session> {
         return Arrays.binarySearch(CONFERENCE_DATES, dayOnly(dateTime)) + 1;
     }
 
-    @Override
-    public String getUuid() {
-        return uuid;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public String getSummary() {
-        return summary;
-    }
-
-    public String getLocation() {
-        return location;
-    }
-
-    public int getCapacity() {
-        return capacity;
-    }
-
-    public long getStartTime() {
-        return startTime;
-    }
-
-    public long getEndTime() {
-        return endTime;
-    }
-
-    public Track getTrack() {
-        return track;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public String getExperienceLevel() {
-        return experienceLevel;
-    }
-
-    public List<String> getSpeakersUuid() {
-        return speakersUuid;
-    }
-
     public ZonedDateTime getStartDate() {
-        return timeToZonedDateTime(getStartTime());
+        return timeToZonedDateTime(getFromTimeMillis());
     }
 
     public ZonedDateTime getEndDate() {
-        return timeToZonedDateTime(getEndTime());
+        return timeToZonedDateTime(getToTimeMillis());
     }
 
     public int getConferenceDayIndex() {
@@ -154,7 +177,7 @@ public class Session implements Searchable, Mergeable<Session> {
     }
 
     private static ZonedDateTime timeToZonedDateTime( long time ) {
-        return ZonedDateTime.ofInstant(Instant.ofEpochMilli(time * 1000), CONFERENCE_ZONE_ID);
+        return ZonedDateTime.ofInstant(Instant.ofEpochMilli(time), CONFERENCE_ZONE_ID);
     }
 
     public boolean isOverlappingWith(Session otherSession ) {
@@ -174,16 +197,20 @@ public class Session implements Searchable, Mergeable<Session> {
             return false;
         } 
         String lowerKeyword = keyword.toLowerCase(Locale.ROOT);
-        return ((getTitle() != null && getTitle().toLowerCase(Locale.ROOT).contains(lowerKeyword)) || 
-                (getTrack() != null && getTrack().toString().toLowerCase(Locale.ROOT).contains(lowerKeyword)) || 
-                (getLocation() != null && getLocation().toLowerCase(Locale.ROOT).contains(lowerKeyword)) ||
-                (getExperienceLevel() != null && getExperienceLevel().toLowerCase(Locale.ROOT).contains(lowerKeyword)) ||
-                (getSummary() != null && getSummary().toLowerCase(Locale.ROOT).contains(lowerKeyword)));
+        return ((getRoomName() != null && getRoomName().toLowerCase(Locale.ROOT).contains(lowerKeyword)));
     }
 
-    @Override
-    public boolean merge(Session other) {
-        boolean changed = false;
-        return changed;
+    public String getTitle() {
+        if (talk != null) return talk.getTitle();
+        return "session without a talk";
+    }
+
+    public String getSummary() {
+        if (talk != null) return talk.getSummary();
+        return "session without a talk";
+    }
+    
+    public String getLocation() {
+        return getRoomName();
     }
 }

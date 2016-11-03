@@ -59,16 +59,15 @@ public class SpeakerCard extends Region {
         speakerName = new Label(speaker.getFullName());
         speakerName.getStyleClass().add("speaker-name");
 
-        speakerCompany = new Label(speaker.getJobTitle());
+        speakerCompany = new Label(speaker.getCompany());
         speakerCompany.getStyleClass().add("speaker-company");
 
-        speakerTitle = new Label(speaker.getCompany());
+        speakerTitle = new Label(speaker.getTwitter());
         speakerTitle.getStyleClass().add("speaker-title");
 
         avatar = Util.getSpeakerAvatar(speaker);
 
-        getChildren().addAll(imageView, imageSpacer, avatar, speakerName, speakerCompany, speakerTitle);
-
+        getChildren().addAll(imageView, imageSpacer, avatar, this.speakerName, speakerCompany, speakerTitle);
         Platform.runLater(this::requestLayout);
     }
 

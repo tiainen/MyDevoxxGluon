@@ -43,9 +43,11 @@ public class CircularSelectorSkin<T> extends SkinBase<CircularSelector<T>> {
         group.getChildren().clear();
         group.getChildren().add(mainCircle);
 
-        Node centerDecoration = getSkinnable().getCellFactory().apply(null);
-        if ( centerDecoration != null ) {
 
+        // central circle decoration
+        Node centerDecoration = getSkinnable().getCellFactory().apply(null);
+
+        if ( centerDecoration != null ) {
             Bounds b = centerDecoration.getBoundsInParent();
             Translate t = new Translate();
             t.xProperty().bind(mainCircle.centerXProperty().subtract(b.getWidth()/2));
@@ -58,36 +60,38 @@ public class CircularSelectorSkin<T> extends SkinBase<CircularSelector<T>> {
         int itemCount = getSkinnable().getItems().size();
         if (itemCount < 1) return; // nothing to do
 
-        double angle = 360 / itemCount;
+        double itemAngle = 360 / itemCount;
         AtomicReference<Double> absoluteAngle = new AtomicReference<>(0d);
 
         final double selectorRadius = getSkinnable().getSelectorCircleRadius();
 
         for (int i = 0; i < itemCount; i++) {
 
-            T item = getSkinnable().getItems().get(i);
+            final T item = getSkinnable().getItems().get(i);
             final Node itemGraphic = getSkinnable().getCellFactory().apply(item);
             if (itemGraphic == null) continue;
 
             Label itemLabel = new Label( null, itemGraphic);
-            itemLabel.setUserData(item);
 
+            // translate selector to the edge of the main circle
             Translate t = new Translate(-selectorRadius, -getSkinnable().getMainCircleRadius()-selectorRadius);
-            Rotate r = new Rotate(i * angle);
+
+            // Rotate selector to appropriate angle
+            Rotate r = new Rotate(i * itemAngle);
             r.setPivotX(selectorRadius);
             r.pivotYProperty().bind( mainCircle.radiusProperty().add(selectorRadius));
-
             r.axisProperty().setValue(Rotate.Z_AXIS);
 
             itemLabel.getTransforms().addAll(t, r);
 
-            final double cangle = i * angle;
+            final double cangle = i * itemAngle;
 
             itemLabel.setOnMouseClicked(e -> {
+                // rotate selected item to the top of the control
                 RotateTransition transition = new RotateTransition(getSkinnable().getTransitionDuration(), group);
                 transition.setByAngle((-absoluteAngle.get() - cangle) % 360);
                 absoluteAngle.set(-cangle);
-                transition.setOnFinished(ae -> getSkinnable().setSelectedItem((T) itemLabel.getUserData()));
+                transition.setOnFinished(ae -> getSkinnable().setSelectedItem(item));
                 transition.play();
             });
 

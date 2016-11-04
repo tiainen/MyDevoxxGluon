@@ -53,28 +53,43 @@ public class ActivityFeedPresenter extends GluonPresenter<OTNApplication> {
 
     private static final String PLACEHOLDER_MESSAGE = OTNBundle.getString("OTN.ACTIVITY.PLACEHOLDER_MESSAGE");
 
-    private String[] images = new String[] {
-        "circle.png",
-        "splash_btn_usa.png",
-        "splash_btn_be.png",
-        "splash_btn_ma.png",
-        "splash_btn_fr.png",
-        "splash_btn_uk.png",
-        "splash_btn_pl.png"
-    };
+    enum Conference {
+
+        DEVOXX_US("usa"),
+        DEVOXX_BE("be"),
+        DEVOXX_MA("ma"),
+        DEVOXX_FR("fr"),
+        DEVOXX_UK("uk"),
+        DEVOXX_PL("pl");
+
+        private final String id;
+
+        Conference(String id) { // TODO: define more conference attributes, such as url etc
+            this.id = id;
+        }
+
+        public String getImageFileName() {
+            return "splash_btn_" + id + ".png";
+        }
+
+    }
+
+    private static final String CONF_CIRCLE_NAME = "circle.png";
 
     @FXML
     private View activityFeedView;
 
-    private CircularSelector<Integer> selector = new CircularSelector<>( item -> {
-        String imageName = images[item == null? 0: item];
-        ImageView iv = new ImageView(ActivityFeedPresenter.class.getResource(imageName).toExternalForm());
+    private CircularSelector<Conference> selector = new CircularSelector<>( item -> {
+
+        String imageFileName = item ==  null?  CONF_CIRCLE_NAME: item.getImageFileName();
+        ImageView iv = new ImageView(ActivityFeedPresenter.class.getResource(imageFileName).toExternalForm());
 
         if ( item != null ) {
-            double size = 30 * 2; // TODO: base on the size
+            double size = 30 * 2; // TODO: base it on the component size
             iv.setPreserveRatio(true);
             iv.setFitWidth(size);
         }
+
         return iv;
     });
 
@@ -85,7 +100,7 @@ public class ActivityFeedPresenter extends GluonPresenter<OTNApplication> {
 
     public void initialize() {
 
-        selector.getItems().addAll(1,2,3,4,5,6);
+        selector.getItems().addAll(Conference.values());
 
         activityFeedView.setOnShowing(event -> {
             AppBar appBar = getApp().getAppBar();
@@ -93,18 +108,11 @@ public class ActivityFeedPresenter extends GluonPresenter<OTNApplication> {
             appBar.setTitleText(OTNView.ACTIVITY_FEED.getTitle());
             appBar.getActionItems().add(getApp().getSearchButton());
 
-
             activityFeedView.setCenter(selector);
 
-            //TODO move to css
+            //TODO move to external css
             activityFeedView.setStyle("-fx-background-color: #363C5A");
 
-
-//            if (firstTime && !EulaManager.isEulaAccepted() && OTNSettings.SHOW_EULA) {
-//                OTNView.EULA.switchView(ViewStackPolicy.SKIP)
-//                        .ifPresent(p -> ((EulaPresenter) p).setBottom(true));
-//                firstTime = false;
-//            }
         });
 
     }

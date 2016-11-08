@@ -33,10 +33,13 @@ import com.gluonhq.otn.OTNView;
 import com.gluonhq.otn.control.CircularSelector;
 import com.gluonhq.otn.model.Service;
 import com.gluonhq.otn.util.OTNBundle;
+import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.BorderPane;
+
 import javax.inject.Inject;
 
 public class ActivityFeedPresenter extends GluonPresenter<OTNApplication> {
@@ -93,27 +96,32 @@ public class ActivityFeedPresenter extends GluonPresenter<OTNApplication> {
     private Service service;
 
     private boolean firstTime = true;
-    private Button country = new Button("Select a country");
+    private Button countryButton = new Button("Select a countryButton");
+
 
     public void initialize() {
-        VBox vbox = new VBox(20);
-        country.setOnAction(e -> {
+
+        BorderPane content = new BorderPane();
+        content.setStyle("-fx-padding: 70 0 70 0;");
+
+        countryButton.setOnAction(e -> {
             service.setConference(selector.getSelectedItem());
             OTNView.SESSIONS.switchView();
         });
         selector.getItems().addAll(Conference.values());
         selector.selectedItemProperty().addListener(e -> {
             Conference c = selector.getSelectedItem();
-            country.setText(c.getName());
+            countryButton.setText("Go to " + c.getName());
         });
-        vbox.getChildren().addAll(country, selector);
+        content.setCenter(selector);
+        content.setBottom(countryButton);
+        content.setAlignment(countryButton, Pos.CENTER);
         activityFeedView.setOnShowing(event -> {
             AppBar appBar = getApp().getAppBar();
             appBar.setNavIcon(getApp().getNavMenuButton());
             appBar.setTitleText(OTNView.ACTIVITY_FEED.getTitle());
             appBar.getActionItems().add(getApp().getSearchButton());
-            activityFeedView.setTop(country);
-            activityFeedView.setCenter(vbox);
+            activityFeedView.setCenter(content);
 
             //TODO move to external css
             activityFeedView.setStyle("-fx-background-color: #363C5A");

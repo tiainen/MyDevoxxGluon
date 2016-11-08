@@ -36,6 +36,7 @@ import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import com.gluonhq.otn.util.OTNBundle;
 import com.gluonhq.otn.util.OTNNotifications;
 import com.gluonhq.otn.util.OTNSettings;
+import com.gluonhq.otn.views.ActivityFeedPresenter.Conference;
 import com.gluonhq.otn.views.helper.Placeholder;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Button;
@@ -67,6 +68,7 @@ public abstract class BaseService implements Service {
     private ObservableList<Vote> votes;
 
     private String authenticatedUserId = "";
+    private Conference conference;
 
     protected BaseService() {
     }
@@ -229,6 +231,11 @@ public abstract class BaseService implements Service {
         return Optional.empty();
     }
 
+    @Override
+    public void setConference (Conference c) {
+        this.conference = c;
+    }
+    
     protected String getAuthenticatedUserId() {
         return authenticatedUserId;
     }

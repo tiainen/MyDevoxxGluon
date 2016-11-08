@@ -26,50 +26,46 @@
 package com.gluonhq.otn.views;
 
 import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
-import com.gluonhq.charm.glisten.application.ViewStackPolicy;
 import com.gluonhq.charm.glisten.control.AppBar;
-import com.gluonhq.charm.glisten.control.CardCell;
-import com.gluonhq.charm.glisten.control.CardPane2;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.otn.OTNApplication;
 import com.gluonhq.otn.OTNView;
 import com.gluonhq.otn.control.CircularSelector;
-import com.gluonhq.otn.model.News;
 import com.gluonhq.otn.model.Service;
-import com.gluonhq.otn.util.EulaManager;
-import com.gluonhq.otn.util.ImageCache;
 import com.gluonhq.otn.util.OTNBundle;
-import com.gluonhq.otn.util.OTNSettings;
-import com.gluonhq.otn.views.helper.Util;
-import com.gluonhq.otn.views.layer.ImageViewLayer;
-import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
-import javafx.scene.image.Image;
+import javafx.scene.control.Button;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.VBox;
 import javax.inject.Inject;
 
 public class ActivityFeedPresenter extends GluonPresenter<OTNApplication> {
 
     private static final String PLACEHOLDER_MESSAGE = OTNBundle.getString("OTN.ACTIVITY.PLACEHOLDER_MESSAGE");
 
-    enum Conference {
+    public enum Conference {
 
-        DEVOXX_US("usa"),
-        DEVOXX_BE("be"),
-        DEVOXX_MA("ma"),
-        DEVOXX_FR("fr"),
-        DEVOXX_UK("uk"),
-        DEVOXX_PL("pl");
+        DEVOXX_US("usa", "USA"),
+        DEVOXX_BE("be", "Belgium"),
+        DEVOXX_MA("ma", "Morocco"),
+        DEVOXX_FR("fr", "France"),
+        DEVOXX_UK("uk", "United Kingdom"),
+        DEVOXX_PL("pl", "Poland");
 
         private final String id;
+        private final String name;
 
-        Conference(String id) { // TODO: define more conference attributes, such as url etc
+        Conference(String id, String name) { // TODO: define more conference attributes, such as url etc
             this.id = id;
+            this.name = name;
         }
 
         public String getImageFileName() {
             return "splash_btn_" + id + ".png";
+        }
+
+        public String getName() {
+            return name;
         }
 
     }
@@ -79,12 +75,12 @@ public class ActivityFeedPresenter extends GluonPresenter<OTNApplication> {
     @FXML
     private View activityFeedView;
 
-    private CircularSelector<Conference> selector = new CircularSelector<>( item -> {
+    private CircularSelector<Conference> selector = new CircularSelector<>(item -> {
 
-        String imageFileName = item ==  null?  CONF_CIRCLE_NAME: item.getImageFileName();
+        String imageFileName = item == null ? CONF_CIRCLE_NAME : item.getImageFileName();
         ImageView iv = new ImageView(ActivityFeedPresenter.class.getResource(imageFileName).toExternalForm());
 
-        if ( item != null ) {
+        if (item != null) {
             double size = 30 * 2; // TODO: base it on the component size
             iv.setPreserveRatio(true);
             iv.setFitWidth(size);
@@ -97,18 +93,27 @@ public class ActivityFeedPresenter extends GluonPresenter<OTNApplication> {
     private Service service;
 
     private boolean firstTime = true;
+    private Button country = new Button("Select a country");
 
     public void initialize() {
-
+        VBox vbox = new VBox(20);
+        country.setOnAction(e -> {
+            service.setConference(selector.getSelectedItem());
+            OTNView.SESSIONS.switchView();
+        });
         selector.getItems().addAll(Conference.values());
-
+        selector.selectedItemProperty().addListener(e -> {
+            Conference c = selector.getSelectedItem();
+            country.setText(c.getName());
+        });
+        vbox.getChildren().addAll(country, selector);
         activityFeedView.setOnShowing(event -> {
             AppBar appBar = getApp().getAppBar();
             appBar.setNavIcon(getApp().getNavMenuButton());
             appBar.setTitleText(OTNView.ACTIVITY_FEED.getTitle());
             appBar.getActionItems().add(getApp().getSearchButton());
-
-            activityFeedView.setCenter(selector);
+            activityFeedView.setTop(country);
+            activityFeedView.setCenter(vbox);
 
             //TODO move to external css
             activityFeedView.setStyle("-fx-background-color: #363C5A");

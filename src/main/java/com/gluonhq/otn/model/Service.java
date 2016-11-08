@@ -25,6 +25,7 @@
  */
 package com.gluonhq.otn.model;
 
+import com.gluonhq.otn.views.ActivityFeedPresenter;
 import javafx.beans.property.ReadOnlyListProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.collections.ObservableList;
@@ -240,5 +241,11 @@ public interface Service {
      * @return Session with the specific uuid
      */
     Optional<Session> findSession(String uuid);
+
+    /**
+     * Sets the selected conference.
+     * @param selectedItem the selected conference
+     */
+    public void setConference(ActivityFeedPresenter.Conference selectedItem);
     
 }

@@ -60,6 +60,8 @@ public class CircularSelectorSkin<T> extends SkinBase<CircularSelector<T>> {
         int itemCount = getSkinnable().getItems().size();
         if (itemCount < 1) return; // nothing to do
 
+        getSkinnable().setSelectedItem(getSkinnable().getItems().get(0));
+
         double itemAngle = 360 / itemCount;
         AtomicReference<Double> absoluteAngle = new AtomicReference<>(0d);
 

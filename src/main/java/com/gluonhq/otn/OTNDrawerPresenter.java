@@ -39,7 +39,6 @@ import static com.gluonhq.otn.OTNApplication.MENU_LAYER;
 import com.gluonhq.otn.model.Service;
 
 import com.gluonhq.otn.util.OTNBundle;
-import com.gluonhq.otn.views.EulaPresenter;
 import com.gluonhq.otn.views.helper.Util;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -134,7 +133,7 @@ public class OTNDrawerPresenter extends GluonPresenter<OTNApplication> {
             background.setFitWidth(getWidth());
 
             // text
-            text = new Label(OTNBundle.getString("OTN.DRAWER.JAVAONE_2016"));
+            text = new Label(OTNBundle.getString("OTN.DRAWER.CONF_NAME"));
             text.getStyleClass().add("primary-title");
 
 //            // profile button
@@ -148,14 +147,14 @@ public class OTNDrawerPresenter extends GluonPresenter<OTNApplication> {
             
             getChildren().addAll(background, text/*, profileButton*/);
 
-            if (OTNSettings.SHOW_EULA) {
-                // EULA button
-                eulaButton = MaterialDesignIcon.ASSESSMENT.button(e -> {
-                    getApp().hideLayer(MENU_LAYER);
-                    OTNView.EULA.switchView().ifPresent(p -> ((EulaPresenter) p).setBottom(false));
-                });
-                getChildren().add(eulaButton);
-            }
+//            if (OTNSettings.SHOW_EULA) {
+//                // EULA button
+//                eulaButton = MaterialDesignIcon.ASSESSMENT.button(e -> {
+//                    getApp().hideLayer(MENU_LAYER);
+//                    OTNView.EULA.switchView().ifPresent(p -> ((EulaPresenter) p).setBottom(false));
+//                });
+//                getChildren().add(eulaButton);
+//            }
         }
 
         protected void setSidePopupView(SidePopupView sidePopupView) {

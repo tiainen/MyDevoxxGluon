@@ -38,7 +38,7 @@ public class OTNView  {
 
     public static final AppViewRegistry registry = new AppViewRegistry();
 
-    public static final AppView ACTIVITY_FEED  = view( ActivityFeedPresenter.class,  MaterialDesignIcon.ANNOUNCEMENT,       SHOW_IN_DRAWER, HOME_VIEW, SKIP_VIEW_STACK);
+    public static final AppView CONF_SELECTOR  = view( ConfSelectorPresenter.class,  MaterialDesignIcon.ANNOUNCEMENT,       SHOW_IN_DRAWER, HOME_VIEW, SKIP_VIEW_STACK);
     public static final AppView SESSIONS       = view( SessionsPresenter.class,      MaterialDesignIcon.DASHBOARD,          SHOW_IN_DRAWER);
     public static final AppView SESSION        = view( SessionPresenter.class,       MaterialDesignIcon.RECORD_VOICE_OVER);
     public static final AppView SPEAKERS       = view( SpeakersPresenter.class,      MaterialDesignIcon.SPEAKER,            SHOW_IN_DRAWER);

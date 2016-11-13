@@ -86,7 +86,7 @@ public class EulaPresenter extends GluonPresenter<OTNApplication> {
                 getApp().getAppBar().getNavIcon().setVisible(true);
                 getApp().getAppBar().getNavIcon().setManaged(true);
                 EulaManager.acceptEula();
-                OTNView.ACTIVITY_FEED.switchView();
+                OTNView.CONF_SELECTOR.switchView();
             });
             HBox buttonBox = new HBox(accept);
             HBox.setHgrow(accept, Priority.ALWAYS);

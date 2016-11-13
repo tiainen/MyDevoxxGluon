@@ -31,9 +31,8 @@ import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.otn.OTNApplication;
 import com.gluonhq.otn.OTNView;
 import com.gluonhq.otn.control.CircularSelector;
+import com.gluonhq.otn.model.Conference;
 import com.gluonhq.otn.model.Service;
-import com.gluonhq.otn.util.OTNBundle;
-import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -43,35 +42,6 @@ import javafx.scene.layout.BorderPane;
 import javax.inject.Inject;
 
 public class ActivityFeedPresenter extends GluonPresenter<OTNApplication> {
-
-    private static final String PLACEHOLDER_MESSAGE = OTNBundle.getString("OTN.ACTIVITY.PLACEHOLDER_MESSAGE");
-
-    public enum Conference {
-
-        DEVOXX_US("usa", "USA"),
-        DEVOXX_BE("be", "Belgium"),
-        DEVOXX_MA("ma", "Morocco"),
-        DEVOXX_FR("fr", "France"),
-        DEVOXX_UK("uk", "United Kingdom"),
-        DEVOXX_PL("pl", "Poland");
-
-        private final String id;
-        private final String name;
-
-        Conference(String id, String name) { // TODO: define more conference attributes, such as url etc
-            this.id = id;
-            this.name = name;
-        }
-
-        public String getImageFileName() {
-            return "splash_btn_" + id + ".png";
-        }
-
-        public String getName() {
-            return name;
-        }
-
-    }
 
     private static final String CONF_CIRCLE_NAME = "circle.png";
 

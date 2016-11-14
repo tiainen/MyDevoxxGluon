@@ -36,7 +36,6 @@ import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import com.gluonhq.otn.util.OTNBundle;
 import com.gluonhq.otn.util.OTNNotifications;
 import com.gluonhq.otn.util.OTNSettings;
-import com.gluonhq.otn.views.ActivityFeedPresenter.Conference;
 import com.gluonhq.otn.views.helper.Placeholder;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Button;

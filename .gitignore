@@ -1,3 +1,4 @@
 .gradle/
 build/
 .idea/
+/src/main/resources/gluoncloudlink_config.json

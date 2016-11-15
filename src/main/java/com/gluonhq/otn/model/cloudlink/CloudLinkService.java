@@ -59,7 +59,6 @@ import com.gluonhq.otn.model.Speaker;
 import com.gluonhq.otn.model.Sponsor;
 import com.gluonhq.otn.model.Venue;
 import com.gluonhq.otn.model.Vote;
-import com.gluonhq.otn.util.ServiceUtils;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyListProperty;
 import javafx.beans.property.ReadOnlyListWrapper;
@@ -118,7 +117,7 @@ public class CloudLinkService extends BaseService {
     private GluonView authenticationView;
 
     public CloudLinkService() {
-        GluonCredentials gluonCredentials = new GluonCredentials("XXXXXXXXXXXXXX", "YYYYYYYYYYYYYY");//see https://gluonhq.com/products/cloudlink
+        GluonCredentials gluonCredentials = new GluonCredentials(CloudLinkService.class.getResourceAsStream("/gluoncloudlink_config.json"));
 
         localGluonClient = GluonClientBuilder.create()
                 .credentials(gluonCredentials)
@@ -127,7 +126,6 @@ public class CloudLinkService extends BaseService {
                 .build();
 
         cloudGluonClient = GluonClientBuilder.create()
-//                .host(GLUONCLOUD_HOST)
                 .credentials(gluonCredentials)
                 .authenticationMode(AuthenticationMode.PUBLIC)
                 .operationMode(OperationMode.CLOUD_FIRST)

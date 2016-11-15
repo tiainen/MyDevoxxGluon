@@ -80,8 +80,6 @@ public abstract class BaseService implements Service {
 
     public abstract ObservableList<Vote> internalRetrieveVotes();
 
-    public abstract void retrieveSurveyAnswers();
-
     public abstract GluonView getAuthenticationView();
 
     @Override
@@ -155,7 +153,7 @@ public abstract class BaseService implements Service {
 //                view.setPrefWidth(MobileApplication.getInstance().getView().getScene().getWidth() - 40);
 //                view.setPrefHeight(MobileApplication.getInstance().getView().getScene().getHeight() - 200);
 
-                Placeholder loginDialogContent = new Placeholder("Temp Login Prompt", "(Awaiting Oracle SSO)\n\nPlease enter *any* username below", MaterialDesignIcon.LOCK);
+                Placeholder loginDialogContent = new Placeholder("Temp Login Prompt", "Please enter *any* username below", MaterialDesignIcon.LOCK);
 
                 // FIXME: Too narrow Dialogs in Glisten
                 loginDialogContent.setPrefWidth(MobileApplication.getInstance().getView().getScene().getWidth() - 40);
@@ -223,7 +221,7 @@ public abstract class BaseService implements Service {
     @Override
     public Optional<Session> findSession(String uuid) {
         for (Session session : retrieveSessions()) {
-            if (session.getUuid().equals(uuid)) {
+            if (session.getSlotId().equals(uuid)) {
                 return Optional.of(session);
             }
         }
@@ -302,7 +300,6 @@ public abstract class BaseService implements Service {
             retrieveScheduledSessions();
             retrieveNotes();
             retrieveVotes();
-            retrieveSurveyAnswers();
         }
     }
     

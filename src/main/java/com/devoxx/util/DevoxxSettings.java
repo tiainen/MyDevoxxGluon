@@ -41,7 +41,7 @@ public class DevoxxSettings {
      *  the id will be gone as well.
      * - false: authentication is done with user interaction.
      */
-    public final static boolean AUTO_AUTHENTICATION = true;
+    public final static boolean AUTO_AUTHENTICATION = false;
 
     /**
      * boolean option to switch on/off the remote notes
@@ -88,7 +88,7 @@ public class DevoxxSettings {
     public final static int PROCESSING_TIME_OUT = 15; // seconds
     
     public final static Locale LOCALE = Locale.ENGLISH;
-    public static final boolean FAV_AND_SCHEDULE_ENABLED = false;
+    public static final boolean FAV_AND_SCHEDULE_ENABLED = true;
 
     private static final String TIME_PATTERN = "h:mma";
     private static final String DAY_PATTERN  = "EEEE, MMMM dd";

@@ -124,7 +124,7 @@ jfxmobile {
         launcherClassName = 'com.gluonhq.charm.down.notifications.CustomLauncher'
         infoPList = file('src/ios/Default-Info.plist')
         forceLinkClasses = [
-                'com.gluonhq.otn.**.*',
+                'com.devoxx.**.*',
                 'com.gluonhq.**.*',
                 'javax.xml.stream.*.',
                 'io.datafx.**.*',

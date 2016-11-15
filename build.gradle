@@ -16,6 +16,7 @@ license {
     header = file('LICENSE.txt')
     strictCheck true
     skipExistingHeaders true
+    excludes(['**/*.json'])
 }
 
 

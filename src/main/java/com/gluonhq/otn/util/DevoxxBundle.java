@@ -25,33 +25,28 @@
  */
 package com.gluonhq.otn.util;
 
-import com.gluonhq.otn.OTNApplication;
-import java.io.IOException;
+import java.text.MessageFormat;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
-public class OTNLogging {
+public class DevoxxBundle {
     
-    public static boolean LOGGING_ENABLED = false;
-
-    OTNLogging() {
+    public static ResourceBundle getBundle() {
+        return ResourceBundle.getBundle("com/gluonhq/otn/otn");
     }
     
-    public static void config() {
+    public static String getString(String value) {
         try {
-            // By default there's no console output
-            String file = "/loggingOFF.properties";
-            if (Boolean.getBoolean("enable.logging")) {
-                // to enable output on mobile, set enable.logging=true in java.custom.properties
-                // on desktop, in the build.gradle file, under applicationDefaultJvmArgs
-                file = "/loggingON.properties";
-                LOGGING_ENABLED = true;
-            }
-            LogManager.getLogManager().readConfiguration(OTNApplication.class.getResourceAsStream(file));
-        } catch (IOException ex) {
-            Logger.getLogger(OTNApplication.class.getName()).log(Level.SEVERE, "Can't find logging properties file", ex);
+            return getBundle().getString(value);
+        } catch (MissingResourceException ex) {
+            Logger.getLogger(DevoxxBundle.class.getName()).log(Level.SEVERE, null, ex);
         }
+        return "";
     }
     
+    public static String getString(String value, Object... arguments) {
+        return MessageFormat.format(getString(value), arguments);
+    }
 }

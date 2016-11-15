@@ -37,7 +37,7 @@ import com.gluonhq.charm.glisten.layout.layer.SidePopupView;
 import com.gluonhq.charm.glisten.license.License;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import com.gluonhq.otn.model.Service;
-import com.gluonhq.otn.util.OTNSearch;
+import com.gluonhq.otn.util.DevoxxSearch;
 import com.gluonhq.otn.views.helper.ConnectivityUtils;
 import com.gluonhq.otn.views.helper.SessionVisuals;
 import javafx.beans.value.ChangeListener;
@@ -49,50 +49,50 @@ import javafx.stage.Stage;
 
 import java.util.Locale;
 
-import static com.gluonhq.otn.OTNView.SEARCH;
+import static com.gluonhq.otn.DevoxxView.SEARCH;
 import com.gluonhq.otn.model.DevoxxService;
-import com.gluonhq.otn.util.OTNLogging;
-import com.gluonhq.otn.util.OTNNotifications;
+import com.gluonhq.otn.util.DevoxxLogging;
+import com.gluonhq.otn.util.DevoxxNotifications;
 import javafx.stage.Window;
 
 @License(key = "??????????????????????")
-public class OTNApplication extends MobileApplication {
+public class DevoxxApplication extends MobileApplication {
     
     public static final String MENU_LAYER = "SideMenu";
     public static final String POPUP_FILTER_SESSIONS_MENU = "FilterSessionsMenu";
 
     private static final GluonInstanceProvider instanceSupplier = new GluonInstanceProvider() {{
         bindProvider(Service.class, DevoxxService::new);
-        bindProvider(OTNSearch.class, OTNSearch::new);
-        bindProvider(OTNNotifications.class, OTNNotifications::new);
+        bindProvider(DevoxxSearch.class, DevoxxSearch::new);
+        bindProvider(DevoxxNotifications.class, DevoxxNotifications::new);
         bindProvider(SessionVisuals.class, SessionVisuals::new);
 
         Injector.setInstanceSupplier(this);
     }};
 
-    private final Button navMenuButton   = MaterialDesignIcon.MENU.button(e -> showLayer(OTNApplication.MENU_LAYER));
+    private final Button navMenuButton   = MaterialDesignIcon.MENU.button(e -> showLayer(DevoxxApplication.MENU_LAYER));
     private final Button navBackButton   = MaterialDesignIcon.ARROW_BACK.button(e -> switchToPreviousView());
     private final Button navHomeButton   = MaterialDesignIcon.HOME.button(e -> goHome());
     private final Button navSearchButton = MaterialDesignIcon.SEARCH.button(e -> SEARCH.switchView());
 
-    private OTNDrawerPresenter drawerPresenter;
+    private DevoxxDrawerPresenter drawerPresenter;
     
-    private OTNNotifications otnNotifications;
+    private DevoxxNotifications devoxxNotifications;
 
     @Override
     public void init() {
 
         // Config logging
-        OTNLogging.config();
+        DevoxxLogging.config();
 
         // start service data preloading as soon as possible
         Injector.instantiateModelOrService(Service.class);
 
         // check if the app starts from a notification
-        otnNotifications = Injector.instantiateModelOrService(OTNNotifications.class);
-        otnNotifications.findNotificationIdAtStartup(getParameters().getNamed());
+        devoxxNotifications = Injector.instantiateModelOrService(DevoxxNotifications.class);
+        devoxxNotifications.findNotificationIdAtStartup(getParameters().getNamed());
 
-        for (AppView view : OTNView.REGISTRY.getViews()) {
+        for (AppView view : DevoxxView.REGISTRY.getViews()) {
             view.registerView(this);
         }
         
@@ -112,16 +112,16 @@ public class OTNApplication extends MobileApplication {
         String stylesheetName = String.format("javaone_%s%s.css",
                 Platform.getCurrent().name().toLowerCase(Locale.ROOT),
                 formFactorSuffix);
-        scene.getStylesheets().add(OTNApplication.class.getResource(stylesheetName).toExternalForm());
+        scene.getStylesheets().add(DevoxxApplication.class.getResource(stylesheetName).toExternalForm());
         
         if (Platform.isDesktop()) {
             Window window = scene.getWindow();
-            ((Stage) window).getIcons().add(new Image(OTNApplication.class.getResourceAsStream("/icon.png")));
+            ((Stage) window).getIcons().add(new Image(DevoxxApplication.class.getResourceAsStream("/icon.png")));
             window.setWidth(350);
             window.setHeight(700);
         }
         
-        drawerPresenter = Injector.instantiateModelOrService(OTNDrawerPresenter.class);
+        drawerPresenter = Injector.instantiateModelOrService(DevoxxDrawerPresenter.class);
 
         scene.getWindow().showingProperty().addListener(new ChangeListener<Boolean>() {
             @Override

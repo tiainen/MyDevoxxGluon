@@ -33,9 +33,9 @@ import com.gluonhq.charm.glisten.application.MobileApplication;
 import com.gluonhq.charm.glisten.control.Dialog;
 import com.gluonhq.charm.glisten.control.TextField;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
-import com.gluonhq.otn.util.OTNBundle;
-import com.gluonhq.otn.util.OTNNotifications;
-import com.gluonhq.otn.util.OTNSettings;
+import com.gluonhq.otn.util.DevoxxBundle;
+import com.gluonhq.otn.util.DevoxxNotifications;
+import com.gluonhq.otn.util.DevoxxSettings;
 import com.gluonhq.otn.views.helper.Placeholder;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Button;
@@ -104,7 +104,7 @@ public abstract class BaseService implements Service {
         }
 
         if (scheduledSessions == null) {
-            OTNNotifications notifications = Injector.instantiateModelOrService(OTNNotifications.class);
+            DevoxxNotifications notifications = Injector.instantiateModelOrService(DevoxxNotifications.class);
             // stop recreating notifications, after the list of scheduled sessions is fully retrieved
             scheduledSessions = internalRetrieveScheduledSessions(notifications::stopPreloadingScheduledSessions);
             // start recreating notifications as soon as the scheduled sessions are being retrieved
@@ -117,7 +117,7 @@ public abstract class BaseService implements Service {
 
     @Override
     public ObservableList<Note> retrieveNotes() {
-        if (!isAuthenticated() && OTNSettings.USE_REMOTE_NOTES) {
+        if (!isAuthenticated() && DevoxxSettings.USE_REMOTE_NOTES) {
             throw new IllegalStateException("An authenticated user must be available when calling this method.");
         }
 
@@ -144,8 +144,8 @@ public abstract class BaseService implements Service {
     @Override
     public boolean authenticate() {
         if (!isAuthenticated()) {
-            if (OTNSettings.AUTO_AUTHENTICATION) {
-                authenticatedUserId = OTNSettings.getUserUUID();
+            if (DevoxxSettings.AUTO_AUTHENTICATION) {
+                authenticatedUserId = DevoxxSettings.getUserUUID();
                 storeAuthenticatedUser();
             } else {
                 Dialog<Button> dialog = new Dialog<>();
@@ -165,8 +165,8 @@ public abstract class BaseService implements Service {
                 loginDialogContent.getChildren().add(usernameField);
 
                 dialog.setContent(loginDialogContent);
-                Button okButton = new Button(OTNBundle.getString("OTN.LOGIN_DIALOG.LOGIN"));
-                Button cancelButton = new Button(OTNBundle.getString("OTN.LOGIN_DIALOG.CANCEL"));
+                Button okButton = new Button(DevoxxBundle.getString("OTN.LOGIN_DIALOG.LOGIN"));
+                Button cancelButton = new Button(DevoxxBundle.getString("OTN.LOGIN_DIALOG.CANCEL"));
                 okButton.setOnAction(e -> {
                     authenticatedUserId = usernameField.getText();
                     storeAuthenticatedUser();
@@ -197,14 +197,14 @@ public abstract class BaseService implements Service {
         loggedOut = false;
 
         Dialog<Button> dialog = new Dialog<>();
-        Placeholder logoutDialogContent = new Placeholder("Confirm Logout", OTNBundle.getString("OTN.LOGOUT_DIALOG.CONTENT"), MaterialDesignIcon.HELP);
+        Placeholder logoutDialogContent = new Placeholder("Confirm Logout", DevoxxBundle.getString("OTN.LOGOUT_DIALOG.CONTENT"), MaterialDesignIcon.HELP);
 
         // FIXME: Too narrow Dialogs in Glisten
         logoutDialogContent.setPrefWidth(MobileApplication.getInstance().getView().getScene().getWidth() - 40);
 
         dialog.setContent(logoutDialogContent);
-        Button yesButton = new Button(OTNBundle.getString("OTN.LOGOUT_DIALOG.YES"));
-        Button noButton = new Button(OTNBundle.getString("OTN.LOGOUT_DIALOG.NO"));
+        Button yesButton = new Button(DevoxxBundle.getString("OTN.LOGOUT_DIALOG.YES"));
+        Button noButton = new Button(DevoxxBundle.getString("OTN.LOGOUT_DIALOG.NO"));
         yesButton.setOnAction(e -> {
             loggedOut = removeAuthenticatedUser();
             if (loggedOut) {
@@ -257,7 +257,7 @@ public abstract class BaseService implements Service {
 
         if (isAuthenticated()) {
             loadAuthenticatedData();
-        } else if (OTNSettings.AUTO_AUTHENTICATION) {
+        } else if (DevoxxSettings.AUTO_AUTHENTICATION) {
             authenticate();
         }
     }

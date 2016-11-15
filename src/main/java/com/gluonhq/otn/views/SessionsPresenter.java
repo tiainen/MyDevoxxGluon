@@ -34,12 +34,12 @@ import com.gluonhq.charm.glisten.control.CharmListView;
 import com.gluonhq.charm.glisten.layout.layer.SidePopupView;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
-import com.gluonhq.otn.OTNApplication;
-import com.gluonhq.otn.OTNView;
+import com.gluonhq.otn.DevoxxApplication;
+import com.gluonhq.otn.DevoxxView;
 import com.gluonhq.otn.model.Service;
 import com.gluonhq.otn.model.Session;
-import com.gluonhq.otn.util.OTNBundle;
-import com.gluonhq.otn.util.OTNSettings;
+import com.gluonhq.otn.util.DevoxxBundle;
+import com.gluonhq.otn.util.DevoxxSettings;
 import com.gluonhq.otn.views.cell.ScheduleCell;
 import com.gluonhq.otn.views.cell.ScheduleHeaderCell;
 import com.gluonhq.otn.views.helper.FilterSessionsPresenter;
@@ -63,16 +63,16 @@ import javax.inject.Inject;
 import java.time.LocalDate;
 import java.util.function.Predicate;
 
-import static com.gluonhq.otn.OTNApplication.POPUP_FILTER_SESSIONS_MENU;
+import static com.gluonhq.otn.DevoxxApplication.POPUP_FILTER_SESSIONS_MENU;
 
-public class SessionsPresenter  extends GluonPresenter<OTNApplication> {
-    private static final String SESSIONS_PLACEHOLDER_MESSAGE = OTNBundle.getString("OTN.CONTENT_CATALOG.ALL_SESSIONS.PLACEHOLDER_MESSAGE");
+public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
+    private static final String SESSIONS_PLACEHOLDER_MESSAGE = DevoxxBundle.getString("OTN.CONTENT_CATALOG.ALL_SESSIONS.PLACEHOLDER_MESSAGE");
 
-    private static final String SCHEDULE_LOGIN_PROMPT_MESSAGE = OTNBundle.getString("OTN.CONTENT_CATALOG.SCHEDULED_SESSIONS.LOGIN_PROMPT");
-    private static final String SCHEDULE_EMPTY_LIST_MESSAGE = OTNBundle.getString("OTN.CONTENT_CATALOG.SCHEDULED_SESSIONS.EMPTY_LIST_MESSAGE");
+    private static final String SCHEDULE_LOGIN_PROMPT_MESSAGE = DevoxxBundle.getString("OTN.CONTENT_CATALOG.SCHEDULED_SESSIONS.LOGIN_PROMPT");
+    private static final String SCHEDULE_EMPTY_LIST_MESSAGE = DevoxxBundle.getString("OTN.CONTENT_CATALOG.SCHEDULED_SESSIONS.EMPTY_LIST_MESSAGE");
 
-    private static final String FAVORITE_LOGIN_PROMPT_MESSAGE = OTNBundle.getString("OTN.CONTENT_CATALOG.FAVORITE_SESSIONS.LOGIN_PROMPT");
-    private static final String FAVORITE_EMPTY_LIST_MESSAGE = OTNBundle.getString("OTN.CONTENT_CATALOG.FAVORITE_SESSIONS.EMPTY_LIST_MESSAGE");
+    private static final String FAVORITE_LOGIN_PROMPT_MESSAGE = DevoxxBundle.getString("OTN.CONTENT_CATALOG.FAVORITE_SESSIONS.LOGIN_PROMPT");
+    private static final String FAVORITE_EMPTY_LIST_MESSAGE = DevoxxBundle.getString("OTN.CONTENT_CATALOG.FAVORITE_SESSIONS.EMPTY_LIST_MESSAGE");
 
     private static final MaterialDesignIcon SESSIONS_ICON = MaterialDesignIcon.DASHBOARD;
     private static final MaterialDesignIcon SCHEDULER_ICON = MaterialDesignIcon.STAR;
@@ -101,7 +101,7 @@ public class SessionsPresenter  extends GluonPresenter<OTNApplication> {
 
     public void initialize() {
         // navigation between all sessions and the users scheduled sesssions
-        if (OTNSettings.FAV_AND_SCHEDULE_ENABLED) {
+        if (DevoxxSettings.FAV_AND_SCHEDULE_ENABLED) {
             final BottomNavigation bottomNavigation = createBottomNavigation();
             sessions.setBottom(bottomNavigation);
         } else {
@@ -113,11 +113,11 @@ public class SessionsPresenter  extends GluonPresenter<OTNApplication> {
         sessions.setOnShowing(event -> {
             AppBar appBar = getApp().getAppBar();
             appBar.setNavIcon(getApp().getNavMenuButton());
-            appBar.setTitleText(OTNView.SESSIONS.getTitle());
+            appBar.setTitleText(DevoxxView.SESSIONS.getTitle());
             appBar.getActionItems().addAll(getApp().getSearchButton(), filterButton);
 
             // Will never be null
-            if (OTNSettings.FAV_AND_SCHEDULE_ENABLED) {
+            if (DevoxxSettings.FAV_AND_SCHEDULE_ENABLED) {
                 lastSelectedButton.setSelected(true);
                 if (currentHandler != null) {
                     currentHandler.handle(null);
@@ -147,7 +147,7 @@ public class SessionsPresenter  extends GluonPresenter<OTNApplication> {
         BottomNavigation bottomNavigation = new BottomNavigation();
 
         // Show all sessions
-        ToggleButton sessionsButton = bottomNavigation.createButton(OTNBundle.getString("OTN.BUTTON.SESSIONS"), SESSIONS_ICON.graphic(), e -> {
+        ToggleButton sessionsButton = bottomNavigation.createButton(DevoxxBundle.getString("OTN.BUTTON.SESSIONS"), SESSIONS_ICON.graphic(), e -> {
             sessions.setCenter(createSessionsList(ContentDisplayMode.ALL));
         });
 
@@ -159,7 +159,7 @@ public class SessionsPresenter  extends GluonPresenter<OTNApplication> {
                 sessions.setCenter(createSessionsList(ContentDisplayMode.SCHEDULED));
             }
         };
-        ToggleButton scheduleButton = bottomNavigation.createButton(OTNBundle.getString("OTN.BUTTON.MY_SCHEDULE"), SCHEDULER_ICON.graphic(), scheduleHandler);
+        ToggleButton scheduleButton = bottomNavigation.createButton(DevoxxBundle.getString("OTN.BUTTON.MY_SCHEDULE"), SCHEDULER_ICON.graphic(), scheduleHandler);
 
         // show favorite sessions
         EventHandler<ActionEvent> favoriteHandler = e -> {
@@ -169,7 +169,7 @@ public class SessionsPresenter  extends GluonPresenter<OTNApplication> {
                 sessions.setCenter(createSessionsList(ContentDisplayMode.FAVORITE));
             }
         };
-        ToggleButton favoriteButton = bottomNavigation.createButton(OTNBundle.getString("OTN.BUTTON.MY_FAVORITES"), FAVORITE_ICON.graphic(), favoriteHandler);
+        ToggleButton favoriteButton = bottomNavigation.createButton(DevoxxBundle.getString("OTN.BUTTON.MY_FAVORITES"), FAVORITE_ICON.graphic(), favoriteHandler);
 
         bottomNavigation.getActionItems().addAll(sessionsButton, scheduleButton, favoriteButton);
 
@@ -206,7 +206,7 @@ public class SessionsPresenter  extends GluonPresenter<OTNApplication> {
             scheduleListView.setCellFactory(p -> new ScheduleCell(service));
 //            scheduleListView.selectedItemProperty().addListener((observable, oldValue, newValue) -> {
 //                if (newValue != null) {
-//                    OTNView.SESSION.switchView().ifPresent(presenter ->
+//                    DevoxxView.SESSION.switchView().ifPresent(presenter ->
 //                        ((SessionPresenter) presenter).showSession(newValue));
 //                }
 //            });

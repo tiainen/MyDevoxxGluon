@@ -29,11 +29,11 @@ import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.control.CharmListView;
 import com.gluonhq.charm.glisten.mvc.View;
-import com.gluonhq.otn.OTNApplication;
-import com.gluonhq.otn.OTNView;
+import com.gluonhq.otn.DevoxxApplication;
+import com.gluonhq.otn.DevoxxView;
 import com.gluonhq.otn.model.Service;
 import com.gluonhq.otn.model.Sponsor;
-import com.gluonhq.otn.util.OTNBundle;
+import com.gluonhq.otn.util.DevoxxBundle;
 import com.gluonhq.otn.views.cell.SponsorCell;
 import com.gluonhq.otn.views.cell.SponsorHeaderCell;
 import com.gluonhq.otn.views.helper.Placeholder;
@@ -44,8 +44,8 @@ import javafx.fxml.FXML;
 
 import javax.inject.Inject;
 
-public class SponsorsPresenter extends GluonPresenter<OTNApplication> {
-    private static final String PLACEHOLDER_MESSAGE = OTNBundle.getString("OTN.SPONSORS.PLACEHOLDER_MESSAGE");
+public class SponsorsPresenter extends GluonPresenter<DevoxxApplication> {
+    private static final String PLACEHOLDER_MESSAGE = DevoxxBundle.getString("OTN.SPONSORS.PLACEHOLDER_MESSAGE");
 
     @FXML
     private View sponsors;
@@ -59,14 +59,14 @@ public class SponsorsPresenter extends GluonPresenter<OTNApplication> {
         sponsors.setOnShowing(event -> {
             AppBar appBar = getApp().getAppBar();
             appBar.setNavIcon(getApp().getNavMenuButton());
-            appBar.setTitleText(OTNView.SPONSORS.getTitle());
+            appBar.setTitleText(DevoxxView.SPONSORS.getTitle());
             appBar.getActionItems().add(getApp().getSearchButton());
             sponsorListView.setSelectedItem(null);
         });
 
         sponsorListView.getStyleClass().add("sponsor-list-view");
 
-        sponsorListView.setPlaceholder(new Placeholder(PLACEHOLDER_MESSAGE, OTNView.SPONSORS.getMenuIcon()));
+        sponsorListView.setPlaceholder(new Placeholder(PLACEHOLDER_MESSAGE, DevoxxView.SPONSORS.getMenuIcon()));
 
         ObservableList<Sponsor> sponsorsList = FXCollections.observableArrayList(service.retrieveSponsors());
         sponsorListView.setItems(sponsorsList);
@@ -79,7 +79,7 @@ public class SponsorsPresenter extends GluonPresenter<OTNApplication> {
 
         sponsorListView.selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
-                OTNView.SPONSOR.switchView().ifPresent( presenter ->
+                DevoxxView.SPONSOR.switchView().ifPresent(presenter ->
                         ((SponsorPresenter)presenter).setSponsor(newValue)
                 );
             }

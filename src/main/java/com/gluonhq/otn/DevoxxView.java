@@ -29,12 +29,12 @@ import com.gluonhq.charm.glisten.afterburner.AppView;
 import com.gluonhq.charm.glisten.afterburner.AppViewRegistry;
 import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
-import com.gluonhq.otn.util.OTNBundle;
+import com.gluonhq.otn.util.DevoxxBundle;
 import com.gluonhq.otn.views.*;
 
 import static com.gluonhq.charm.glisten.afterburner.AppView.Flag.*;
 
-public class OTNView  {
+public class DevoxxView {
 
     public static final AppViewRegistry REGISTRY = new AppViewRegistry();
 
@@ -57,7 +57,7 @@ public class OTNView  {
 
     static AppView view(Class<? extends GluonPresenter<?>> presenterClass, MaterialDesignIcon menuIcon, AppView.Flag... flags ) {
         return REGISTRY.createView( name(presenterClass),
-                                    OTNBundle.getString( "OTN.VIEW." + name(presenterClass)),
+                                    DevoxxBundle.getString( "OTN.VIEW." + name(presenterClass)),
                                     presenterClass,
                                     menuIcon,
                                     flags);

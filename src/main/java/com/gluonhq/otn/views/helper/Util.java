@@ -33,7 +33,7 @@ import com.gluonhq.charm.glisten.layout.layer.FloatingActionButton;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import com.gluonhq.otn.model.Speaker;
 import com.gluonhq.otn.util.ImageCache;
-import com.gluonhq.otn.util.OTNBundle;
+import com.gluonhq.otn.util.DevoxxBundle;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
@@ -112,7 +112,7 @@ public class Util {
                     }
                     b.launchExternalBrowser(url);
                 } catch (IOException | URISyntaxException ex) {
-                    Toast toast = new Toast(OTNBundle.getString("OTN.VISUALS.CONNECTION_FAILED"));
+                    Toast toast = new Toast(DevoxxBundle.getString("OTN.VISUALS.CONNECTION_FAILED"));
                     toast.show();
                 }
             });

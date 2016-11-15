@@ -59,7 +59,6 @@ import com.gluonhq.otn.model.Speaker;
 import com.gluonhq.otn.model.Sponsor;
 import com.gluonhq.otn.model.Venue;
 import com.gluonhq.otn.model.Vote;
-import com.gluonhq.otn.util.ServiceUtils;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyListProperty;
 import javafx.beans.property.ReadOnlyListWrapper;
@@ -81,8 +80,8 @@ import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.gluonhq.otn.util.OTNLogging.LOGGING_ENABLED;
-import com.gluonhq.otn.util.OTNSettings;
+import static com.gluonhq.otn.util.DevoxxLogging.LOGGING_ENABLED;
+import com.gluonhq.otn.util.DevoxxSettings;
 import javafx.beans.InvalidationListener;
 
 public class CloudLinkService extends BaseService {
@@ -324,7 +323,7 @@ public class CloudLinkService extends BaseService {
                 SyncFlag.LIST_READ_THROUGH, SyncFlag.LIST_WRITE_THROUGH, SyncFlag.OBJECT_READ_THROUGH, SyncFlag.OBJECT_WRITE_THROUGH));
         internalDataLocal.initializedProperty().addListener((obsLocal, ovLocal, nvLocal) -> {
             if (nvLocal) {
-                if (!listIdentifier.equals("notes") || OTNSettings.USE_REMOTE_NOTES) {
+                if (!listIdentifier.equals("notes") || DevoxxSettings.USE_REMOTE_NOTES) {
                     GluonObservableList<E> internalDataCloud = DataProvider.retrieveList(cloudGluonClient.createListDataReader(getAuthenticatedUserId() + "_" + listIdentifier, targetClass,
                             SyncFlag.LIST_READ_THROUGH, SyncFlag.LIST_WRITE_THROUGH, SyncFlag.OBJECT_READ_THROUGH, SyncFlag.OBJECT_WRITE_THROUGH));
                     internalDataCloud.initializedProperty().addListener((obsCloud, ovCloud, nvCloud) -> {
@@ -483,7 +482,7 @@ public class CloudLinkService extends BaseService {
 
     @Override
     public boolean canVoteForOTN3DModel() {
-        return latestClearVotes == null || latestClearVotes.get() == null || OTNSettings.getLastVoteCast() <= latestClearVotes.get().getTimestamp();
+        return latestClearVotes == null || latestClearVotes.get() == null || DevoxxSettings.getLastVoteCast() <= latestClearVotes.get().getTimestamp();
     }
 
     @Override
@@ -505,7 +504,7 @@ public class CloudLinkService extends BaseService {
         if (otn3DModels != null) {
             for (OTN3DModel model : otn3DModels) {
                 if (model.getUuid().equals(id)) {
-                    OTNSettings.setLastVoteCast(System.currentTimeMillis());
+                    DevoxxSettings.setLastVoteCast(System.currentTimeMillis());
 
                     model.vote();
                     break;

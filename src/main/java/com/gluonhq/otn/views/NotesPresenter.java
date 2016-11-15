@@ -29,12 +29,12 @@ import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.control.CharmListView;
 import com.gluonhq.charm.glisten.mvc.View;
-import com.gluonhq.otn.OTNApplication;
-import com.gluonhq.otn.OTNView;
+import com.gluonhq.otn.DevoxxApplication;
+import com.gluonhq.otn.DevoxxView;
 import com.gluonhq.otn.model.Note;
 import com.gluonhq.otn.model.Service;
-import com.gluonhq.otn.util.OTNBundle;
-import com.gluonhq.otn.util.OTNSettings;
+import com.gluonhq.otn.util.DevoxxBundle;
+import com.gluonhq.otn.util.DevoxxSettings;
 import com.gluonhq.otn.views.cell.NoteCell;
 import com.gluonhq.otn.views.helper.LoginPrompter;
 import com.gluonhq.otn.views.helper.Placeholder;
@@ -46,9 +46,9 @@ import javafx.fxml.FXML;
 
 import javax.inject.Inject;
 
-public class NotesPresenter extends GluonPresenter<OTNApplication> {
-    private static final String ANONYMOUS_MESSAGE = OTNBundle.getString("OTN.NOTES.ANONYMOUS_MESSAGE");
-    private static final String EMPTY_LIST_MESSAGE = OTNBundle.getString("OTN.NOTES.EMPTY_LIST_MESSAGE");
+public class NotesPresenter extends GluonPresenter<DevoxxApplication> {
+    private static final String ANONYMOUS_MESSAGE = DevoxxBundle.getString("OTN.NOTES.ANONYMOUS_MESSAGE");
+    private static final String EMPTY_LIST_MESSAGE = DevoxxBundle.getString("OTN.NOTES.EMPTY_LIST_MESSAGE");
 
     private static boolean listenersAdded = false;
     
@@ -66,11 +66,11 @@ public class NotesPresenter extends GluonPresenter<OTNApplication> {
         notesView.setOnShowing(event -> {
             AppBar appBar = getApp().getAppBar();
             appBar.setNavIcon(getApp().getNavMenuButton());
-            appBar.setTitleText(OTNView.NOTES.getTitle());
+            appBar.setTitleText(DevoxxView.NOTES.getTitle());
             appBar.getActionItems().add(getApp().getSearchButton());
             lvNotes.setSelectedItem(null);
             
-            if (service.isAuthenticated() || !OTNSettings.USE_REMOTE_NOTES) {
+            if (service.isAuthenticated() || !DevoxxSettings.USE_REMOTE_NOTES) {
                 loadAuthenticatedView();
             } else {
                 loadAnonymousView();
@@ -78,12 +78,12 @@ public class NotesPresenter extends GluonPresenter<OTNApplication> {
         });
 
         lvNotes = new CharmListView<>();
-        lvNotes.setPlaceholder(new Placeholder(EMPTY_LIST_MESSAGE, OTNView.NOTES.getMenuIcon()));
+        lvNotes.setPlaceholder(new Placeholder(EMPTY_LIST_MESSAGE, DevoxxView.NOTES.getMenuIcon()));
         lvNotes.setCellFactory(param -> new NoteCell(service));
 //        lvNotes.selectedItemProperty().addListener((observable, oldValue, newValue) -> {
 //            if (newValue != null) {
 //                service.findSession(newValue.getSessionUuid()).ifPresent(session ->
-//                        OTNView.SESSION.switchView().ifPresent(presenter ->
+//                        DevoxxView.SESSION.switchView().ifPresent(presenter ->
 //                                ((SessionPresenter) presenter).showSession(session, Pane.NOTE)));
 //            }
 //        });
@@ -92,7 +92,7 @@ public class NotesPresenter extends GluonPresenter<OTNApplication> {
     }
 
     private void loadAnonymousView() {
-        notesView.setCenter(new LoginPrompter(service, ANONYMOUS_MESSAGE, OTNView.NOTES.getMenuIcon(), this::loadAuthenticatedView));
+        notesView.setCenter(new LoginPrompter(service, ANONYMOUS_MESSAGE, DevoxxView.NOTES.getMenuIcon(), this::loadAuthenticatedView));
     }
 
     private void loadAuthenticatedView() {

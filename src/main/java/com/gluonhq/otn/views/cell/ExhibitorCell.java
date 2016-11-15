@@ -28,14 +28,12 @@ package com.gluonhq.otn.views.cell;
 import com.gluonhq.charm.glisten.control.CharmListCell;
 import com.gluonhq.charm.glisten.control.ListTile;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
-import com.gluonhq.otn.OTNView;
+import com.gluonhq.otn.DevoxxView;
 import com.gluonhq.otn.model.Exhibitor;
+import com.gluonhq.otn.util.DevoxxBundle;
 import com.gluonhq.otn.util.ImageCache;
-import com.gluonhq.otn.util.OTNBundle;
 import com.gluonhq.otn.views.ExhibitorPresenter;
-import javafx.event.EventHandler;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseEvent;
 
 public class ExhibitorCell extends CharmListCell<Exhibitor> {
 
@@ -64,13 +62,13 @@ public class ExhibitorCell extends CharmListCell<Exhibitor> {
             tile.textProperty().setAll(exhibitor.getName());
             String booth = exhibitor.getBooth();
             if(booth != null && !booth.isEmpty()) {
-                tile.textProperty().add(OTNBundle.getString("OTN.EXHIBITOR.BOOTH_NUMBER", booth));
+                tile.textProperty().add(DevoxxBundle.getString("OTN.EXHIBITOR.BOOTH_NUMBER", booth));
             }
             setGraphic(tile);
 
             // FIX for OTN-568
             tile.setOnMouseReleased(event -> {
-                OTNView.EXHIBITOR.switchView().ifPresent(presenter ->
+                DevoxxView.EXHIBITOR.switchView().ifPresent(presenter ->
                         ((ExhibitorPresenter) presenter).setExhibitor(exhibitor));
             });
         } else {

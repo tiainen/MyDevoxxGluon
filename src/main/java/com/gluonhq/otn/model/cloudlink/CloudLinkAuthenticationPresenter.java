@@ -27,17 +27,17 @@ package com.gluonhq.otn.model.cloudlink;
 
 import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
 import com.gluonhq.charm.glisten.mvc.View;
-import com.gluonhq.otn.OTNApplication;
+import com.gluonhq.otn.DevoxxApplication;
 import com.gluonhq.otn.util.AuthenticationPresenter;
 import com.gluonhq.otn.model.Service;
-import com.gluonhq.otn.util.OTNBundle;
+import com.gluonhq.otn.util.DevoxxBundle;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 
 import javax.inject.Inject;
 
-public class CloudLinkAuthenticationPresenter extends GluonPresenter<OTNApplication> implements AuthenticationPresenter {
+public class CloudLinkAuthenticationPresenter extends GluonPresenter<DevoxxApplication> implements AuthenticationPresenter {
 
     @FXML
     private View view;
@@ -52,7 +52,7 @@ public class CloudLinkAuthenticationPresenter extends GluonPresenter<OTNApplicat
     private Service service;
 
     public void initialize() {
-        label.setText(OTNBundle.getString("OTN.CLOUDLINK.TEXT"));
+        label.setText(DevoxxBundle.getString("OTN.CLOUDLINK.TEXT"));
     }
 
     @Override

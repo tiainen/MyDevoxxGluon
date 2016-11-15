@@ -29,7 +29,7 @@ import com.gluonhq.charm.glisten.control.CharmListCell;
 import com.gluonhq.charm.glisten.control.ListTile;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import com.gluonhq.otn.model.Session;
-import com.gluonhq.otn.util.OTNSettings;
+import com.gluonhq.otn.util.DevoxxSettings;
 
 public class ScheduleHeaderCell extends CharmListCell<Session> {
 
@@ -45,7 +45,7 @@ public class ScheduleHeaderCell extends CharmListCell<Session> {
     public void updateItem(Session item, boolean empty) {
         super.updateItem(item, empty);
         if (item != null && !empty) {
-            tile.textProperty().setAll(OTNSettings.DATE_FORMATTER.format(item.getStartDate()));
+            tile.textProperty().setAll(DevoxxSettings.DATE_FORMATTER.format(item.getStartDate()));
             setGraphic(tile);
         } else {
             setGraphic(null);

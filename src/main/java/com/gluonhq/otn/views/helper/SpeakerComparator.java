@@ -26,7 +26,7 @@
 package com.gluonhq.otn.views.helper;
 
 import com.gluonhq.otn.model.Speaker;
-import static com.gluonhq.otn.util.OTNLogging.LOGGING_ENABLED;
+import static com.gluonhq.otn.util.DevoxxLogging.LOGGING_ENABLED;
 import java.util.Comparator;
 import java.util.logging.Level;
 import java.util.logging.Logger;

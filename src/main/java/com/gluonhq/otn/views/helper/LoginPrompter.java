@@ -27,14 +27,14 @@ package com.gluonhq.otn.views.helper;
 
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import com.gluonhq.otn.model.Service;
-import com.gluonhq.otn.util.OTNBundle;
+import com.gluonhq.otn.util.DevoxxBundle;
 import javafx.scene.control.Button;
 
 public class LoginPrompter extends Placeholder {
     private Button login;
 
     public LoginPrompter(Service service, String message, MaterialDesignIcon image, Runnable onAuthenticated) {
-        this(service, OTNBundle.getString("OTN.LOGIN.TITLE"), message, image, onAuthenticated);
+        this(service, DevoxxBundle.getString("OTN.LOGIN.TITLE"), message, image, onAuthenticated);
     }
 
     public LoginPrompter(Service service, String titleText, String messageText, MaterialDesignIcon image, Runnable onAuthenticated) {
@@ -42,7 +42,7 @@ public class LoginPrompter extends Placeholder {
 
         getStyleClass().add("login-prompter");
 
-        this.login = new Button(OTNBundle.getString("OTN.BUTTON.LOGIN"));
+        this.login = new Button(DevoxxBundle.getString("OTN.BUTTON.LOGIN"));
         this.login.getStyleClass().add("login");
         this.login.setOnAction(e -> {
             if (service.authenticate()) {

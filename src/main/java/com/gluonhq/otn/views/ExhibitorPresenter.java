@@ -29,11 +29,11 @@ import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.layout.layer.FloatingActionButton;
 import com.gluonhq.charm.glisten.mvc.View;
-import com.gluonhq.otn.OTNApplication;
-import com.gluonhq.otn.OTNView;
+import com.gluonhq.otn.DevoxxApplication;
+import com.gluonhq.otn.DevoxxView;
 import com.gluonhq.otn.model.Exhibitor;
+import com.gluonhq.otn.util.DevoxxBundle;
 import com.gluonhq.otn.util.ImageCache;
-import com.gluonhq.otn.util.OTNBundle;
 import com.gluonhq.otn.views.helper.Util;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -43,8 +43,8 @@ import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Region;
 
-public class ExhibitorPresenter extends GluonPresenter<OTNApplication> {
-    private static final String PLACEHOLDER_MESSAGE = OTNBundle.getString("OTN.EXHIBITOR.PLACEHOLDER_MESSAGE");
+public class ExhibitorPresenter extends GluonPresenter<DevoxxApplication> {
+    private static final String PLACEHOLDER_MESSAGE = DevoxxBundle.getString("OTN.EXHIBITOR.PLACEHOLDER_MESSAGE");
 
     @FXML
     private View exhibitor;
@@ -81,7 +81,7 @@ public class ExhibitorPresenter extends GluonPresenter<OTNApplication> {
 
             String boothText = exhibitor.getBooth();
             if(boothText != null && !boothText.isEmpty()) {
-                booth.setText(OTNBundle.getString("OTN.EXHIBITOR.BOOTH_NUMBER", boothText));
+                booth.setText(DevoxxBundle.getString("OTN.EXHIBITOR.BOOTH_NUMBER", boothText));
             }
 
             String url = exhibitor.getUrl();
@@ -109,7 +109,7 @@ public class ExhibitorPresenter extends GluonPresenter<OTNApplication> {
         exhibitor.setOnShowing( event -> {
             AppBar appBar = getApp().getAppBar();
             appBar.setNavIcon(getApp().getNavBackButton());
-            appBar.setTitleText(OTNView.EXHIBITOR.getTitle());
+            appBar.setTitleText(DevoxxView.EXHIBITOR.getTitle());
 
             // give images full width of scene
             exhibitor.getScene().widthProperty().addListener(widthListener);

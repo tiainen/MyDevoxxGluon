@@ -29,19 +29,19 @@ import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.control.CharmListView;
 import com.gluonhq.charm.glisten.mvc.View;
-import com.gluonhq.otn.OTNApplication;
-import com.gluonhq.otn.OTNView;
+import com.gluonhq.otn.DevoxxApplication;
+import com.gluonhq.otn.DevoxxView;
 import com.gluonhq.otn.model.Exhibitor;
 import com.gluonhq.otn.model.Service;
-import com.gluonhq.otn.util.OTNBundle;
+import com.gluonhq.otn.util.DevoxxBundle;
 import com.gluonhq.otn.views.cell.ExhibitorCell;
 import com.gluonhq.otn.views.helper.Placeholder;
 import javafx.fxml.FXML;
 
 import javax.inject.Inject;
 
-public class ExhibitorsPresenter extends GluonPresenter<OTNApplication> {
-    private static final String PLACEHOLDER_MESSAGE = OTNBundle.getString("OTN.EXHIBITORS.PLACEHOLDER_MESSAGE");
+public class ExhibitorsPresenter extends GluonPresenter<DevoxxApplication> {
+    private static final String PLACEHOLDER_MESSAGE = DevoxxBundle.getString("OTN.EXHIBITORS.PLACEHOLDER_MESSAGE");
 
     @FXML
     private View exhibitors;
@@ -55,17 +55,17 @@ public class ExhibitorsPresenter extends GluonPresenter<OTNApplication> {
         exhibitors.setOnShowing( event -> {
             AppBar appBar = getApp().getAppBar();
             appBar.setNavIcon(getApp().getNavMenuButton());
-            appBar.setTitleText(OTNView.EXHIBITORS.getTitle());
+            appBar.setTitleText(DevoxxView.EXHIBITORS.getTitle());
             appBar.getActionItems().add(getApp().getSearchButton());
             lvExhibitors.setSelectedItem(null);
         });
 
-        lvExhibitors.setPlaceholder(new Placeholder(PLACEHOLDER_MESSAGE, OTNView.EXHIBITORS.getMenuIcon()));
+        lvExhibitors.setPlaceholder(new Placeholder(PLACEHOLDER_MESSAGE, DevoxxView.EXHIBITORS.getMenuIcon()));
         lvExhibitors.setItems(service.retrieveExhibitors());
         lvExhibitors.setCellFactory(lv -> new ExhibitorCell());
 //        lvExhibitors.selectedItemProperty().addListener((observable, oldValue, newValue) -> {
 //            if (newValue != null) {
-//                OTNView.EXHIBITOR.switchView().ifPresent(presenter ->
+//                DevoxxView.EXHIBITOR.switchView().ifPresent(presenter ->
 //                        ((ExhibitorPresenter) presenter).setExhibitor(newValue));
 //            }
 //        });

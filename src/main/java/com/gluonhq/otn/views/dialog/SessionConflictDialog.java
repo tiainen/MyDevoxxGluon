@@ -27,7 +27,7 @@ package com.gluonhq.otn.views.dialog;
 
 import com.gluonhq.charm.glisten.control.Dialog;
 import com.gluonhq.otn.model.Session;
-import com.gluonhq.otn.util.OTNBundle;
+import com.gluonhq.otn.util.DevoxxBundle;
 import com.gluonhq.otn.views.helper.SessionVisuals;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -46,17 +46,17 @@ public class SessionConflictDialog extends Dialog<Session> {
 
         this.sessionVisuals = sessionVisuals;
 
-        setTitle(new Label(OTNBundle.getString("OTN.CONFLICT.SCHEDULE_CONFLICT")));
+        setTitle(new Label(DevoxxBundle.getString("OTN.CONFLICT.SCHEDULE_CONFLICT")));
 
-        RadioButton rbScheduled = new RadioButton(OTNBundle.getString("OTN.CONFLICT.CURRENTLY_SCHEDULED"));
-        RadioButton rbProposed = new RadioButton(OTNBundle.getString("OTN.CONFLICT.PROPOSED"));
+        RadioButton rbScheduled = new RadioButton(DevoxxBundle.getString("OTN.CONFLICT.CURRENTLY_SCHEDULED"));
+        RadioButton rbProposed = new RadioButton(DevoxxBundle.getString("OTN.CONFLICT.PROPOSED"));
 
         ToggleGroup group = new ToggleGroup();
         group.getToggles().addAll(rbScheduled, rbProposed);
         group.selectToggle(rbScheduled);
         
         final VBox vBox = new VBox(
-                new Label(OTNBundle.getString("OTN.CONFLICT.QUESTION")),
+                new Label(DevoxxBundle.getString("OTN.CONFLICT.QUESTION")),
                 sessionPane(scheduled, rbScheduled),
                 sessionPane(proposed, rbProposed));
         vBox.getStyleClass().add("content");
@@ -64,8 +64,8 @@ public class SessionConflictDialog extends Dialog<Session> {
         setContent(vBox);
 
         getButtons().addAll(
-                createButton(OTNBundle.getString("OTN.BUTTON.CANCEL"),   () -> null),
-                createButton(OTNBundle.getString("OTN.BUTTON.SCHEDULE"), () -> rbProposed.isSelected() ? proposed: scheduled));
+                createButton(DevoxxBundle.getString("OTN.BUTTON.CANCEL"),   () -> null),
+                createButton(DevoxxBundle.getString("OTN.BUTTON.SCHEDULE"), () -> rbProposed.isSelected() ? proposed: scheduled));
     }
 
     private Button createButton(String title, Supplier<Session> resultSupplier ) {

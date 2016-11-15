@@ -25,7 +25,7 @@
  */
 package com.gluonhq.otn.model;
 
-import com.gluonhq.otn.util.OTNBundle;
+import com.gluonhq.otn.util.DevoxxBundle;
 import java.util.Locale;
 import javafx.css.PseudoClass;
 
@@ -45,7 +45,7 @@ public enum Track {
     private final PseudoClass pseudoClass;
 
     Track(String title) {
-        this.title = title.isEmpty() ? "" : OTNBundle.getString(title);
+        this.title = title.isEmpty() ? "" : DevoxxBundle.getString(title);
         this.style = "track-" + name().toLowerCase(Locale.ROOT).replace('_','-');
         this.pseudoClass = PseudoClass.getPseudoClass(style);
     }

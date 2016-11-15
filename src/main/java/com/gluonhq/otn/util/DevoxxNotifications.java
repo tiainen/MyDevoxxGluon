@@ -28,7 +28,7 @@ package com.gluonhq.otn.util;
 import com.gluonhq.charm.down.Services;
 import com.gluonhq.charm.down.plugins.LocalNotificationsService;
 import com.gluonhq.charm.down.plugins.Notification;
-import com.gluonhq.otn.OTNView;
+import com.gluonhq.otn.DevoxxView;
 import com.gluonhq.otn.model.Service;
 import com.gluonhq.otn.model.Session;
 import com.gluonhq.otn.model.Vote;
@@ -46,20 +46,20 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.gluonhq.charm.down.plugins.LocalNotificationsService.NOTIFICATION_KEY;
-import static com.gluonhq.otn.util.OTNLogging.LOGGING_ENABLED;
+import static com.gluonhq.otn.util.DevoxxLogging.LOGGING_ENABLED;
 import java.time.ZonedDateTime;
 import static java.time.temporal.ChronoUnit.SECONDS;
 
 @Singleton
-public class OTNNotifications {
+public class DevoxxNotifications {
     
-    private static final Logger LOG = Logger.getLogger(OTNNotifications.class.getName());
+    private static final Logger LOG = Logger.getLogger(DevoxxNotifications.class.getName());
     
     public static final String ID_START = "START_";
     public static final String ID_VOTE = "VOTE_";
 
-    private final static String TITLE_VOTE_SESSION = OTNBundle.getString("OTN.VISUALS.VOTE_NOW");
-    private final static String TITLE_SESSION_STARTS = OTNBundle.getString("OTN.VISUALS.SESSION_STARTING_SOON");
+    private final static String TITLE_VOTE_SESSION = DevoxxBundle.getString("OTN.VISUALS.VOTE_NOW");
+    private final static String TITLE_SESSION_STARTS = DevoxxBundle.getString("OTN.VISUALS.SESSION_STARTING_SOON");
     private final static int SHOW_VOTE_NOTIFICATION = -2; // show vote notification two minutes before session ends
     private final static int SHOW_SESSION_START_NOTIFICATION = -15; // show session start warning 15 minutes before posted start time
     
@@ -72,7 +72,7 @@ public class OTNNotifications {
     
     private final Optional<LocalNotificationsService> notificationsService;
     
-    public OTNNotifications() {
+    public DevoxxNotifications() {
         notificationsService = Services.get(LocalNotificationsService.class);
     }
     
@@ -90,7 +90,7 @@ public class OTNNotifications {
             String notificationId = options.get(NOTIFICATION_KEY);
             
             if (notificationId != null && !notificationId.isEmpty()) {
-                if (OTNLogging.LOGGING_ENABLED) {
+                if (DevoxxLogging.LOGGING_ENABLED) {
                     LOG.log(Level.INFO,"Starting app with notification #" + notificationId);
                 }
                 notificationsService.ifPresent(n -> n.processNotification(notificationId));
@@ -120,8 +120,8 @@ public class OTNNotifications {
         if (!scheduled) { // otherwise it won't be scheduled
             // Add notification 15 min before session starts
             dateTimeStart = session.getStartDate().plusMinutes(SHOW_SESSION_START_NOTIFICATION);
-            if (OTNSettings.NOTIFICATION_TESTS) {
-                dateTimeStart = dateTimeStart.minus(OTNSettings.NOTIFICATION_OFFSET, SECONDS);
+            if (DevoxxSettings.NOTIFICATION_TESTS) {
+                dateTimeStart = dateTimeStart.minus(DevoxxSettings.NOTIFICATION_OFFSET, SECONDS);
             }
         }
         // don't create new notifications for already started sessions
@@ -130,11 +130,11 @@ public class OTNNotifications {
             notification = new Notification(
                     ID_START + session.getUuid(),
                     TITLE_SESSION_STARTS, 
-                    OTNBundle.getString("OTN.VISUALS.IS_ABOUT_TO_START", session.getTitle()), 
-                    OTNNotifications.class.getResourceAsStream("/icon.png"),  
+                    DevoxxBundle.getString("OTN.VISUALS.IS_ABOUT_TO_START", session.getTitle()),
+                    DevoxxNotifications.class.getResourceAsStream("/icon.png"),
                     dateTimeStart,
                     () -> {
-                        OTNView.SESSION.switchView().ifPresent(presenter -> {
+                        DevoxxView.SESSION.switchView().ifPresent(presenter -> {
                             SessionPresenter sessionPresenter = (SessionPresenter) presenter;
                             sessionPresenter.showSession(session);
                         });
@@ -147,8 +147,8 @@ public class OTNNotifications {
         if (!scheduled) { // otherwise it won't be scheduled
             // Add notification 2 min before session ends
             dateTimeVote = session.getEndDate().plusMinutes(SHOW_VOTE_NOTIFICATION);
-            if (OTNSettings.NOTIFICATION_TESTS) {
-                dateTimeVote = dateTimeVote.minus(OTNSettings.NOTIFICATION_OFFSET, SECONDS);
+            if (DevoxxSettings.NOTIFICATION_TESTS) {
+                dateTimeVote = dateTimeVote.minus(DevoxxSettings.NOTIFICATION_OFFSET, SECONDS);
             }
         }
         
@@ -158,12 +158,12 @@ public class OTNNotifications {
             notification = new Notification(
                     ID_VOTE + session.getUuid(),
                     TITLE_VOTE_SESSION, 
-                    OTNBundle.getString("OTN.VISUALS.CAST_YOUR_VOTE_ON", session.getTitle()), 
-                    OTNNotifications.class.getResourceAsStream("/icon.png"),  
+                    DevoxxBundle.getString("OTN.VISUALS.CAST_YOUR_VOTE_ON", session.getTitle()),
+                    DevoxxNotifications.class.getResourceAsStream("/icon.png"),
                     dateTimeVote,
                     () -> {
                         // first go to the session
-                        OTNView.SESSION.switchView().ifPresent(presenter -> {
+                        DevoxxView.SESSION.switchView().ifPresent(presenter -> {
                             SessionPresenter sessionPresenter = (SessionPresenter) presenter;
                             sessionPresenter.showSession(session);
 

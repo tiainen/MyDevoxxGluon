@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
         <key>CFBundleIdentifier</key>
-        <string>com.gluonhq.otn.OTNApplication</string>
+        <string>com.gluonhq.otn.DevoxxApplication</string>
         <key>CFBundleVersion</key>
         <!-- buildnumber --><string>127</string>
         <key>CFBundleShortVersionString</key>

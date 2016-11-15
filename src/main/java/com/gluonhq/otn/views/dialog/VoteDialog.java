@@ -28,7 +28,7 @@ package com.gluonhq.otn.views.dialog;
 import com.gluonhq.charm.glisten.control.Dialog;
 import com.gluonhq.charm.glisten.control.Rating;
 import com.gluonhq.otn.model.Vote;
-import com.gluonhq.otn.util.OTNBundle;
+import com.gluonhq.otn.util.DevoxxBundle;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
@@ -44,15 +44,15 @@ public class VoteDialog extends Dialog<Vote> {
     public VoteDialog(String title) {
         this.rootNode.getStyleClass().add("vote-dialog");
 
-        setTitleText(OTNBundle.getString("OTN.VOTEDIALOG.VOTE"));
+        setTitleText(DevoxxBundle.getString("OTN.VOTEDIALOG.VOTE"));
         VBox content = new VBox();
-        Label contentTitle = new Label(OTNBundle.getString("OTN.VOTEDIALOG.RATE_THE_FOLLOWING_SESSION"));
+        Label contentTitle = new Label(DevoxxBundle.getString("OTN.VOTEDIALOG.RATE_THE_FOLLOWING_SESSION"));
         Label sessionTitleLabel = new Label(title);
         StackPane stackPane = new StackPane();
         rating = new Rating();
         stackPane.getChildren().add(rating);
 
-        Label shareLabel = new Label(OTNBundle.getString("OTN.VOTEDIALOG.SHARE_YOUR_THOUGHTS"));
+        Label shareLabel = new Label(DevoxxBundle.getString("OTN.VOTEDIALOG.SHARE_YOUR_THOUGHTS"));
         feedbackInput = new TextArea();
         VBox shareContainer = new VBox();
         shareContainer.getChildren().addAll(shareLabel, feedbackInput);
@@ -61,8 +61,8 @@ public class VoteDialog extends Dialog<Vote> {
 
         setContent(content);
 
-        Button cancel = new Button(OTNBundle.getString("OTN.BUTTON.CANCEL"));
-        Button submit = new Button(OTNBundle.getString("OTN.BUTTON.SUBMIT_CAPS"));
+        Button cancel = new Button(DevoxxBundle.getString("OTN.BUTTON.CANCEL"));
+        Button submit = new Button(DevoxxBundle.getString("OTN.BUTTON.SUBMIT_CAPS"));
         getButtons().addAll(cancel, submit);
 
         cancel.setOnAction(event -> {

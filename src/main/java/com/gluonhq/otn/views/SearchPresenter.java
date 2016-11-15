@@ -30,8 +30,8 @@ import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.control.CharmListView;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
-import com.gluonhq.otn.OTNApplication;
-import com.gluonhq.otn.OTNView;
+import com.gluonhq.otn.DevoxxApplication;
+import com.gluonhq.otn.DevoxxView;
 import com.gluonhq.otn.model.Exhibitor;
 import com.gluonhq.otn.model.Note;
 import com.gluonhq.otn.model.Searchable;
@@ -39,8 +39,8 @@ import com.gluonhq.otn.model.Service;
 import com.gluonhq.otn.model.Session;
 import com.gluonhq.otn.model.Speaker;
 import com.gluonhq.otn.model.Venue;
-import com.gluonhq.otn.util.OTNBundle;
-import com.gluonhq.otn.util.OTNSearch;
+import com.gluonhq.otn.util.DevoxxBundle;
+import com.gluonhq.otn.util.DevoxxSearch;
 import com.gluonhq.otn.views.cell.SearchCell;
 import com.gluonhq.otn.views.cell.SearchHeaderCell;
 import com.gluonhq.otn.views.helper.Placeholder;
@@ -54,11 +54,11 @@ import javafx.scene.control.TextField;
 
 import javax.inject.Inject;
 
-public class SearchPresenter extends GluonPresenter<OTNApplication> {
+public class SearchPresenter extends GluonPresenter<DevoxxApplication> {
 
     private static final int MIN_CHARACTERS = 3;
-    private Placeholder emptySearchPlaceholder = new Placeholder(OTNBundle.getString("OTN.SEARCH.PLACEHOLDER"), MaterialDesignIcon.SEARCH),
-                        noResultsPlaceholder = new Placeholder(OTNBundle.getString("OTN.SEARCH.NO_RESULTS"), MaterialDesignIcon.SEARCH);
+    private Placeholder emptySearchPlaceholder = new Placeholder(DevoxxBundle.getString("OTN.SEARCH.PLACEHOLDER"), MaterialDesignIcon.SEARCH),
+                        noResultsPlaceholder = new Placeholder(DevoxxBundle.getString("OTN.SEARCH.NO_RESULTS"), MaterialDesignIcon.SEARCH);
 
     @FXML
     private View search;
@@ -73,7 +73,7 @@ public class SearchPresenter extends GluonPresenter<OTNApplication> {
     private Service service;
 
     @Inject
-    private OTNSearch otnSearch;
+    private DevoxxSearch devoxxSearch;
     
     private ObservableList<Searchable> results;
     private ObservableList<Searchable> prefixResults;
@@ -84,7 +84,7 @@ public class SearchPresenter extends GluonPresenter<OTNApplication> {
         prefixResults = FXCollections.observableArrayList();
         searchTextField = new TextField();
         searchTextField.getStyleClass().add("search-text-field");
-        searchTextField.setPromptText(OTNBundle.getString("OTN.SEARCH.PROMPT"));
+        searchTextField.setPromptText(DevoxxBundle.getString("OTN.SEARCH.PROMPT"));
         
         clearButton = MaterialDesignIcon.CLOSE.button(e -> {
             searchTextField.clear();
@@ -160,7 +160,7 @@ public class SearchPresenter extends GluonPresenter<OTNApplication> {
     
     private Thread backgroundSearch() {
         Runnable task = () -> {
-            ObservableList<Searchable> search1 = otnSearch.search(searchTextField.getText());
+            ObservableList<Searchable> search1 = devoxxSearch.search(searchTextField.getText());
             Platform.runLater(() -> {
                 results.setAll(search1);
                 // Keep the initial results on a list to refine the search based on them
@@ -178,7 +178,7 @@ public class SearchPresenter extends GluonPresenter<OTNApplication> {
             // We don't update the prefixResults list, as this will imply losing elements from it,
             // and in case the user hits the back key, there won't be the same items to perform the search
             // as there were before
-            ObservableList<Searchable> refineSearch = otnSearch.refineSearch(searchTextField.getText(), prefixResults);
+            ObservableList<Searchable> refineSearch = devoxxSearch.refineSearch(searchTextField.getText(), prefixResults);
             Platform.runLater(() -> results.setAll(refineSearch));
         };
         Thread thread = new Thread(task);
@@ -190,23 +190,23 @@ public class SearchPresenter extends GluonPresenter<OTNApplication> {
         searchListView.selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 if (newValue instanceof Exhibitor) {
-                    OTNView.EXHIBITOR.switchView().ifPresent(presenter ->
+                    DevoxxView.EXHIBITOR.switchView().ifPresent(presenter ->
                             ((ExhibitorPresenter) presenter).setExhibitor((Exhibitor) newValue));
                 } else if (newValue instanceof Note) {
                     service.findSession(((Note) newValue).getSessionUuid()).ifPresent(session ->
-                        OTNView.SESSION.switchView().ifPresent(presenter ->
+                        DevoxxView.SESSION.switchView().ifPresent(presenter ->
                             ((SessionPresenter) presenter).showSession(session, SessionPresenter.Pane.NOTE)));
                 } else if (newValue instanceof Session) {
-                    OTNView.SESSION.switchView().ifPresent(presenter ->
+                    DevoxxView.SESSION.switchView().ifPresent(presenter ->
                             ((SessionPresenter) presenter).showSession((Session) newValue));
                 } else if (newValue instanceof Speaker) {
-                    OTNView.SPEAKER.switchView().ifPresent( presenter ->
+                    DevoxxView.SPEAKER.switchView().ifPresent(presenter ->
                             ((SpeakerPresenter)presenter).setSpeaker((Speaker) newValue));
                 } else if (newValue instanceof Venue) {
-                    OTNView.VENUE.switchView().ifPresent( presenter ->
+                    DevoxxView.VENUE.switchView().ifPresent(presenter ->
                             ((VenuePresenter)presenter).setVenue((Venue) newValue));
 //                } if (newValue instanceof Sponsor) {
-//                    OTNView.SPONSOR.switchView().ifPresent( presenter ->
+//                    DevoxxView.SPONSOR.switchView().ifPresent( presenter ->
 //                            ((SponsorPresenter)presenter).setSponsor((Sponsor) newValue));
                 }
             }

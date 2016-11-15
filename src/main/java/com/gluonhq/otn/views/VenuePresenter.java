@@ -39,10 +39,10 @@ import com.gluonhq.maps.MapLayer;
 import com.gluonhq.maps.MapPoint;
 import com.gluonhq.maps.MapView;
 import com.gluonhq.maps.demo.PoiLayer;
-import com.gluonhq.otn.OTNApplication;
-import com.gluonhq.otn.OTNView;
+import com.gluonhq.otn.DevoxxApplication;
+import com.gluonhq.otn.DevoxxView;
 import com.gluonhq.otn.model.Venue;
-import com.gluonhq.otn.util.OTNBundle;
+import com.gluonhq.otn.util.DevoxxBundle;
 import com.gluonhq.otn.views.helper.Util;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -57,7 +57,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 
-public class VenuePresenter extends GluonPresenter<OTNApplication> {
+public class VenuePresenter extends GluonPresenter<DevoxxApplication> {
 
     private static double DEFAULT_ZOOM = 15.0;
 
@@ -127,7 +127,7 @@ public class VenuePresenter extends GluonPresenter<OTNApplication> {
         venue.setOnShowing(event -> {
             AppBar appBar = getApp().getAppBar();
             appBar.setNavIcon(getApp().getNavBackButton());
-            appBar.setTitleText(OTNView.VENUE.getTitle());
+            appBar.setTitleText(DevoxxView.VENUE.getTitle());
 
             // FixME: The following is a hack to reset zoom value (OTN-254)
             mapView.setZoom(10.0);
@@ -147,14 +147,14 @@ public class VenuePresenter extends GluonPresenter<OTNApplication> {
 
     private Layer createFloatingActionButtons() {
         callActionButton = Util.createFAB(MaterialDesignIcon.CALL, e -> {
-            Dialog confirmCallDialog = new Dialog(OTNBundle.getString("OTN.VENUE.CALLDIALOG.TITLE"), OTNBundle.getString("OTN.VENUE.CALLDIALOG.CONTENT", getVenue().getName(), getVenue().getPhoneNumber())) {
+            Dialog confirmCallDialog = new Dialog(DevoxxBundle.getString("OTN.VENUE.CALLDIALOG.TITLE"), DevoxxBundle.getString("OTN.VENUE.CALLDIALOG.CONTENT", getVenue().getName(), getVenue().getPhoneNumber())) {
                 {
                     rootNode.setPrefWidth(MobileApplication.getInstance().getView().getScene().getWidth() * 0.9);
                 }
 
             };
-            Button cancel = new Button(OTNBundle.getString("OTN.VENUE.CALLDIALOG.NO"));
-            Button ok = new Button(OTNBundle.getString("OTN.VENUE.CALLDIALOG.YES"));
+            Button cancel = new Button(DevoxxBundle.getString("OTN.VENUE.CALLDIALOG.NO"));
+            Button ok = new Button(DevoxxBundle.getString("OTN.VENUE.CALLDIALOG.YES"));
             cancel.setOnAction(event -> confirmCallDialog.hide());
             ok.setOnAction(event -> {
                 Services.get(DialerService.class).ifPresent(d -> d.call(getVenue().getPhoneNumber()));

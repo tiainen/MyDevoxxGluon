@@ -28,15 +28,15 @@ package com.gluonhq.otn.views;
 import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.mvc.View;
-import com.gluonhq.otn.OTNApplication;
-import com.gluonhq.otn.OTNView;
-import com.gluonhq.otn.util.OTNBundle;
+import com.gluonhq.otn.DevoxxApplication;
+import com.gluonhq.otn.DevoxxView;
+import com.gluonhq.otn.util.DevoxxBundle;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
-public class AboutPresenter extends GluonPresenter<OTNApplication> {
+public class AboutPresenter extends GluonPresenter<DevoxxApplication> {
 
     @FXML
     private View aboutView;
@@ -63,7 +63,7 @@ public class AboutPresenter extends GluonPresenter<OTNApplication> {
         aboutView.setOnShowing(event -> {
             AppBar appBar = getApp().getAppBar();
             appBar.setNavIcon(getApp().getNavMenuButton());
-            appBar.setTitleText(OTNView.ABOUT.getTitle());
+            appBar.setTitleText(DevoxxView.ABOUT.getTitle());
         });
 
 //        otnLogo.setImage(new Image(getClass().getResource("otn.png").toExternalForm()));
@@ -74,8 +74,8 @@ public class AboutPresenter extends GluonPresenter<OTNApplication> {
         oracleLogo.setFitHeight(100);
         gluonLogo.setFitWidth(250);
 
-//        otnLabel.setText(OTNBundle.getString("OTN.ABOUT.LABEL.OTN"));
-        oracleLabel.setText(OTNBundle.getString("OTN.ABOUT.LABEL.ORACLE_CLOUD"));
-        gluonLabel.setText(OTNBundle.getString("OTN.ABOUT.LABEL.GLUON"));
+//        otnLabel.setText(DevoxxBundle.getString("OTN.ABOUT.LABEL.OTN"));
+        oracleLabel.setText(DevoxxBundle.getString("OTN.ABOUT.LABEL.ORACLE_CLOUD"));
+        gluonLabel.setText(DevoxxBundle.getString("OTN.ABOUT.LABEL.GLUON"));
     }
 }

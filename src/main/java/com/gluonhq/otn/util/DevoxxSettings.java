@@ -32,7 +32,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.UUID;
 
-public class OTNSettings {
+public class DevoxxSettings {
 
     /**
      * boolean option to switch on/off automatic authentication by using a self generated random UUID

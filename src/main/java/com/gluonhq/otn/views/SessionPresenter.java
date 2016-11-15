@@ -33,17 +33,17 @@ import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.GlistenStyleClasses;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import com.gluonhq.impl.charm.glisten.control.skin.AvatarPaneSkin;
-import com.gluonhq.otn.OTNApplication;
-import com.gluonhq.otn.OTNView;
+import com.gluonhq.otn.DevoxxApplication;
+import com.gluonhq.otn.DevoxxView;
 import com.gluonhq.otn.model.Link;
+import com.gluonhq.otn.util.DevoxxSettings;
 import com.gluonhq.otn.views.dialog.VoteDialog;
 import com.gluonhq.otn.model.Service;
 import com.gluonhq.otn.model.Session;
 import com.gluonhq.otn.model.Speaker;
 import com.gluonhq.otn.model.TalkSpeaker;
 import com.gluonhq.otn.model.Vote;
-import com.gluonhq.otn.util.OTNBundle;
-import com.gluonhq.otn.util.OTNSettings;
+import com.gluonhq.otn.util.DevoxxBundle;
 import com.gluonhq.otn.views.helper.LoginPrompter;
 import com.gluonhq.otn.views.helper.SessionNotesEditor;
 import com.gluonhq.otn.views.helper.SessionVisuals;
@@ -70,7 +70,7 @@ import java.time.ZonedDateTime;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javafx.beans.property.ReadOnlyObjectProperty;
 
-public class SessionPresenter extends GluonPresenter<OTNApplication> {
+public class SessionPresenter extends GluonPresenter<DevoxxApplication> {
 
     @FXML
     private View sessionView;
@@ -92,7 +92,7 @@ public class SessionPresenter extends GluonPresenter<OTNApplication> {
         sessionView.setOnShowing(event -> {
             AppBar appBar = getApp().getAppBar();
             appBar.setNavIcon(getApp().getNavBackButton());
-            appBar.setTitleText(OTNView.SESSION.getTitle());
+            appBar.setTitleText(DevoxxView.SESSION.getTitle());
             if(lastSelectedButton != null) {
                 lastSelectedButton.setSelected(true);
             }
@@ -129,7 +129,7 @@ public class SessionPresenter extends GluonPresenter<OTNApplication> {
 
         // update app bar
         final AppBar appBar = sessionView.getApplication().getAppBar();
-        if (OTNSettings.FAV_AND_SCHEDULE_ENABLED) {
+        if (DevoxxSettings.FAV_AND_SCHEDULE_ENABLED) {
             appBar.getActionItems().removeAll(scheduleBtn, favoriteBtn);
             scheduleBtn = sessionVisuals.getSelectedButton(activeSession);
             favoriteBtn = sessionVisuals.getFavoriteButton(activeSession);
@@ -164,12 +164,12 @@ public class SessionPresenter extends GluonPresenter<OTNApplication> {
                     }
                 });
             });
-            if (OTNSettings.FAV_AND_SCHEDULE_ENABLED) {
+            if (DevoxxSettings.FAV_AND_SCHEDULE_ENABLED) {
                 appBar.getActionItems().addAll(scheduleBtn, favoriteBtn, voteButton);
             } else {
                 appBar.getActionItems().add(voteButton);
             }
-        } else if (OTNSettings.FAV_AND_SCHEDULE_ENABLED){
+        } else if (DevoxxSettings.FAV_AND_SCHEDULE_ENABLED){
             appBar.getActionItems().addAll(scheduleBtn, favoriteBtn);
         }
 
@@ -179,7 +179,7 @@ public class SessionPresenter extends GluonPresenter<OTNApplication> {
 
         BottomNavigation bottomNavigation = new BottomNavigation();
 
-        final ToggleButton infoButton = bottomNavigation.createButton(OTNBundle.getString("OTN.BUTTON.INFO"), MaterialDesignIcon.INFO.graphic(), e -> {
+        final ToggleButton infoButton = bottomNavigation.createButton(DevoxxBundle.getString("OTN.BUTTON.INFO"), MaterialDesignIcon.INFO.graphic(), e -> {
             // when clicked create a label in a scrollpane. Label will contain
             // session summary for this session.
             Label sessionSummary = new Label(session.getSummary());
@@ -189,7 +189,7 @@ public class SessionPresenter extends GluonPresenter<OTNApplication> {
         });
         infoButton.setUserData(Pane.INFO);
 
-        final ToggleButton speakerButton = bottomNavigation.createButton(OTNBundle.getString("OTN.BUTTON.SPEAKERS"), MaterialDesignIcon.ACCOUNT_CIRCLE.graphic(), e -> {
+        final ToggleButton speakerButton = bottomNavigation.createButton(DevoxxBundle.getString("OTN.BUTTON.SPEAKERS"), MaterialDesignIcon.ACCOUNT_CIRCLE.graphic(), e -> {
             // when clicked we create an avatar pane containing all speakers.
             // The entire avatar pane is not scrollable, as we want the speaker
             // avatars to remain fixed. Instead, we make the avatar content area
@@ -202,13 +202,13 @@ public class SessionPresenter extends GluonPresenter<OTNApplication> {
         });
         speakerButton.setUserData(Pane.SPEAKER);
 
-        final ToggleButton noteButton = bottomNavigation.createButton(OTNBundle.getString("OTN.BUTTON.NOTES"), MaterialDesignIcon.MESSAGE.graphic(), e -> {
-            if (service.isAuthenticated() || !OTNSettings.USE_REMOTE_NOTES) {
+        final ToggleButton noteButton = bottomNavigation.createButton(DevoxxBundle.getString("OTN.BUTTON.NOTES"), MaterialDesignIcon.MESSAGE.graphic(), e -> {
+            if (service.isAuthenticated() || !DevoxxSettings.USE_REMOTE_NOTES) {
                 loadAuthenticatedNotesView(session);
             } else {
                 LoginPrompter loginPromptView = new LoginPrompter(
                         service,
-                        OTNBundle.getString("OTN.SESSION.LOGIN_TO_RECORD_NOTES"),
+                        DevoxxBundle.getString("OTN.SESSION.LOGIN_TO_RECORD_NOTES"),
                         MaterialDesignIcon.MESSAGE,
                         () -> loadAuthenticatedNotesView(session));
                 sessionView.setCenter(loginPromptView);
@@ -310,7 +310,7 @@ public class SessionPresenter extends GluonPresenter<OTNApplication> {
             GridPane.setVgrow(summary, Priority.ALWAYS);
 
             Button speakerBtn = MaterialDesignIcon.CHEVRON_RIGHT.button(e -> {
-                OTNView.SPEAKER.switchView().ifPresent(presenter -> {
+                DevoxxView.SPEAKER.switchView().ifPresent(presenter -> {
                     SpeakerPresenter speakerPresenter = (SpeakerPresenter) presenter;
                     speakerPresenter.setSpeaker(speaker);
                 });

@@ -25,7 +25,7 @@
  */
 package com.gluonhq.otn.views.helper;
 
-import com.gluonhq.otn.util.OTNBundle;
+import com.gluonhq.otn.util.DevoxxBundle;
 
 public enum SponsorCategory {
     INNOVATION  ("OTN.SPONSOR.INNOVATION",  0),
@@ -38,7 +38,7 @@ public enum SponsorCategory {
     private final int categoryPrecedence;
 
     SponsorCategory(String name, int i) {
-        this.name = OTNBundle.getString(name);
+        this.name = DevoxxBundle.getString(name);
         categoryPrecedence = i;
     }
 

@@ -27,8 +27,8 @@ package com.gluonhq.otn.views.helper;
 
 import com.gluonhq.otn.model.Note;
 import com.gluonhq.otn.model.Service;
-import com.gluonhq.otn.util.OTNBundle;
-import com.gluonhq.otn.util.OTNSettings;
+import com.gluonhq.otn.util.DevoxxBundle;
+import com.gluonhq.otn.util.DevoxxSettings;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.collections.ObservableList;
@@ -52,7 +52,7 @@ public class SessionNotesEditor extends VBox {
         this.sessionUuid = sessionUuid;
         this.service = service;
 
-        Label title = new Label(OTNBundle.getString("OTN.NOTES.SESSION_NOTES"));
+        Label title = new Label(DevoxxBundle.getString("OTN.NOTES.SESSION_NOTES"));
         title.getStyleClass().add("title");
         VBox.setVgrow(title, Priority.NEVER);
 
@@ -80,7 +80,7 @@ public class SessionNotesEditor extends VBox {
     }
 
     private void findAndSetNote() {
-        if (service.isAuthenticated() || !OTNSettings.USE_REMOTE_NOTES) {
+        if (service.isAuthenticated() || !DevoxxSettings.USE_REMOTE_NOTES) {
             ObservableList<Note> notes = service.retrieveNotes();
             for (Note note : notes) {
                 if (note.getSessionUuid().equals(sessionUuid)) {

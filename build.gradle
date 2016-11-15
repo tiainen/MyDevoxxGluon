@@ -60,8 +60,8 @@ repositories {
     }
 }
 
-mainClassName = 'com.gluonhq.otn.OTNApplication'
-preloaderClassName = 'com.gluonhq.otn.OTNPreloader'
+mainClassName = 'com.gluonhq.otn.DevoxxApplication'
+preloaderClassName = 'com.gluonhq.otn.DevoxxPreloader'
 
 // For desktop (for mobile check java.custom.properties)
 applicationDefaultJvmArgs = [

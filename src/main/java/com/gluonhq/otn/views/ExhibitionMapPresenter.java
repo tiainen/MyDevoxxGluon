@@ -30,8 +30,8 @@ import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
 import com.gluonhq.charm.glisten.control.Alert;
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.mvc.View;
-import com.gluonhq.otn.OTNApplication;
-import com.gluonhq.otn.OTNView;
+import com.gluonhq.otn.DevoxxApplication;
+import com.gluonhq.otn.DevoxxView;
 import com.gluonhq.otn.model.Exhibitor;
 import com.gluonhq.otn.model.Service;
 import com.gluonhq.otn.views.helper.ExhibitorMap;
@@ -53,7 +53,7 @@ import javafx.util.Duration;
 import javax.inject.Inject;
 import java.util.Map.Entry;
 
-public class ExhibitionMapPresenter extends GluonPresenter<OTNApplication> {
+public class ExhibitionMapPresenter extends GluonPresenter<DevoxxApplication> {
 
     private static final int MIN_SIZE = 200;
     private static final double MARGIN = 10;
@@ -124,7 +124,7 @@ public class ExhibitionMapPresenter extends GluonPresenter<OTNApplication> {
         exhibitionMap.setOnShowing(event -> {
             AppBar appBar = getApp().getAppBar();
             appBar.setNavIcon(getApp().getNavMenuButton());
-            appBar.setTitleText(OTNView.EXHIBITION_MAP.getTitle());
+            appBar.setTitleText(DevoxxView.EXHIBITION_MAP.getTitle());
             imageView.fitWidthProperty().bind(exhibitionMap.widthProperty().subtract(MARGIN));
             imageView.fitHeightProperty().bind(exhibitionMap.heightProperty().subtract(MARGIN));
             double fitScale = Math.max(INNER_WIDTH / (exhibitionMap.getWidth() - MARGIN), 
@@ -239,7 +239,7 @@ public class ExhibitionMapPresenter extends GluonPresenter<OTNApplication> {
         ReadOnlyListProperty<Exhibitor> exhibitors = service.retrieveExhibitors();
         for (Exhibitor exhibitor : exhibitors) {
             if(exhibitor.getBooth().equalsIgnoreCase(boothId)) {
-                OTNView.EXHIBITOR.switchView().ifPresent(presenter ->
+                DevoxxView.EXHIBITOR.switchView().ifPresent(presenter ->
                         ((ExhibitorPresenter) presenter).setExhibitor(exhibitor));
                 break;
             }

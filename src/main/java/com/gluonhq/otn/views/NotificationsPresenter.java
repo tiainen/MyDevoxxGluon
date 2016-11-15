@@ -30,11 +30,11 @@ import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.control.CardCell;
 import com.gluonhq.charm.glisten.control.CardPane2;
 import com.gluonhq.charm.glisten.mvc.View;
-import com.gluonhq.otn.OTNApplication;
-import com.gluonhq.otn.OTNView;
+import com.gluonhq.otn.DevoxxApplication;
+import com.gluonhq.otn.DevoxxView;
 import com.gluonhq.otn.model.News;
-import com.gluonhq.otn.util.OTNBundle;
-import com.gluonhq.otn.util.OTNSettings;
+import com.gluonhq.otn.util.DevoxxBundle;
+import com.gluonhq.otn.util.DevoxxSettings;
 import com.gluonhq.otn.views.helper.Placeholder;
 import com.gluonhq.otn.views.helper.Util;
 import java.time.Instant;
@@ -46,9 +46,9 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
-public class NotificationsPresenter extends GluonPresenter<OTNApplication> {
+public class NotificationsPresenter extends GluonPresenter<DevoxxApplication> {
 
-    private static final String PLACEHOLDER_MESSAGE = OTNBundle.getString("OTN.NOTIFICATIONS.PLACEHOLDER_MESSAGE");
+    private static final String PLACEHOLDER_MESSAGE = DevoxxBundle.getString("OTN.NOTIFICATIONS.PLACEHOLDER_MESSAGE");
 
     @FXML
     private View notificationsView;
@@ -60,11 +60,11 @@ public class NotificationsPresenter extends GluonPresenter<OTNApplication> {
         notificationsView.setOnShowing(e -> {
             AppBar appBar = getApp().getAppBar();
             appBar.setNavIcon(getApp().getNavBackButton());
-            appBar.setTitleText(OTNView.NOTIFICATIONS.getTitle());
+            appBar.setTitleText(DevoxxView.NOTIFICATIONS.getTitle());
         });
         
         cPNotifications.setPlaceholder(
-                        new Placeholder(PLACEHOLDER_MESSAGE, OTNView.NOTIFICATIONS.getMenuIcon()));
+                        new Placeholder(PLACEHOLDER_MESSAGE, DevoxxView.NOTIFICATIONS.getMenuIcon()));
         
         // FIXME: Create a NotificationCell and move it to the cells package
         cPNotifications.setCellFactory(param -> new CardCell<News>() {
@@ -89,7 +89,7 @@ public class NotificationsPresenter extends GluonPresenter<OTNApplication> {
                     header.setText(news.getTitle());
                     message.setText(news.getContent());
                     LocalDateTime localDate = LocalDateTime.ofInstant(Instant.ofEpochMilli(news.getCreationDate()), ZoneId.systemDefault());
-                    date.setText(OTNSettings.NEWS_FORMATTER.format(localDate));
+                    date.setText(DevoxxSettings.NEWS_FORMATTER.format(localDate));
                 } else {
                     header.setText("");
                     message.setText("");

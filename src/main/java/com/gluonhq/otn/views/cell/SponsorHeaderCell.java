@@ -29,7 +29,7 @@ import com.gluonhq.charm.glisten.control.CharmListCell;
 import com.gluonhq.charm.glisten.control.ListTile;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import com.gluonhq.otn.model.Sponsor;
-import com.gluonhq.otn.util.OTNBundle;
+import com.gluonhq.otn.util.DevoxxBundle;
 
 public class SponsorHeaderCell extends CharmListCell<Sponsor> {
 
@@ -45,7 +45,7 @@ public class SponsorHeaderCell extends CharmListCell<Sponsor> {
     public void updateItem(Sponsor item, boolean empty) {
         super.updateItem(item, empty);
         if (item != null && !empty) {
-            tile.textProperty().setAll(OTNBundle.getString("OTN.SPONSORS.SPONSOR", item.getSection()));
+            tile.textProperty().setAll(DevoxxBundle.getString("OTN.SPONSORS.SPONSOR", item.getSection()));
             setGraphic(tile);
         } else {
             setGraphic(null);

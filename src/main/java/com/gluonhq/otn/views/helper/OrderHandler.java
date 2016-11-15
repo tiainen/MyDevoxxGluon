@@ -26,8 +26,8 @@
 package com.gluonhq.otn.views.helper;
 
 import com.gluonhq.charm.glisten.control.Alert;
-import com.gluonhq.otn.util.OTNBundle;
-import com.gluonhq.otn.util.OTNSettings;
+import com.gluonhq.otn.util.DevoxxBundle;
+import com.gluonhq.otn.util.DevoxxSettings;
 import com.gluonhq.otn.views.dialog.QRDialog;
 import java.util.function.Supplier;
 import javafx.animation.PauseTransition;
@@ -62,9 +62,9 @@ public class OrderHandler implements EventHandler<ActionEvent> {
         this.order = order;
         this.message = message;
         
-        timeout = new PauseTransition(Duration.seconds(OTNSettings.PROCESSING_TIME_OUT));
+        timeout = new PauseTransition(Duration.seconds(DevoxxSettings.PROCESSING_TIME_OUT));
         timeout.setOnFinished(e -> 
-            stopProcessing(true, OTNBundle.getString("OTN.EXPERIENCES.DIALOG.ERROR.MESSAGE.TIMEOUT")));
+            stopProcessing(true, DevoxxBundle.getString("OTN.EXPERIENCES.DIALOG.ERROR.MESSAGE.TIMEOUT")));
     }
     
     @Override
@@ -76,7 +76,7 @@ public class OrderHandler implements EventHandler<ActionEvent> {
         if (processOrder != null) {
             processOrder.responseProperty().addListener(listener);
         } else {
-            stopProcessing(true, OTNBundle.getString("OTN.EXPERIENCES.DIALOG.ERROR.MESSAGE.ORDER"));
+            stopProcessing(true, DevoxxBundle.getString("OTN.EXPERIENCES.DIALOG.ERROR.MESSAGE.ORDER"));
         }
     }
     
@@ -88,8 +88,8 @@ public class OrderHandler implements EventHandler<ActionEvent> {
         }
         if (showErrorDialog) {
             Alert error = new Alert(javafx.scene.control.Alert.AlertType.ERROR);
-            error.setTitleText(OTNBundle.getString("OTN.EXPERIENCES.DIALOG.ERROR.TITLE"));
-            error.setContentText(OTNBundle.getString("OTN.EXPERIENCES.DIALOG.ERROR.MESSAGE", message));
+            error.setTitleText(DevoxxBundle.getString("OTN.EXPERIENCES.DIALOG.ERROR.TITLE"));
+            error.setContentText(DevoxxBundle.getString("OTN.EXPERIENCES.DIALOG.ERROR.MESSAGE", message));
             javafx.application.Platform.runLater(error::showAndWait);
         }
     }

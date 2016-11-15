@@ -27,10 +27,10 @@ package com.gluonhq.otn.views.helper;
 
 import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
 import com.gluonhq.charm.glisten.application.MobileApplication;
-import com.gluonhq.otn.OTNApplication;
+import com.gluonhq.otn.DevoxxApplication;
 import com.gluonhq.otn.model.Session;
-import com.gluonhq.otn.util.OTNBundle;
-import com.gluonhq.otn.util.OTNSettings;
+import com.gluonhq.otn.util.DevoxxBundle;
+import com.gluonhq.otn.util.DevoxxSettings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -50,9 +50,9 @@ import javafx.scene.layout.Region;
 import java.time.format.DateTimeFormatter;
 import java.util.function.Predicate;
 
-import static com.gluonhq.otn.OTNApplication.POPUP_FILTER_SESSIONS_MENU;
+import static com.gluonhq.otn.DevoxxApplication.POPUP_FILTER_SESSIONS_MENU;
 
-public class FilterSessionsPresenter extends GluonPresenter<OTNApplication> {
+public class FilterSessionsPresenter extends GluonPresenter<DevoxxApplication> {
 
     @FXML private CheckBox day1;
     @FXML private CheckBox day2;
@@ -89,35 +89,35 @@ public class FilterSessionsPresenter extends GluonPresenter<OTNApplication> {
     private static final Predicate<Session> DEFAULT_PREDICATE = session -> true;
 
     public void initialize() {
-        tabDay.setText(OTNBundle.getString("OTN.FILTER.TABDAY"));
-        tabTrack.setText(OTNBundle.getString("OTN.FILTER.TABTRACK"));
-        tabType.setText(OTNBundle.getString("OTN.FILTER.TABTYPE"));
+        tabDay.setText(DevoxxBundle.getString("OTN.FILTER.TABDAY"));
+        tabTrack.setText(DevoxxBundle.getString("OTN.FILTER.TABTRACK"));
+        tabType.setText(DevoxxBundle.getString("OTN.FILTER.TABTYPE"));
 
-        DateTimeFormatter formatter = OTNSettings.DATE_FORMATTER;
+        DateTimeFormatter formatter = DevoxxSettings.DATE_FORMATTER;
         day1.setText(formatter.format(Session.CONFERENCE_START_DATE));
         day2.setText(formatter.format(Session.CONFERENCE_START_DATE.plusDays(1)));
         day3.setText(formatter.format(Session.CONFERENCE_START_DATE.plusDays(2)));
         day4.setText(formatter.format(Session.CONFERENCE_START_DATE.plusDays(3)));
         day5.setText(formatter.format(Session.CONFERENCE_START_DATE.plusDays(4)));
 
-        track1.setText(OTNBundle.getString("OTN.TRACK.CORE_JAVA_PLATFORM"));
-        track2.setText(OTNBundle.getString("OTN.TRACK.EMERGING_LANGUAGES"));
-        track3.setText(OTNBundle.getString("OTN.TRACK.JAVA_CLOUD_AND_SERVER-SIDE_DEVELOPMENT"));
-        track4.setText(OTNBundle.getString("OTN.TRACK.JAVA_AND_DEVICES"));
-        track5.setText(OTNBundle.getString("OTN.TRACK.JAVA_CLIENTS_AND_USER_INTERFACES"));
-        track6.setText(OTNBundle.getString("OTN.TRACK.JAVA_DEVELOPMENT_TOOLS"));
-        track7.setText(OTNBundle.getString("OTN.TRACK.JAVA_DEVOPS_AND_METHODOLOGIES"));
+        track1.setText(DevoxxBundle.getString("OTN.TRACK.CORE_JAVA_PLATFORM"));
+        track2.setText(DevoxxBundle.getString("OTN.TRACK.EMERGING_LANGUAGES"));
+        track3.setText(DevoxxBundle.getString("OTN.TRACK.JAVA_CLOUD_AND_SERVER-SIDE_DEVELOPMENT"));
+        track4.setText(DevoxxBundle.getString("OTN.TRACK.JAVA_AND_DEVICES"));
+        track5.setText(DevoxxBundle.getString("OTN.TRACK.JAVA_CLIENTS_AND_USER_INTERFACES"));
+        track6.setText(DevoxxBundle.getString("OTN.TRACK.JAVA_DEVELOPMENT_TOOLS"));
+        track7.setText(DevoxxBundle.getString("OTN.TRACK.JAVA_DEVOPS_AND_METHODOLOGIES"));
 
-        type1.setText(OTNBundle.getString("OTN.SESSION.TYPE.BOF"));
-        type2.setText(OTNBundle.getString("OTN.SESSION.TYPE.CONFERENCE"));
-        type3.setText(OTNBundle.getString("OTN.SESSION.TYPE.HOL"));
-        type4.setText(OTNBundle.getString("OTN.SESSION.TYPE.KEYNOTE"));
-        type5.setText(OTNBundle.getString("OTN.SESSION.TYPE.TUTORIAL"));
-        type6.setText(OTNBundle.getString("OTN.SESSION.TYPE.UGF"));
-        type7.setText(OTNBundle.getString("OTN.SESSION.TYPE.UNIVERSITY"));
+        type1.setText(DevoxxBundle.getString("OTN.SESSION.TYPE.BOF"));
+        type2.setText(DevoxxBundle.getString("OTN.SESSION.TYPE.CONFERENCE"));
+        type3.setText(DevoxxBundle.getString("OTN.SESSION.TYPE.HOL"));
+        type4.setText(DevoxxBundle.getString("OTN.SESSION.TYPE.KEYNOTE"));
+        type5.setText(DevoxxBundle.getString("OTN.SESSION.TYPE.TUTORIAL"));
+        type6.setText(DevoxxBundle.getString("OTN.SESSION.TYPE.UGF"));
+        type7.setText(DevoxxBundle.getString("OTN.SESSION.TYPE.UNIVERSITY"));
 
-        applyButton.setText(OTNBundle.getString("OTN.BUTTON.APPLY"));
-        resetButton.setText(OTNBundle.getString("OTN.FILTER.BUTTON.RESET"));
+        applyButton.setText(DevoxxBundle.getString("OTN.BUTTON.APPLY"));
+        resetButton.setText(DevoxxBundle.getString("OTN.FILTER.BUTTON.RESET"));
 
         showing.addListener((observable, oldValue, newValue) -> {
             if(!newValue) {

@@ -35,10 +35,11 @@ import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import java.util.Optional;
 
 import static com.gluonhq.charm.glisten.application.MobileApplication.HOME_VIEW;
-import static com.gluonhq.otn.OTNApplication.MENU_LAYER;
+import static com.gluonhq.otn.DevoxxApplication.MENU_LAYER;
 import com.gluonhq.otn.model.Service;
 
-import com.gluonhq.otn.util.OTNBundle;
+import com.gluonhq.otn.util.DevoxxBundle;
+import com.gluonhq.otn.util.DevoxxSettings;
 import com.gluonhq.otn.views.helper.Util;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -47,10 +48,9 @@ import javafx.scene.layout.Region;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import com.gluonhq.charm.glisten.control.Toast;
-import com.gluonhq.otn.util.OTNSettings;
 
 @Singleton
-public class OTNDrawerPresenter extends GluonPresenter<OTNApplication> {
+public class DevoxxDrawerPresenter extends GluonPresenter<DevoxxApplication> {
 
     private final NavigationDrawer drawer;
     private final Header header;
@@ -59,24 +59,24 @@ public class OTNDrawerPresenter extends GluonPresenter<OTNApplication> {
     @Inject
     private Service service;
     
-    public OTNDrawerPresenter() {
+    public DevoxxDrawerPresenter() {
         drawer = new NavigationDrawer();
         header = new Header();
         
         drawer.setHeader(header);
 
-        for (AppView view : OTNView.REGISTRY.getViews()) {
+        for (AppView view : DevoxxView.REGISTRY.getViews()) {
             if (view.isShownInDrawer()) {
                 drawer.getItems().add(view.getMenuItem());
             }
         }
         
-        logOut = new NavigationDrawer.Item(OTNBundle.getString("OTN.DRAWER.LOG_OUT"), MaterialDesignIcon.CANCEL.graphic());
+        logOut = new NavigationDrawer.Item(DevoxxBundle.getString("OTN.DRAWER.LOG_OUT"), MaterialDesignIcon.CANCEL.graphic());
         logOut.managedProperty().bind(logOut.visibleProperty());
         logOut.selectedProperty().addListener((obs, ov, nv) -> {
             if (nv) {
                 if (service.logOut()) {
-                    Toast toast = new Toast(OTNBundle.getString("OTN.LOGGED_OUT_MESSAGE"));
+                    Toast toast = new Toast(DevoxxBundle.getString("OTN.LOGGED_OUT_MESSAGE"));
                     toast.show();
 
                     // switch to home view
@@ -90,7 +90,7 @@ public class OTNDrawerPresenter extends GluonPresenter<OTNApplication> {
         
         getApp().viewProperty().addListener((obs, oldView, newView) -> {
             Optional.ofNullable(oldView)
-                    .flatMap(v -> OTNView.REGISTRY.getView(oldView))
+                    .flatMap(v -> DevoxxView.REGISTRY.getView(oldView))
                     .ifPresent(otnView -> otnView.getMenuItem().setSelected(false));
             updateDrawer(newView);
         });
@@ -98,7 +98,7 @@ public class OTNDrawerPresenter extends GluonPresenter<OTNApplication> {
     }
     
     private void updateDrawer(View view) {
-        OTNView.REGISTRY.getView(view)
+        DevoxxView.REGISTRY.getView(view)
                 .ifPresent(otnView -> {
                     drawer.setSelectedItem(otnView.getMenuItem());
                     otnView.selectMenuItem();
@@ -108,7 +108,7 @@ public class OTNDrawerPresenter extends GluonPresenter<OTNApplication> {
     public final void setSidePopupView(SidePopupView sidePopupView) {
         sidePopupView.showingProperty().addListener((obs, ov, nv) -> {
             if (nv) {
-                logOut.setVisible(service.isAuthenticated() && !OTNSettings.AUTO_AUTHENTICATION);
+                logOut.setVisible(service.isAuthenticated() && !DevoxxSettings.AUTO_AUTHENTICATION);
             }
         });
         header.setSidePopupView(sidePopupView);
@@ -133,13 +133,13 @@ public class OTNDrawerPresenter extends GluonPresenter<OTNApplication> {
             background.setFitWidth(getWidth());
 
             // text
-            text = new Label(OTNBundle.getString("OTN.DRAWER.CONF_NAME"));
+            text = new Label(DevoxxBundle.getString("OTN.DRAWER.CONF_NAME"));
             text.getStyleClass().add("primary-title");
 
 //            // profile button
 //            profileButton  = MaterialDesignIcon.SETTINGS.button(e -> {
 //                getApp().hideLayer(MENU_LAYER);
-//                OTNView.PROFILE.switchView();
+//                DevoxxView.PROFILE.switchView();
 //            });
 //            // the profile button is only visible when the user is logged in
 //            profileButton.setVisible(false);
@@ -147,11 +147,11 @@ public class OTNDrawerPresenter extends GluonPresenter<OTNApplication> {
             
             getChildren().addAll(background, text/*, profileButton*/);
 
-//            if (OTNSettings.SHOW_EULA) {
+//            if (DevoxxSettings.SHOW_EULA) {
 //                // EULA button
 //                eulaButton = MaterialDesignIcon.ASSESSMENT.button(e -> {
 //                    getApp().hideLayer(MENU_LAYER);
-//                    OTNView.EULA.switchView().ifPresent(p -> ((EulaPresenter) p).setBottom(false));
+//                    DevoxxView.EULA.switchView().ifPresent(p -> ((EulaPresenter) p).setBottom(false));
 //                });
 //                getChildren().add(eulaButton);
 //            }
@@ -180,7 +180,7 @@ public class OTNDrawerPresenter extends GluonPresenter<OTNApplication> {
             text.resizeRelocate(0, h - labelHeight, labelWidth, labelHeight);
 
             // put profile and eula button down bottom-right
-            if (OTNSettings.SHOW_EULA) {
+            if (DevoxxSettings.SHOW_EULA) {
                 final double padding = 5;
                 final double eulaBtnWidth = eulaButton.prefWidth(-1);
                 final double eulaBtnHeight = eulaButton.prefHeight(-1);

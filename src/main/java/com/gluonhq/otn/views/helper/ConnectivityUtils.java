@@ -30,7 +30,7 @@ import com.gluonhq.charm.down.plugins.SettingsService;
 import com.gluonhq.charm.glisten.application.MobileApplication;
 import com.gluonhq.charm.glisten.application.StatusBar;
 import com.gluonhq.charm.glisten.control.Dialog;
-import com.gluonhq.otn.util.OTNBundle;
+import com.gluonhq.otn.util.DevoxxBundle;
 import javafx.css.PseudoClass;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
@@ -61,13 +61,13 @@ public class ConnectivityUtils {
             Dialog dialog = new Dialog();
             VBox vBox = new VBox();
             vBox.getStyleClass().add("offline-dialog-content");
-            Label label = new Label(OTNBundle.getString("OTN.OFFLINE.DIALOG.CONTENT"));
+            Label label = new Label(DevoxxBundle.getString("OTN.OFFLINE.DIALOG.CONTENT"));
             label.setWrapText(true);
-            CheckBox checkBox = new CheckBox(OTNBundle.getString("OTN.DIALOG.DONT_SHOW_AGAIN"));
+            CheckBox checkBox = new CheckBox(DevoxxBundle.getString("OTN.DIALOG.DONT_SHOW_AGAIN"));
             vBox.getChildren().addAll(label, checkBox);
-            dialog.setTitleText(OTNBundle.getString("OTN.OFFLINE.DIALOG.TITLE"));
+            dialog.setTitleText(DevoxxBundle.getString("OTN.OFFLINE.DIALOG.TITLE"));
             dialog.setContent(vBox);
-            Button okButton = new Button(OTNBundle.getString("OTN.OFFLINE.DIALOG.OK"));
+            Button okButton = new Button(DevoxxBundle.getString("OTN.OFFLINE.DIALOG.OK"));
             okButton.setOnAction(event -> {
                 if (checkBox.isSelected()) {
                     Services.get(SettingsService.class).ifPresent(s -> s.store(DONT_SHOW_AGAIN_KEY, "checked"));

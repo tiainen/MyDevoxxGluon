@@ -28,13 +28,11 @@ package com.gluonhq.otn.views.cell;
 import com.gluonhq.charm.glisten.control.CharmListCell;
 import com.gluonhq.charm.glisten.control.ListTile;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
-import com.gluonhq.otn.OTNView;
+import com.gluonhq.otn.DevoxxView;
 import com.gluonhq.otn.model.Note;
 import com.gluonhq.otn.model.Service;
 import com.gluonhq.otn.model.Session;
 import com.gluonhq.otn.views.SessionPresenter;
-import javafx.event.EventHandler;
-import javafx.scene.input.MouseEvent;
 
 public class NoteCell extends CharmListCell<Note> {
     private static final int MAX_TEXT_SIZE = 100;
@@ -66,7 +64,7 @@ public class NoteCell extends CharmListCell<Note> {
 
             // FIX for OTN-568
             tile.setOnMouseReleased(event -> {
-                OTNView.SESSION.switchView().ifPresent(presenter ->
+                DevoxxView.SESSION.switchView().ifPresent(presenter ->
                         ((SessionPresenter) presenter).showSession(noteSession, SessionPresenter.Pane.NOTE));
             });
         } else {

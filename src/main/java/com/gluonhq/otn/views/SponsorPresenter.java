@@ -29,8 +29,8 @@ import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.layout.layer.FloatingActionButton;
 import com.gluonhq.charm.glisten.mvc.View;
-import com.gluonhq.otn.OTNApplication;
-import com.gluonhq.otn.OTNView;
+import com.gluonhq.otn.DevoxxApplication;
+import com.gluonhq.otn.DevoxxView;
 import com.gluonhq.otn.model.Sponsor;
 import com.gluonhq.otn.util.ImageCache;
 import com.gluonhq.otn.views.helper.Util;
@@ -41,7 +41,7 @@ import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Region;
 
-public class SponsorPresenter extends GluonPresenter<OTNApplication> {
+public class SponsorPresenter extends GluonPresenter<DevoxxApplication> {
 
     @FXML
     private View sponsor;
@@ -95,7 +95,7 @@ public class SponsorPresenter extends GluonPresenter<OTNApplication> {
         sponsor.setOnShowing( event -> {
             AppBar appBar = getApp().getAppBar();
             appBar.setNavIcon(getApp().getNavBackButton());
-            appBar.setTitleText(OTNView.SPONSOR.getTitle());
+            appBar.setTitleText(DevoxxView.SPONSOR.getTitle());
 
             // give images full width of scene
             sponsor.getScene().widthProperty().addListener((observable, oldValue, newValue) -> resizeImages());

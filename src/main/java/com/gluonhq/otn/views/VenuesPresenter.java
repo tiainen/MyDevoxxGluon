@@ -29,11 +29,11 @@ import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.control.CharmListView;
 import com.gluonhq.charm.glisten.mvc.View;
-import com.gluonhq.otn.OTNApplication;
-import com.gluonhq.otn.OTNView;
+import com.gluonhq.otn.DevoxxApplication;
+import com.gluonhq.otn.DevoxxView;
 import com.gluonhq.otn.model.Service;
 import com.gluonhq.otn.model.Venue;
-import com.gluonhq.otn.util.OTNBundle;
+import com.gluonhq.otn.util.DevoxxBundle;
 import com.gluonhq.otn.views.cell.VenueCell;
 import com.gluonhq.otn.views.helper.Placeholder;
 import javafx.collections.transformation.FilteredList;
@@ -41,8 +41,8 @@ import javafx.fxml.FXML;
 
 import javax.inject.Inject;
 
-public class VenuesPresenter extends GluonPresenter<OTNApplication> {
-    private static final String PLACEHOLDER_MESSAGE = OTNBundle.getString("OTN.VENUES.PLACEHOLDER_MESSAGE");
+public class VenuesPresenter extends GluonPresenter<DevoxxApplication> {
+    private static final String PLACEHOLDER_MESSAGE = DevoxxBundle.getString("OTN.VENUES.PLACEHOLDER_MESSAGE");
 
     @FXML
     private View venues;
@@ -58,14 +58,14 @@ public class VenuesPresenter extends GluonPresenter<OTNApplication> {
         venues.setOnShowing(event -> {
             AppBar appBar = getApp().getAppBar();
             appBar.setNavIcon(getApp().getNavMenuButton());
-            appBar.setTitleText(OTNView.VENUES.getTitle());
+            appBar.setTitleText(DevoxxView.VENUES.getTitle());
             appBar.getActionItems().add(getApp().getSearchButton());
             venuesListView.setSelectedItem(null);
         });
 
         venuesListView.getStyleClass().add("venues-list-view");
 
-        venuesListView.setPlaceholder(new Placeholder(PLACEHOLDER_MESSAGE, OTNView.VENUES.getMenuIcon()));
+        venuesListView.setPlaceholder(new Placeholder(PLACEHOLDER_MESSAGE, DevoxxView.VENUES.getMenuIcon()));
 
         filteredVenues = new FilteredList<>(service.retrieveVenues());
         venuesListView.setItems(filteredVenues);
@@ -73,7 +73,7 @@ public class VenuesPresenter extends GluonPresenter<OTNApplication> {
         venuesListView.setCellFactory(p -> new VenueCell());
 //        venuesListView.selectedItemProperty().addListener((observable, oldValue, newValue) -> {
 //            if (newValue != null) {
-//                OTNView.VENUE.switchView().ifPresent( presenter ->
+//                DevoxxView.VENUE.switchView().ifPresent( presenter ->
 //                        ((VenuePresenter)presenter).setVenue(newValue));
 //            }
 //        });

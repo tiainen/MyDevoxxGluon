@@ -29,11 +29,11 @@ import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.control.CharmListView;
 import com.gluonhq.charm.glisten.mvc.View;
-import com.gluonhq.otn.OTNApplication;
-import com.gluonhq.otn.OTNView;
+import com.gluonhq.otn.DevoxxApplication;
+import com.gluonhq.otn.DevoxxView;
 import com.gluonhq.otn.model.Service;
 import com.gluonhq.otn.model.Speaker;
-import com.gluonhq.otn.util.OTNBundle;
+import com.gluonhq.otn.util.DevoxxBundle;
 import com.gluonhq.otn.views.cell.SpeakerCell;
 import com.gluonhq.otn.views.cell.SpeakerHeaderCell;
 import com.gluonhq.otn.views.helper.Placeholder;
@@ -44,8 +44,8 @@ import javafx.util.StringConverter;
 import javax.inject.Inject;
 
 
-public class SpeakersPresenter extends GluonPresenter<OTNApplication> {
-    private static final String PLACEHOLDER_MESSAGE = OTNBundle.getString("OTN.SPEAKERS.PLACEHOLDER_MESSAGE");
+public class SpeakersPresenter extends GluonPresenter<DevoxxApplication> {
+    private static final String PLACEHOLDER_MESSAGE = DevoxxBundle.getString("OTN.SPEAKERS.PLACEHOLDER_MESSAGE");
 
     @FXML
     private View speakers;
@@ -59,14 +59,14 @@ public class SpeakersPresenter extends GluonPresenter<OTNApplication> {
         speakers.setOnShowing(event -> {
             AppBar appBar = getApp().getAppBar();
             appBar.setNavIcon(getApp().getNavMenuButton());
-            appBar.setTitleText(OTNView.SPEAKERS.getTitle());
+            appBar.setTitleText(DevoxxView.SPEAKERS.getTitle());
             appBar.getActionItems().addAll(getApp().getSearchButton());
             speakersListView.setSelectedItem(null);
         });
 
         speakersListView.getStyleClass().add("speakers-list-view");
 
-        speakersListView.setPlaceholder(new Placeholder(PLACEHOLDER_MESSAGE, OTNView.SPEAKERS.getMenuIcon()));
+        speakersListView.setPlaceholder(new Placeholder(PLACEHOLDER_MESSAGE, DevoxxView.SPEAKERS.getMenuIcon()));
 
         speakersListView.setItems(service.retrieveSpeakers());
         speakersListView.setComparator(new SpeakerComparator());
@@ -91,7 +91,7 @@ public class SpeakersPresenter extends GluonPresenter<OTNApplication> {
         speakersListView.setHeaderCellFactory(p -> new SpeakerHeaderCell(speakersListView));
 //        speakersListView.selectedItemProperty().addListener((observable, oldValue, newValue) -> {
 //            if (newValue != null) {
-//                OTNView.SPEAKER.switchView().ifPresent( presenter ->
+//                DevoxxView.SPEAKER.switchView().ifPresent( presenter ->
 //                        ((SpeakerPresenter)presenter).setSpeaker(newValue));
 //            }
 //        });

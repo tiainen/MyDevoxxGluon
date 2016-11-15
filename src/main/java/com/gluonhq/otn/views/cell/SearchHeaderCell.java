@@ -28,9 +28,9 @@ package com.gluonhq.otn.views.cell;
 import com.gluonhq.charm.glisten.control.CharmListCell;
 import com.gluonhq.charm.glisten.control.ListTile;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
-import com.gluonhq.otn.OTNView;
+import com.gluonhq.otn.DevoxxView;
 import com.gluonhq.otn.model.*;
-import com.gluonhq.otn.util.OTNBundle;
+import com.gluonhq.otn.util.DevoxxBundle;
 
 import java.util.HashMap;
 import java.util.Locale;
@@ -41,12 +41,12 @@ public class SearchHeaderCell extends CharmListCell<Searchable> {
 
     private static final Map<Class<?>, MaterialDesignIcon> ICON_MAP = new HashMap<>();
     static {
-        ICON_MAP.put( Exhibitor.class, OTNView.EXHIBITOR.getMenuIcon() );
-        ICON_MAP.put( Session.class,   OTNView.SESSIONS.getMenuIcon() );
-        ICON_MAP.put( Note.class,      OTNView.NOTES.getMenuIcon() );
-        ICON_MAP.put( Speaker.class,   OTNView.SPEAKER.getMenuIcon() );
-        ICON_MAP.put( Venue.class,     OTNView.VENUE.getMenuIcon() );
-        ICON_MAP.put( Sponsor.class,   OTNView.SPONSOR.getMenuIcon() );
+        ICON_MAP.put( Exhibitor.class, DevoxxView.EXHIBITOR.getMenuIcon() );
+        ICON_MAP.put( Session.class,   DevoxxView.SESSIONS.getMenuIcon() );
+        ICON_MAP.put( Note.class,      DevoxxView.NOTES.getMenuIcon() );
+        ICON_MAP.put( Speaker.class,   DevoxxView.SPEAKER.getMenuIcon() );
+        ICON_MAP.put( Venue.class,     DevoxxView.VENUE.getMenuIcon() );
+        ICON_MAP.put( Sponsor.class,   DevoxxView.SPONSOR.getMenuIcon() );
     }
 
     private final ListTile tile;
@@ -61,7 +61,7 @@ public class SearchHeaderCell extends CharmListCell<Searchable> {
         super.updateItem(item, empty);
         if (item != null && !empty) {
 
-            tile.textProperty().setAll(OTNBundle.getString("OTN.CELL." + item.getClass().getSimpleName().toUpperCase(Locale.ROOT)));
+            tile.textProperty().setAll(DevoxxBundle.getString("OTN.CELL." + item.getClass().getSimpleName().toUpperCase(Locale.ROOT)));
 
             Optional.ofNullable(ICON_MAP.get(item.getClass())).ifPresent(icon ->
                     tile.setPrimaryGraphic(icon.graphic()));

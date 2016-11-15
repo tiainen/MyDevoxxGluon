@@ -31,13 +31,13 @@ import com.gluonhq.charm.glisten.control.BottomNavigation;
 import com.gluonhq.charm.glisten.control.CharmListView;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
-import com.gluonhq.otn.OTNApplication;
-import com.gluonhq.otn.OTNView;
+import com.gluonhq.otn.DevoxxApplication;
+import com.gluonhq.otn.DevoxxView;
 import com.gluonhq.otn.model.Service;
 import com.gluonhq.otn.model.Session;
 import com.gluonhq.otn.model.Speaker;
 import com.gluonhq.otn.model.Talk;
-import com.gluonhq.otn.util.OTNBundle;
+import com.gluonhq.otn.util.DevoxxBundle;
 import com.gluonhq.otn.views.cell.ScheduleCell;
 import com.gluonhq.otn.views.helper.SpeakerCard;
 import javafx.beans.value.ChangeListener;
@@ -54,7 +54,7 @@ import javax.inject.Inject;
 import java.time.LocalDate;
 import java.util.List;
 
-public class SpeakerPresenter extends GluonPresenter<OTNApplication> {
+public class SpeakerPresenter extends GluonPresenter<DevoxxApplication> {
 
     @FXML
     private View speakerView;
@@ -75,7 +75,7 @@ public class SpeakerPresenter extends GluonPresenter<OTNApplication> {
         speakerView.setOnShowing(event -> {
             AppBar appBar = getApp().getAppBar();
             appBar.setNavIcon(getApp().getNavBackButton());
-            appBar.setTitleText(OTNView.SPEAKER.getTitle());
+            appBar.setTitleText(DevoxxView.SPEAKER.getTitle());
             if (lastSelectedButton != null) {
                 lastSelectedButton.setSelected(true);
             }
@@ -107,7 +107,7 @@ public class SpeakerPresenter extends GluonPresenter<OTNApplication> {
 
         BottomNavigation bottomNavigation = new BottomNavigation();
 
-        final ToggleButton infoButton = bottomNavigation.createButton(OTNBundle.getString("OTN.BUTTON.INFO"), MaterialDesignIcon.INFO.graphic(), e -> {
+        final ToggleButton infoButton = bottomNavigation.createButton(DevoxxBundle.getString("OTN.BUTTON.INFO"), MaterialDesignIcon.INFO.graphic(), e -> {
             // when clicked create a label in a scrollpane. Label will contain
             // the speaker summary
             Label speakerSummary = new Label(activeSpeaker.getSummary());
@@ -116,7 +116,7 @@ public class SpeakerPresenter extends GluonPresenter<OTNApplication> {
             speakerView.setCenter(createScrollPane(speakerSummary));
         });
 
-        final ToggleButton sessionsButton = bottomNavigation.createButton(OTNBundle.getString("OTN.BUTTON.SESSIONS"), MaterialDesignIcon.EVENT_NOTE.graphic(), e -> {
+        final ToggleButton sessionsButton = bottomNavigation.createButton(DevoxxBundle.getString("OTN.BUTTON.SESSIONS"), MaterialDesignIcon.EVENT_NOTE.graphic(), e -> {
             // when clicked we create a pane containing all sessions.
             speakerView.setCenter(createSessionsListView(activeSpeaker));
         });
@@ -149,10 +149,10 @@ public class SpeakerPresenter extends GluonPresenter<OTNApplication> {
         sessionsListView = new CharmListView<>(fetchSessions(activeSpeaker));
         sessionsListView.getStyleClass().add("sessions-list");
         sessionsListView.setCellFactory(p -> new ScheduleCell(service, true));
-        sessionsListView.setPlaceholder(new Label(OTNBundle.getString("OTN.SPEAKER.THERE_ARE_NO_SESSIONS")));
+        sessionsListView.setPlaceholder(new Label(DevoxxBundle.getString("OTN.SPEAKER.THERE_ARE_NO_SESSIONS")));
         sessionsListView.selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
-                OTNView.SESSION.switchView().ifPresent(presenter ->
+                DevoxxView.SESSION.switchView().ifPresent(presenter ->
                         ((SessionPresenter) presenter).showSession(newValue));
             }
         });

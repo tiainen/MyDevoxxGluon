@@ -28,8 +28,8 @@ package com.gluonhq.otn.views;
 import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.mvc.View;
-import com.gluonhq.otn.OTNApplication;
-import com.gluonhq.otn.OTNView;
+import com.gluonhq.otn.DevoxxApplication;
+import com.gluonhq.otn.DevoxxView;
 import com.gluonhq.otn.control.CircularSelector;
 import com.gluonhq.otn.model.Conference;
 import com.gluonhq.otn.model.Service;
@@ -41,7 +41,7 @@ import javafx.scene.layout.BorderPane;
 
 import javax.inject.Inject;
 
-public class ConfSelectorPresenter extends GluonPresenter<OTNApplication> {
+public class ConfSelectorPresenter extends GluonPresenter<DevoxxApplication> {
 
     private static final String CONF_CIRCLE_NAME = "circle.png";
 
@@ -76,7 +76,7 @@ public class ConfSelectorPresenter extends GluonPresenter<OTNApplication> {
 
         countryButton.setOnAction(e -> {
             service.setConference(selector.getSelectedItem());
-            OTNView.SESSIONS.switchView();
+            DevoxxView.SESSIONS.switchView();
         });
         selector.getItems().addAll(Conference.values());
         selector.selectedItemProperty().addListener(e -> {
@@ -89,7 +89,7 @@ public class ConfSelectorPresenter extends GluonPresenter<OTNApplication> {
         activityFeedView.setOnShowing(event -> {
             AppBar appBar = getApp().getAppBar();
             appBar.setNavIcon(getApp().getNavMenuButton());
-            appBar.setTitleText(OTNView.CONF_SELECTOR.getTitle());
+            appBar.setTitleText(DevoxxView.CONF_SELECTOR.getTitle());
             appBar.getActionItems().add(getApp().getSearchButton());
             activityFeedView.setCenter(content);
 

@@ -26,7 +26,7 @@
 package com.gluonhq.otn.views.dialog;
 
 import com.gluonhq.charm.glisten.control.Dialog;
-import com.gluonhq.otn.util.OTNBundle;
+import com.gluonhq.otn.util.DevoxxBundle;
 import com.gluonhq.otn.util.QRGenerator;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -38,7 +38,7 @@ public class QRDialog extends Dialog {
 
     private QRDialog(String id, String message) {
         this.rootNode.getStyleClass().add("qr-dialog");
-        setTitleText(OTNBundle.getString("OTN.EXPERIENCE.QR_DIALOG_TITLE"));
+        setTitleText(DevoxxBundle.getString("OTN.EXPERIENCE.QR_DIALOG_TITLE"));
         Image image = QRGenerator.createQR(id);
         ImageView imageView = new ImageView(image);
         Label messageLabel = new Label(message);
@@ -48,7 +48,7 @@ public class QRDialog extends Dialog {
         qrContent.getStyleClass().add("content");
         setContent(qrContent);
 
-        Button okButton = new Button(OTNBundle.getString("OTN.BUTTON.CLOSE"));
+        Button okButton = new Button(DevoxxBundle.getString("OTN.BUTTON.CLOSE"));
         okButton.setOnAction(event -> hide());
         getButtons().add(okButton);
     }

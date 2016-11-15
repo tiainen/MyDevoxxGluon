@@ -28,11 +28,9 @@ package com.gluonhq.otn.views.cell;
 import com.gluonhq.charm.glisten.control.CharmListCell;
 import com.gluonhq.charm.glisten.control.ListTile;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
-import com.gluonhq.otn.OTNView;
+import com.gluonhq.otn.DevoxxView;
 import com.gluonhq.otn.model.Venue;
 import com.gluonhq.otn.views.VenuePresenter;
-import javafx.event.EventHandler;
-import javafx.scene.input.MouseEvent;
 
 public class VenueCell extends CharmListCell<Venue> {
 
@@ -55,7 +53,7 @@ public class VenueCell extends CharmListCell<Venue> {
 
             // FIX for OTN-568
             tile.setOnMouseReleased(event -> {
-                OTNView.VENUE.switchView().ifPresent(presenter ->
+                DevoxxView.VENUE.switchView().ifPresent(presenter ->
                         ((VenuePresenter)presenter).setVenue(venue));
             });
          } else {

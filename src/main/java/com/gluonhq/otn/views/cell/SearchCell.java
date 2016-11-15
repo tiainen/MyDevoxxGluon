@@ -36,7 +36,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.gluonhq.otn.util.OTNSearch.CELL_MAP;
+import static com.gluonhq.otn.util.DevoxxSearch.CELL_MAP;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import javafx.collections.ObservableSet;

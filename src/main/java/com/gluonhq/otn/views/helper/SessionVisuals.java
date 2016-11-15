@@ -30,9 +30,9 @@ import com.gluonhq.charm.glisten.visual.GlistenStyleClasses;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import com.gluonhq.otn.model.Service;
 import com.gluonhq.otn.model.Session;
-import com.gluonhq.otn.util.OTNBundle;
-import com.gluonhq.otn.util.OTNNotifications;
-import com.gluonhq.otn.util.OTNSettings;
+import com.gluonhq.otn.util.DevoxxBundle;
+import com.gluonhq.otn.util.DevoxxNotifications;
+import com.gluonhq.otn.util.DevoxxSettings;
 import com.gluonhq.otn.views.dialog.SessionConflictDialog;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -51,7 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.gluonhq.charm.glisten.visual.MaterialDesignIcon.*;
-import static com.gluonhq.otn.util.OTNLogging.LOGGING_ENABLED;
+import static com.gluonhq.otn.util.DevoxxLogging.LOGGING_ENABLED;
 
 @Singleton
 public class SessionVisuals {
@@ -99,7 +99,7 @@ public class SessionVisuals {
     private Service service;
     
     @Inject
-    private OTNNotifications otnNotifications;
+    private DevoxxNotifications devoxxNotifications;
 
     private boolean usingOfflineEmptyLists = true;
     private final Map<SessionListType, ObservableList<Session>> cloudLists = new HashMap<>();
@@ -119,11 +119,11 @@ public class SessionVisuals {
     public String formatMultilineInfo(Session session) {
         ZonedDateTime startDate = session.getStartDate();
         ZonedDateTime endDate = session.getEndDate();
-        return String.format(OTNBundle.getString("OTN.VISUALS.FORMAT.MULTILINE",
+        return String.format(DevoxxBundle.getString("OTN.VISUALS.FORMAT.MULTILINE",
                 session.getTalk().getTrack(),
                 session.getConferenceDayIndex(),
-                startDate.format(OTNSettings.TIME_FORMATTER),
-                endDate.format(OTNSettings.TIME_FORMATTER),
+                startDate.format(DevoxxSettings.TIME_FORMATTER),
+                endDate.format(DevoxxSettings.TIME_FORMATTER),
                 session.getRoomName())
         );
     }
@@ -132,10 +132,10 @@ public class SessionVisuals {
     public String formatOneLineInfo(Session session) {
         ZonedDateTime startDate = session.getStartDate();
         ZonedDateTime endDate = session.getEndDate();
-        return String.format(OTNBundle.getString("OTN.VISUALS.FORMAT.ONELINE", 
+        return String.format(DevoxxBundle.getString("OTN.VISUALS.FORMAT.ONELINE",
                 session.getConferenceDayIndex(),
-                startDate.format(OTNSettings.TIME_FORMATTER),
-                endDate.format(OTNSettings.TIME_FORMATTER),
+                startDate.format(DevoxxSettings.TIME_FORMATTER),
+                endDate.format(DevoxxSettings.TIME_FORMATTER),
                 session.getLocation())
         );
 
@@ -226,7 +226,7 @@ public class SessionVisuals {
     private ObservableList<Session> getList(SessionListType listType) {
         if (usingOfflineEmptyLists && service.isAuthenticated()) {
             // OTN-513 - First time user logs in: stop the listener
-            otnNotifications.stopPreloadingScheduledSessions();
+            devoxxNotifications.stopPreloadingScheduledSessions();
             
             retrieveLists();
         }
@@ -258,7 +258,7 @@ public class SessionVisuals {
         if (service.isAuthenticated()) {
             if (!listContains(session, listType)) {
                 if (listType == SessionListType.SCHEDULED) {
-                    otnNotifications.addScheduledSessionNotifications(session, false);
+                    devoxxNotifications.addScheduledSessionNotifications(session, false);
                 }
 
                 getList(listType).add(session);
@@ -280,7 +280,7 @@ public class SessionVisuals {
 
         if (service.isAuthenticated()) {
             if (listType == SessionListType.SCHEDULED) {    
-                otnNotifications.removeScheduledSessionNotifications(session);
+                devoxxNotifications.removeScheduledSessionNotifications(session);
             }
 
             getList(listType).remove(session);
@@ -332,15 +332,15 @@ public class SessionVisuals {
         Toast toast = new Toast();
         if (added) {
             if (listType.equals(SessionListType.FAVORITES)) {
-                toast.setMessage(OTNBundle.getString("OTN.VISUALS.SESSION_MARKED_AS_FAVORITE"));
+                toast.setMessage(DevoxxBundle.getString("OTN.VISUALS.SESSION_MARKED_AS_FAVORITE"));
             } else {
-                toast.setMessage(OTNBundle.getString("OTN.VISUALS.SESSION_SCHEDULED"));
+                toast.setMessage(DevoxxBundle.getString("OTN.VISUALS.SESSION_SCHEDULED"));
             }
         } else {
             if (listType.equals(SessionListType.FAVORITES)) {
-                toast.setMessage(OTNBundle.getString("OTN.VISUALS.SESSION_UNFAVORITED"));
+                toast.setMessage(DevoxxBundle.getString("OTN.VISUALS.SESSION_UNFAVORITED"));
             } else {
-                toast.setMessage(OTNBundle.getString("OTN.VISUALS.SESSION_UNSCHEDULED"));
+                toast.setMessage(DevoxxBundle.getString("OTN.VISUALS.SESSION_UNSCHEDULED"));
             }
         }
         toast.show();

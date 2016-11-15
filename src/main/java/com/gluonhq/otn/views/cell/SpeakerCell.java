@@ -29,13 +29,10 @@ import com.gluonhq.charm.glisten.control.Avatar;
 import com.gluonhq.charm.glisten.control.CharmListCell;
 import com.gluonhq.charm.glisten.control.ListTile;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
-import com.gluonhq.otn.OTNView;
+import com.gluonhq.otn.DevoxxView;
 import com.gluonhq.otn.model.Speaker;
-import com.gluonhq.otn.views.SessionPresenter;
 import com.gluonhq.otn.views.SpeakerPresenter;
 import com.gluonhq.otn.views.helper.Util;
-import javafx.event.EventHandler;
-import javafx.scene.input.MouseEvent;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -79,7 +76,7 @@ public class SpeakerCell extends CharmListCell<Speaker> {
 
         // FIX for OTN-568
         tile.setOnMouseReleased(event -> {
-            OTNView.SPEAKER.switchView().ifPresent( presenter ->
+            DevoxxView.SPEAKER.switchView().ifPresent(presenter ->
                     ((SpeakerPresenter)presenter).setSpeaker(speaker));
         });
 

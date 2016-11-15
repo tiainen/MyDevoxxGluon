@@ -26,6 +26,8 @@
 package com.gluonhq.charm.down.notifications;
 
 import com.gluonhq.charm.down.plugins.LocalNotificationsService;
+import com.gluonhq.otn.DevoxxApplication;
+import com.gluonhq.otn.DevoxxPreloader;
 import com.sun.javafx.application.LauncherImpl;
 import javafx.application.Application;
 import javafx.application.Preloader;
@@ -51,8 +53,8 @@ public class CustomLauncher extends UIApplicationDelegateAdapter {
     private static final String JAVAFX_PLATFORM_PROPERTIES = "javafx.platform.properties";
     private static final String JAVA_CUSTOM_PROPERTIES = "java.custom.properties";
 
-    private static final Class<? extends Application> mainClass = com.gluonhq.otn.OTNApplication.class;
-    private static final Class<? extends Preloader> preloaderClass = com.gluonhq.otn.OTNPreloader.class;
+    private static final Class<? extends Application> mainClass = DevoxxApplication.class;
+    private static final Class<? extends Preloader> preloaderClass = DevoxxPreloader.class;
 
     @Override
     public boolean didFinishLaunching(UIApplication application, UIApplicationLaunchOptions launchOptions) {

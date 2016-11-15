@@ -28,20 +28,17 @@ package com.gluonhq.otn.views.cell;
 import com.gluonhq.charm.glisten.control.CharmListCell;
 import com.gluonhq.charm.glisten.control.ListTile;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
-import com.gluonhq.otn.OTNView;
+import com.gluonhq.otn.DevoxxView;
 import com.gluonhq.otn.model.Service;
 import com.gluonhq.otn.model.Session;
-import com.gluonhq.otn.util.OTNBundle;
-import com.gluonhq.otn.util.OTNSettings;
+import com.gluonhq.otn.util.DevoxxBundle;
+import com.gluonhq.otn.util.DevoxxSettings;
 import com.gluonhq.otn.views.SessionPresenter;
 import com.gluonhq.otn.views.helper.SessionVisuals;
 import javafx.css.PseudoClass;
-import javafx.event.EventHandler;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.Label;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
@@ -87,7 +84,7 @@ public class ScheduleCell extends CharmListCell<Session> {
 
             // FIX for OTN-568
             listTile.setOnMouseReleased(event -> {
-                OTNView.SESSION.switchView().ifPresent(presenter ->
+                DevoxxView.SESSION.switchView().ifPresent(presenter ->
                         ((SessionPresenter) presenter).showSession(session));
             });
         } else {
@@ -106,9 +103,9 @@ public class ScheduleCell extends CharmListCell<Session> {
             listTile.textProperty().add(trackTitle);
         }
 
-        listTile.textProperty().add(OTNBundle.getString("OTN.SCHEDULE.IN_AT", session.getRoomName(),
-                        OTNSettings.TIME_FORMATTER.format(session.getStartDate()))
-                        + (showDate? "\n" + OTNSettings.DATE_FORMATTER.format(session.getStartDate()) : ""));
+        listTile.textProperty().add(DevoxxBundle.getString("OTN.SCHEDULE.IN_AT", session.getRoomName(),
+                        DevoxxSettings.TIME_FORMATTER.format(session.getStartDate()))
+                        + (showDate? "\n" + DevoxxSettings.DATE_FORMATTER.format(session.getStartDate()) : ""));
 
 //        changePseudoClass(session.getTrack().getPseudoClass());
 

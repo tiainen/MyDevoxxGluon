@@ -26,7 +26,7 @@
 package com.gluonhq.otn.util;
 
 import com.gluonhq.charm.down.Services;
-import static com.gluonhq.otn.util.OTNLogging.LOGGING_ENABLED;
+import static com.gluonhq.otn.util.DevoxxLogging.LOGGING_ENABLED;
 
 import com.gluonhq.charm.down.plugins.Cache;
 import com.gluonhq.charm.down.plugins.CacheService;
@@ -275,7 +275,7 @@ public class ImageCache {
             File cached = new File(store, url2id(urlString));
             if (cached.exists()) {
                 if (cached.length() > MAX_FILE_LENGTH) {
-                    if (OTNLogging.LOGGING_ENABLED) {
+                    if (DevoxxLogging.LOGGING_ENABLED) {
                         LOG.log(Level.WARNING, "Not loading image: " + urlString + "with size: " + cached.length());
                     }
                     return defaultImage.get();
@@ -297,7 +297,7 @@ public class ImageCache {
     private static void storeInFileCache(String urlString) {
         new Thread(() -> 
             imageStore.ifPresent(store -> {
-                if (OTNLogging.LOGGING_ENABLED) {
+                if (DevoxxLogging.LOGGING_ENABLED) {
                     LOG.log(Level.INFO, "String image " + urlString);
                 }
                 String id = url2id(urlString);

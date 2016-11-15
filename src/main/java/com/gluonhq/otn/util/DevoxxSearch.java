@@ -39,7 +39,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 @Singleton
-public class OTNSearch {
+public class DevoxxSearch {
     
     public static final Map<String, Class<?>> CELL_MAP = new HashMap<>();
     static {

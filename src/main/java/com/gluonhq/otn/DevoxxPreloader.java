@@ -38,7 +38,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 
-public class OTNPreloader extends Preloader {
+public class DevoxxPreloader extends Preloader {
 
     private Stage stage;
     
@@ -52,7 +52,7 @@ public class OTNPreloader extends Preloader {
         double width = IS_DESKTOP ? 350 : visualBounds.getWidth();
         double height = IS_DESKTOP ? 700 : visualBounds.getHeight();
 
-        ImageView imageView = new ImageView(OTNPreloader.class.getResource("preload_small.png").toExternalForm());
+        ImageView imageView = new ImageView(DevoxxPreloader.class.getResource("preload_small.png").toExternalForm());
         imageView.setPreserveRatio(true);
         imageView.setFitWidth(width * 0.50);
 

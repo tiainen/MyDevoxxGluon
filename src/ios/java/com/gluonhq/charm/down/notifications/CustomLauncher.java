@@ -26,8 +26,8 @@
 package com.gluonhq.charm.down.notifications;
 
 import com.gluonhq.charm.down.plugins.LocalNotificationsService;
-import com.gluonhq.otn.DevoxxApplication;
-import com.gluonhq.otn.DevoxxPreloader;
+import com.devoxx.DevoxxApplication;
+import com.devoxx.DevoxxPreloader;
 import com.sun.javafx.application.LauncherImpl;
 import javafx.application.Application;
 import javafx.application.Preloader;

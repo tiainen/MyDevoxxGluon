@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.gluonhq.otn.devoxx" android:versionCode="127" android:versionName="1.0">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.devoxx" android:versionCode="127" android:versionName="1.0">
         <supports-screens android:xlargeScreens="true"/>
         <uses-permission android:name="android.permission.INTERNET"/>
         <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
@@ -17,8 +17,8 @@
                         <!-- <meta-data android:name="swipekeyboard" android:value="true"/> -->
                         <meta-data android:name="java.args" android:value="notificationId"/>
                         <meta-data android:name="restorekeyboard" android:value="true"/>
-                        <meta-data android:name="main.class" android:value="com.gluonhq.otn.OTNApplication"/>
-                        <meta-data android:name="preloader.class" android:value="com.gluonhq.otn.OTNPreloader"/>
+                        <meta-data android:name="main.class" android:value="com.devoxx.DevoxxApplication"/>
+                        <meta-data android:name="preloader.class" android:value="com.devoxx.DevoxxPreloader"/>
                         <meta-data android:name="debug.port" android:value="0"/>
                         <intent-filter>
                                 <action android:name="android.intent.action.MAIN"/>

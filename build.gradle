@@ -15,6 +15,7 @@ plugins {
 license {
     header = file('LICENSE.txt')
     strictCheck true
+    skipExistingHeaders true
 }
 
 
@@ -54,8 +55,8 @@ repositories {
     }
 }
 
-mainClassName = 'com.gluonhq.otn.OTNApplication'
-preloaderClassName = 'com.gluonhq.otn.OTNPreloader'
+mainClassName = 'com.devoxx.DevoxxApplication'
+preloaderClassName = 'com.devoxx.DevoxxPreloader'
 
 // For desktop (for mobile check java.custom.properties)
 applicationDefaultJvmArgs = [
@@ -102,7 +103,7 @@ jfxmobile {
         launcherClassName = 'com.gluonhq.charm.down.notifications.CustomLauncher'
         infoPList = file('src/ios/Default-Info.plist')
         forceLinkClasses = [
-                'com.gluonhq.otn.**.*',
+                'com.devoxx.**.*',
                 'com.gluonhq.**.*',
                 'javax.xml.stream.*.',
                 'io.datafx.**.*',

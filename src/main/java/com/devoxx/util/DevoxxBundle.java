@@ -34,7 +34,7 @@ import java.util.logging.Logger;
 public class DevoxxBundle {
     
     public static ResourceBundle getBundle() {
-        return ResourceBundle.getBundle("com/gluonhq/otn/otn");
+        return ResourceBundle.getBundle("com/devoxx/devoxx");
     }
     
     public static String getString(String value) {

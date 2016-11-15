@@ -42,19 +42,11 @@ import com.gluonhq.connect.provider.DataProvider;
 import com.gluonhq.connect.provider.InputStreamListDataReader;
 import com.gluonhq.connect.source.BasicInputDataSource;
 import com.devoxx.model.BaseService;
-import com.devoxx.model.EnabledOTNExperiences;
 import com.devoxx.model.Exhibitor;
 import com.devoxx.model.Identifiable;
-import com.devoxx.model.LatestClearThreeDModelVotes;
 import com.devoxx.model.Mergeable;
 import com.devoxx.model.News;
 import com.devoxx.model.Note;
-import com.devoxx.model.OTN3DModel;
-import com.devoxx.model.OTNCarvedBadgeOrder;
-import com.devoxx.model.OTNCoffee;
-import com.devoxx.model.OTNCoffeeOrder;
-import com.devoxx.model.OTNEmbroidery;
-import com.devoxx.model.OTNGame;
 import com.devoxx.model.PushNotification;
 import com.devoxx.model.Session;
 import com.devoxx.model.Speaker;
@@ -65,7 +57,6 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyListProperty;
 import javafx.beans.property.ReadOnlyListWrapper;
 import javafx.beans.property.ReadOnlyObjectProperty;
-import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -102,22 +93,11 @@ public class CloudLinkService extends BaseService {
     private ReadOnlyListWrapper<Venue> venues;
     private ReadOnlyListWrapper<News> news;
     private PushNotification pushNotification;
-    private ReadOnlyObjectWrapper<EnabledOTNExperiences> enabledOTNExperiences;
-    private ReadOnlyObjectWrapper<LatestClearThreeDModelVotes> latestClearVotes;
-    private ReadOnlyListWrapper<OTNCoffee> otnCoffees;
-    private ReadOnlyListWrapper<OTNGame> otnGames;
-    private ReadOnlyListWrapper<OTNEmbroidery> otnEmbroideries;
-    private ReadOnlyListWrapper<OTN3DModel> otn3DModels;
-
-    // user specific data
-    private GluonObservableObject<String> surveyAnswers;
-    private GluonObservableList<OTNCoffeeOrder> coffeeOrders;
-    private GluonObservableList<OTNCarvedBadgeOrder> carvedBadgeOrders;
 
     private GluonView authenticationView;
 
     public CloudLinkService() {
-        GluonCredentials gluonCredentials = new GluonCredentials("XXXXXXXXXXXXXX", "YYYYYYYYYYYYYY");//see https://gluonhq.com/products/cloudlink
+        GluonCredentials gluonCredentials = new GluonCredentials(CloudLinkService.class.getResourceAsStream("/gluoncloudlink_config.json"));
 
         localGluonClient = GluonClientBuilder.create()
                 .credentials(gluonCredentials)
@@ -126,13 +106,11 @@ public class CloudLinkService extends BaseService {
                 .build();
 
         cloudGluonClient = GluonClientBuilder.create()
-//                .host(GLUONCLOUD_HOST)
                 .credentials(gluonCredentials)
                 .authenticationMode(AuthenticationMode.PUBLIC)
                 .operationMode(OperationMode.CLOUD_FIRST)
                 .build();
 
-        retrieveLatestClearVotes();
    //     loadData();
     }
 
@@ -142,16 +120,6 @@ public class CloudLinkService extends BaseService {
             authenticationView = new GluonView(CloudLinkAuthenticationPresenter.class);
         }
         return authenticationView;
-    }
-
-    @Override
-    protected void loadAuthenticatedData() {
-        super.loadAuthenticatedData();
-
-        if (isAuthenticated()) {
-            retrieveCoffeeOrders();
-            retrieveCarvedBadgeOrders();
-        }
     }
 
     @Override
@@ -232,7 +200,7 @@ public class CloudLinkService extends BaseService {
                 // schedule button to add a session
                 List<String> addedSessionBeforeInitialized = new ArrayList<>();
                 for (Session session : internalSessions) {
-                    addedSessionBeforeInitialized.add(session.getUuid());
+                    addedSessionBeforeInitialized.add(session.getSlotId());
                 }
 
                 for (String uuidLocal : internalSessionsLocal) {
@@ -245,14 +213,14 @@ public class CloudLinkService extends BaseService {
                         while (c.next()) {
                             if (c.wasRemoved()) {
                                 for (Session session : c.getRemoved()) {
-                                    internalSessionsLocal.remove(session.getUuid());
-                                    internalSessionsCloud.remove(session.getUuid());
+                                    internalSessionsLocal.remove(session.getSlotId());
+                                    internalSessionsCloud.remove(session.getSlotId());
                                 }
                             }
                             if (c.wasAdded()) {
                                 for (Session session : c.getAddedSubList()) {
-                                    internalSessionsLocal.add(session.getUuid());
-                                    internalSessionsCloud.add(session.getUuid());
+                                    internalSessionsLocal.add(session.getSlotId());
+                                    internalSessionsCloud.add(session.getSlotId());
                                 }
                             }
                         }
@@ -364,154 +332,6 @@ public class CloudLinkService extends BaseService {
         return internalDataLocal;
     }
 
-    @Override
-    public void storeSurveyAnswers(final String answers) {
-        if (isAuthenticated() && this.surveyAnswers != null) {
-            this.surveyAnswers.set(answers);
-            cloudGluonClient.push(surveyAnswers);
-        }
-    }
-
-    @Override
-    public boolean isSurveyCompleted() {
-        return surveyAnswers != null && surveyAnswers.get() != null;
-    }
-
-    @Override
-    public void retrieveSurveyAnswers() {
-        if (isAuthenticated()) {
-            this.surveyAnswers = DataProvider.retrieveObject(cloudGluonClient.createObjectDataReader(getAuthenticatedUserId() + "_surveyAnswers", String.class));
-        }
-    }
-
-    @Override
-    public ReadOnlyObjectProperty<EnabledOTNExperiences> retrieveEnabledOTNExperiences() {
-        if (enabledOTNExperiences == null) {
-            enabledOTNExperiences = new ReadOnlyObjectWrapper<>();
-            GluonObservableObject<EnabledOTNExperiences> otnExperiences = DataProvider.retrieveObject(cloudGluonClient.createObjectDataReader("enabledOtnExperiences", EnabledOTNExperiences.class, SyncFlag.OBJECT_READ_THROUGH));
-            otnExperiences.initializedProperty().addListener((obs, ov, nv) -> {
-                if (nv) {
-                    enabledOTNExperiences.setValue(otnExperiences.get());
-                }
-            });
-        }
-        return enabledOTNExperiences.getReadOnlyProperty();
-    }
-
-    @Override
-    public ReadOnlyListProperty<OTNCoffee> retrieveOTNCoffees() {
-        if (otnCoffees == null) {
-            GluonObservableList<OTNCoffee> gluonCoffees = DataProvider.retrieveList(cloudGluonClient.createListDataReader("otncoffees", OTNCoffee.class, SyncFlag.LIST_READ_THROUGH));
-            otnCoffees = new ReadOnlyListWrapper<>(gluonCoffees);
-        }
-        return otnCoffees.getReadOnlyProperty();
-    }
-
-    private void retrieveCoffeeOrders() {
-        if (isAuthenticated()) {
-            this.coffeeOrders = DataProvider.retrieveList(cloudGluonClient.createListDataReader(getAuthenticatedUserId() + "_coffeeOrders", OTNCoffeeOrder.class, SyncFlag.LIST_WRITE_THROUGH, SyncFlag.OBJECT_READ_THROUGH));
-        }
-    }
-
-    @Override
-    public OTNCoffeeOrder orderOTNCoffee(OTNCoffee coffee, int strength) {
-        if (isAuthenticated()) {
-            if (coffeeOrders == null) {
-                retrieveCoffeeOrders();
-            }
-
-            OTNCoffeeOrder order = new OTNCoffeeOrder(coffee.getType(), strength);
-            coffeeOrders.add(order);
-            return order;
-        }
-        return null;
-    }
-
-    private void retrieveCarvedBadgeOrders() {
-        if (isAuthenticated()) {
-            this.carvedBadgeOrders = DataProvider.retrieveList(cloudGluonClient.createListDataReader(getAuthenticatedUserId() + "_carvedBadgeOrders", OTNCarvedBadgeOrder.class, SyncFlag.LIST_WRITE_THROUGH, SyncFlag.OBJECT_READ_THROUGH));
-        }
-    }
-
-    @Override
-    public OTNCarvedBadgeOrder orderOTNCarveABadge(String shape) {
-        if (isAuthenticated()) {
-            if (carvedBadgeOrders == null) {
-                retrieveCarvedBadgeOrders();
-            }
-
-            OTNCarvedBadgeOrder carvedBadgeOrder = new OTNCarvedBadgeOrder(shape);
-            carvedBadgeOrders.add(carvedBadgeOrder);
-            return carvedBadgeOrder;
-        }
-        return null;
-    }
-
-    @Override
-    public ReadOnlyListProperty<OTNGame> retrieveOTNGames() {
-        if (otnGames == null) {
-            GluonObservableList<OTNGame> gluonGames = DataProvider.retrieveList(cloudGluonClient.createListDataReader("otngames", OTNGame.class, SyncFlag.LIST_READ_THROUGH));
-            otnGames = new ReadOnlyListWrapper<>(gluonGames);
-        }
-        return otnGames.getReadOnlyProperty();
-    }
-
-    @Override
-    public ReadOnlyListProperty<OTNEmbroidery> retrieveOTNEmbroideries() {
-        if (otnEmbroideries == null) {
-            GluonObservableList<OTNEmbroidery> gluonEmbroideries = DataProvider.retrieveList(cloudGluonClient.createListDataReader("otnembroideries", OTNEmbroidery.class, SyncFlag.LIST_READ_THROUGH));
-            otnEmbroideries = new ReadOnlyListWrapper<>(gluonEmbroideries);
-        }
-        return otnEmbroideries.getReadOnlyProperty();
-    }
-
-    @Override
-    public ReadOnlyListProperty<OTN3DModel> retrieveOTN3DModels() {
-        if (otn3DModels == null) {
-            ObservableList<OTN3DModel> localList = FXCollections.observableArrayList();
-            otn3DModels = new ReadOnlyListWrapper<>(localList);
-            GluonObservableList<OTN3DModel> gluon3DModels = DataProvider.retrieveList(cloudGluonClient.createListDataReader("otn3dmodels", OTN3DModel.class, SyncFlag.LIST_READ_THROUGH, SyncFlag.OBJECT_READ_THROUGH, SyncFlag.OBJECT_WRITE_THROUGH));
-            gluon3DModels.initializedProperty().addListener((obs, ov, nv) -> {
-                if (nv) {
-                    Bindings.bindContent(localList, gluon3DModels);
-                }
-            });
-        }
-        return otn3DModels.getReadOnlyProperty();
-    }
-
-    @Override
-    public boolean canVoteForOTN3DModel() {
-        return latestClearVotes == null || latestClearVotes.get() == null || DevoxxSettings.getLastVoteCast() <= latestClearVotes.get().getTimestamp();
-    }
-
-    @Override
-    public ReadOnlyObjectProperty<LatestClearThreeDModelVotes> retrieveLatestClearVotes() {
-        if (latestClearVotes == null) {
-            latestClearVotes = new ReadOnlyObjectWrapper<>();
-            GluonObservableObject<LatestClearThreeDModelVotes> gluonLatestClearVotes = DataProvider.retrieveObject(cloudGluonClient.createObjectDataReader("latestClearThreeDModelVotes", LatestClearThreeDModelVotes.class, SyncFlag.OBJECT_READ_THROUGH));
-            gluonLatestClearVotes.initializedProperty().addListener((obs, ov, nv) -> {
-                if (nv) {
-                    latestClearVotes.setValue(gluonLatestClearVotes.get());
-                }
-            });
-        }
-        return latestClearVotes.getReadOnlyProperty();
-    }
-
-    @Override
-    public void voteForOTN3DModel(String id) {
-        if (otn3DModels != null) {
-            for (OTN3DModel model : otn3DModels) {
-                if (model.getUuid().equals(id)) {
-                    DevoxxSettings.setLastVoteCast(System.currentTimeMillis());
-
-                    model.vote();
-                    break;
-                }
-            }
-        }
-    }
 //
 //    private void loadData() {
 //        GluonObservableList<Exhibitor> localExhibitors = loadEntities("exhibitors", Exhibitor.class, ServiceUtils::mapJsonToExhibitor);

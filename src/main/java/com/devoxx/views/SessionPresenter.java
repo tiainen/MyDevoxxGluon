@@ -144,7 +144,7 @@ public class SessionPresenter extends GluonPresenter<DevoxxApplication> {
                 ObservableList<Vote> votes = service.retrieveVotes();
                 Vote retrievedVote = null;
                 for (Vote currentVote : votes) {
-                    if (currentVote.getSessionUuid().equals(activeSession.getUuid())) {
+                    if (currentVote.getSessionUuid().equals(activeSession.getSlotId())) {
                         retrievedVote = currentVote;
                         break;
                     }
@@ -155,7 +155,7 @@ public class SessionPresenter extends GluonPresenter<DevoxxApplication> {
                     voteDialog.setVote(retrievedVote);
                     addVote.set(false);
                 } else {
-                    voteDialog.setVote(new Vote(activeSession.getUuid()));
+                    voteDialog.setVote(new Vote(activeSession.getSlotId()));
                     addVote.set(true);
                 }
                 voteDialog.showAndWait().ifPresent(usersVote -> {
@@ -254,7 +254,7 @@ public class SessionPresenter extends GluonPresenter<DevoxxApplication> {
     }
 
     private void loadAuthenticatedNotesView(final Session session) {
-        sessionNotesEditor = new SessionNotesEditor(session.getUuid(), service);
+        sessionNotesEditor = new SessionNotesEditor(session.getSlotId(), service);
         sessionView.setCenter(sessionNotesEditor);
     }
 

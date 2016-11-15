@@ -304,7 +304,7 @@ public class SessionVisuals {
         for(Session s : getList(SessionListType.SCHEDULED)) {
             if (s == null) {
                 if (LOGGING_ENABLED) {
-                    LOG.log(Level.WARNING, String.format("Session %s is not found in the session index!", session.getUuid()));
+                    LOG.log(Level.WARNING, String.format("Session %s is not found in the session index!", session.getSlotId()));
                 }
             } else {
                 if (s.isOverlappingWith(session)) {

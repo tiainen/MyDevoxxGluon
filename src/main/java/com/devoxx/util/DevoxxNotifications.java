@@ -128,7 +128,7 @@ public class DevoxxNotifications {
         if (dateTimeStart == null || dateTimeStart.isAfter(ZonedDateTime.now())) {
 
             notification = new Notification(
-                    ID_START + session.getUuid(),
+                    ID_START + session.getSlotId(),
                     TITLE_SESSION_STARTS, 
                     DevoxxBundle.getString("OTN.VISUALS.IS_ABOUT_TO_START", session.getTitle()),
                     DevoxxNotifications.class.getResourceAsStream("/icon.png"),
@@ -139,7 +139,7 @@ public class DevoxxNotifications {
                             sessionPresenter.showSession(session);
                         });
                     });
-            scheduledSessionNotificationMap.put(session.getUuid(), notification);
+            scheduledSessionNotificationMap.put(session.getSlotId(), notification);
             notificationsService.ifPresent(n -> n.getNotifications().add(notification));
         }
         
@@ -156,7 +156,7 @@ public class DevoxxNotifications {
         if (dateTimeVote == null || dateTimeVote.isAfter(ZonedDateTime.now())) {
         
             notification = new Notification(
-                    ID_VOTE + session.getUuid(),
+                    ID_VOTE + session.getSlotId(),
                     TITLE_VOTE_SESSION, 
                     DevoxxBundle.getString("OTN.VISUALS.CAST_YOUR_VOTE_ON", session.getTitle()),
                     DevoxxNotifications.class.getResourceAsStream("/icon.png"),
@@ -177,7 +177,7 @@ public class DevoxxNotifications {
                                         // then launch vote dialog
                                         VoteDialog dialog = new VoteDialog(session.getTitle());
                                         // New vote
-                                        dialog.setVote(new Vote(session.getUuid()));
+                                        dialog.setVote(new Vote(session.getSlotId()));
                                         dialog.showAndWait()
                                               .ifPresent(voteResult -> service.retrieveVotes().add(voteResult));
                                     });
@@ -185,7 +185,7 @@ public class DevoxxNotifications {
                             }).start();
                         });
                     });
-            voteSessionNotificationMap.put(session.getUuid(), notification);
+            voteSessionNotificationMap.put(session.getSlotId(), notification);
             notificationsService.ifPresent(n -> n.getNotifications().add(notification));
         }
     }
@@ -199,11 +199,11 @@ public class DevoxxNotifications {
         /**
         * Remove notification
         */
-       notification = scheduledSessionNotificationMap.remove(session.getUuid());
+       notification = scheduledSessionNotificationMap.remove(session.getSlotId());
        if (notification != null) { 
            notificationsService.ifPresent(n -> n.getNotifications().remove(notification));
        }
-       notification = voteSessionNotificationMap.remove(session.getUuid());
+       notification = voteSessionNotificationMap.remove(session.getSlotId());
        if (notification != null) { 
            notificationsService.ifPresent(n -> n.getNotifications().remove(notification));
        }
@@ -223,7 +223,7 @@ public class DevoxxNotifications {
                     if (c.wasAdded()) {
                         for (Session session : c.getAddedSubList()) {
                             if (LOGGING_ENABLED) {
-                                LOG.log(Level.INFO, "Adding notification #" + session.getUuid());
+                                LOG.log(Level.INFO, "Adding notification #" + session.getSlotId());
                             }
                             addScheduledSessionNotifications(session, true);
                         }

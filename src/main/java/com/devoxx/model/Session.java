@@ -59,8 +59,8 @@ public class Session implements Searchable {
 
     public Session() {}
 
-    public Session(String uuid, String roomId, String roomName, String day, String fromTime, long fromTimeMillis, String toTime, long toTimeMillis, Break aBreak, Talk talk) {
-        this.slotId = uuid;
+    public Session(String slotId, String roomId, String roomName, String day, String fromTime, long fromTimeMillis, String toTime, long toTimeMillis, Break aBreak, Talk talk) {
+        this.slotId = slotId;
         this.roomId = roomId;
         this.roomName = roomName;
         this.day = day;
@@ -72,7 +72,7 @@ public class Session implements Searchable {
         this.talk = talk;
     }
 
-    public String getUuid() {
+    public String getSlotId() {
         return slotId;
     }
 

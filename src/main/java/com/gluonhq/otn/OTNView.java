@@ -36,7 +36,7 @@ import static com.gluonhq.charm.glisten.afterburner.AppView.Flag.*;
 
 public class OTNView  {
 
-    public static final AppViewRegistry registry = new AppViewRegistry();
+    public static final AppViewRegistry REGISTRY = new AppViewRegistry();
 
     public static final AppView CONF_SELECTOR  = view( ConfSelectorPresenter.class,  MaterialDesignIcon.ANNOUNCEMENT,       SHOW_IN_DRAWER, HOME_VIEW, SKIP_VIEW_STACK);
     public static final AppView SESSIONS       = view( SessionsPresenter.class,      MaterialDesignIcon.DASHBOARD,          SHOW_IN_DRAWER);
@@ -50,22 +50,13 @@ public class OTNView  {
     public static final AppView SPONSOR        = view( SponsorPresenter.class,       MaterialDesignIcon.PAYMENT);
     public static final AppView VENUES         = view( VenuesPresenter.class,        MaterialDesignIcon.ACCESSIBILITY,      SHOW_IN_DRAWER);
     public static final AppView VENUE          = view( VenuePresenter.class,         MaterialDesignIcon.ACCESSIBILITY);
-//    public static final AppView EXPERIENCES    = view( ExperiencesPresenter.class,   MaterialDesignIcon.VIEW_AGENDA,        SHOW_IN_DRAWER);
-//    public static final AppView BADGE          = view( BadgePresenter.class,         MaterialDesignIcon.ALL_INCLUSIVE);
-//    public static final AppView COFFEE         = view( CoffeePresenter.class,        MaterialDesignIcon.LOCAL_DRINK);
-//    public static final AppView GAME           = view( GamePresenter.class,          MaterialDesignIcon.GAMES);
-//    public static final AppView VOTE3D         = view( Vote3DPresenter.class,        MaterialDesignIcon._3D_ROTATION);
-//    public static final AppView EMBROIDER      = view( EmbroiderPresenter.class,     MaterialDesignIcon.GESTURE);
-//    public static final AppView IOT_WORKSHOP   = view( IOTWorkshopPresenter.class,   MaterialDesignIcon.DEVELOPER_BOARD);
     public static final AppView NOTES          = view( NotesPresenter.class,         MaterialDesignIcon.EVENT_NOTE,         SHOW_IN_DRAWER);
     public static final AppView NOTIFICATIONS  = view( NotificationsPresenter.class, MaterialDesignIcon.NOTIFICATIONS);
-//    public static final AppView UNIVERSITY     = view( UniversityPresenter.class,    MaterialDesignIcon.SCHOOL,             SHOW_IN_DRAWER);
     public static final AppView SEARCH         = view( SearchPresenter.class,        MaterialDesignIcon.SEARCH);
-//    public static final AppView EULA           = view( EulaPresenter.class,          MaterialDesignIcon.ASSESSMENT);
     public static final AppView ABOUT          = view( AboutPresenter.class,         MaterialDesignIcon.AC_UNIT,            SHOW_IN_DRAWER);
 
     static AppView view(Class<? extends GluonPresenter<?>> presenterClass, MaterialDesignIcon menuIcon, AppView.Flag... flags ) {
-        return registry.createView( name(presenterClass),
+        return REGISTRY.createView( name(presenterClass),
                                     OTNBundle.getString( "OTN.VIEW." + name(presenterClass)),
                                     presenterClass,
                                     menuIcon,

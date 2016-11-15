@@ -65,7 +65,7 @@ public class OTNDrawerPresenter extends GluonPresenter<OTNApplication> {
         
         drawer.setHeader(header);
 
-        for (AppView view : OTNView.registry.getViews()) {
+        for (AppView view : OTNView.REGISTRY.getViews()) {
             if (view.isShownInDrawer()) {
                 drawer.getItems().add(view.getMenuItem());
             }
@@ -90,7 +90,7 @@ public class OTNDrawerPresenter extends GluonPresenter<OTNApplication> {
         
         getApp().viewProperty().addListener((obs, oldView, newView) -> {
             Optional.ofNullable(oldView)
-                    .flatMap(v -> OTNView.registry.getView(oldView))
+                    .flatMap(v -> OTNView.REGISTRY.getView(oldView))
                     .ifPresent(otnView -> otnView.getMenuItem().setSelected(false));
             updateDrawer(newView);
         });
@@ -98,7 +98,7 @@ public class OTNDrawerPresenter extends GluonPresenter<OTNApplication> {
     }
     
     private void updateDrawer(View view) {
-        OTNView.registry.getView(view)
+        OTNView.REGISTRY.getView(view)
                 .ifPresent(otnView -> {
                     drawer.setSelectedItem(otnView.getMenuItem());
                     otnView.selectMenuItem();

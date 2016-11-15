@@ -37,7 +37,6 @@ import com.gluonhq.charm.glisten.layout.layer.SidePopupView;
 import com.gluonhq.charm.glisten.license.License;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import com.gluonhq.otn.model.Service;
-import com.gluonhq.otn.model.cloudlink.CloudLinkService;
 import com.gluonhq.otn.util.OTNSearch;
 import com.gluonhq.otn.views.helper.ConnectivityUtils;
 import com.gluonhq.otn.views.helper.SessionVisuals;
@@ -93,7 +92,7 @@ public class OTNApplication extends MobileApplication {
         otnNotifications = Injector.instantiateModelOrService(OTNNotifications.class);
         otnNotifications.findNotificationIdAtStartup(getParameters().getNamed());
 
-        for (AppView view : OTNView.registry.getViews()) {
+        for (AppView view : OTNView.REGISTRY.getViews()) {
             view.registerView(this);
         }
         

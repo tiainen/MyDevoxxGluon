@@ -37,6 +37,7 @@ import com.gluonhq.connect.gluoncloud.GluonCredentials;
 import com.gluonhq.connect.gluoncloud.OperationMode;
 import com.gluonhq.connect.provider.DataProvider;
 import com.gluonhq.connect.provider.RestClient;
+import java.io.InputStream;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyListProperty;
@@ -60,8 +61,8 @@ public class DevoxxService extends BaseService {
 
     private static final String DEVOXX_HOST = "http://cfp.devoxx.be/api/conferences/DV16";
 
-    private final GluonClient localGluonClient;
-    private final GluonClient cloudGluonClient;
+    private GluonClient localGluonClient;
+    private GluonClient cloudGluonClient;
 
     private BooleanProperty allSessionsAvailable = new SimpleBooleanProperty(false);
     private CountDownLatch fillSessionsCountDownLatch;
@@ -69,29 +70,34 @@ public class DevoxxService extends BaseService {
     private ReadOnlyListWrapper<Speaker> speakers;
 
     public DevoxxService() {
-        GluonCredentials gluonCredentials = new GluonCredentials(CloudLinkService.class.getResourceAsStream("/gluoncloudlink_config.json"));
+        InputStream is = CloudLinkService.class.getResourceAsStream("/gluoncloudlink_config.json");
+        if (is == null) {
+            System.err.println("Can't find a file named gluoncloudlink_config.json on the classpath. This file should be in src/main/resources.");
+        } else {
+            GluonCredentials gluonCredentials = new GluonCredentials(is);
 
-        localGluonClient = GluonClientBuilder.create()
+            localGluonClient = GluonClientBuilder.create()
                 .credentials(gluonCredentials)
                 .authenticationMode(AuthenticationMode.PUBLIC)
                 .operationMode(OperationMode.LOCAL_ONLY)
                 .build();
 
-        cloudGluonClient = GluonClientBuilder.create()
+            cloudGluonClient = GluonClientBuilder.create()
                 .credentials(gluonCredentials)
                 .authenticationMode(AuthenticationMode.PUBLIC)
                 .operationMode(OperationMode.CLOUD_FIRST)
                 .build();
 
-        sessions = new ReadOnlyListWrapper<>(retrieveSessionsInternal());
-        speakers = new ReadOnlyListWrapper<>(retrieveSpeakersInternal());
+            sessions = new ReadOnlyListWrapper<>(retrieveSessionsInternal());
+            speakers = new ReadOnlyListWrapper<>(retrieveSpeakersInternal());
 
-        allSessionsAvailable.addListener((obs, ov, nv) -> {
-            if (nv) {
-                System.out.println("SESSIONS AVAILABLE, LOADING AUTHENTICATION STUFF!");
-                retrieveAuthenticatedUser();
-            }
-        });
+            allSessionsAvailable.addListener((obs, ov, nv) -> {
+                if (nv) {
+                    System.out.println("SESSIONS AVAILABLE, LOADING AUTHENTICATION STUFF!");
+                    retrieveAuthenticatedUser();
+                }
+            });
+        }
     }
 
     @Override

@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
         <key>CFBundleIdentifier</key>
-        <string>com.devoxx.DevoxxApplication</string>
+        <string>com.devoxx.mobile</string>
         <key>CFBundleVersion</key>
         <!-- buildnumber --><string>127</string>
         <key>CFBundleShortVersionString</key>

@@ -99,13 +99,23 @@ public interface Service {
     ReadOnlyListProperty<Venue> retrieveVenues();
 
     /**
-     * Starts the authentication process. This will show a Dialog in which the user can authenticate
-     * himself. When the authentication process completed successfully, <code>true</code> will be
-     * returned.
+     * Starts the authentication process. This will show a View in which the user can authenticate
+     * himself. When the authentication process completed successfully, the run method of the provided
+     * <code>successRunnable</code> will be called.
+     *
+     */
+    void authenticate(Runnable successRunnable);
+
+    /**
+     * Starts the authentication process. This will show a View in which the user can authenticate
+     * himself. When the authentication process completed successfully, the run method of the provided
+     * <code>successRunnable</code> will be called. If the authentication process fails, or was
+     * aborted by the user, the run method of the provided <code>failureRunnable</code> will be called
+     * instead.
      *
      * @return <code>true</code> if the user is authenticated at the end of this method
      */
-    boolean authenticate();
+    void authenticate(Runnable successRunnable, Runnable failureRunnable);
 
     /**
      * Returns a boolean indicating whether there is an authenticated user or not.

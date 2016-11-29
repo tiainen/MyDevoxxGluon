@@ -26,6 +26,7 @@
 package com.devoxx.model;
 
 import com.devoxx.model.cloudlink.CloudLinkService;
+import com.devoxx.util.DevoxxSettings;
 import com.gluonhq.charm.glisten.afterburner.GluonView;
 import com.gluonhq.connect.ConnectState;
 import com.gluonhq.connect.GluonObservableList;
@@ -35,10 +36,12 @@ import com.gluonhq.connect.gluoncloud.GluonClient;
 import com.gluonhq.connect.gluoncloud.GluonClientBuilder;
 import com.gluonhq.connect.gluoncloud.GluonCredentials;
 import com.gluonhq.connect.gluoncloud.OperationMode;
+import com.gluonhq.connect.gluoncloud.SyncFlag;
 import com.gluonhq.connect.provider.DataProvider;
 import com.gluonhq.connect.provider.RestClient;
 import java.io.InputStream;
 import javafx.beans.InvalidationListener;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyListProperty;
 import javafx.beans.property.ReadOnlyListWrapper;
@@ -49,6 +52,7 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -86,7 +90,7 @@ public class DevoxxService extends BaseService {
 
         cloudGluonClient = GluonClientBuilder.create()
             .credentials(gluonCredentials)
-            .authenticationMode(AuthenticationMode.PUBLIC)
+            .authenticationMode(AuthenticationMode.USER)
             .operationMode(OperationMode.CLOUD_FIRST)
             .build();
 
@@ -95,11 +99,44 @@ public class DevoxxService extends BaseService {
 
         allSessionsAvailable.addListener((obs, ov, nv) -> {
             if (nv) {
-                System.out.println("SESSIONS AVAILABLE, LOADING AUTHENTICATION STUFF!");
-                retrieveAuthenticatedUser();
+                if (isAuthenticated()) {
+                    loadAuthenticatedData();
+                }
             }
         });
+    }
 
+    @Override
+    public void authenticate(Runnable successRunnable) {
+        cloudGluonClient.authenticate(user -> {
+            if (successRunnable != null) {
+                successRunnable.run();
+            }
+        });
+    }
+
+    @Override
+    public void authenticate(Runnable successRunnable, Runnable failureRunnable) {
+        cloudGluonClient.authenticate(user -> {
+            if (successRunnable != null) {
+                successRunnable.run();
+            }
+        }, message -> {
+            if (failureRunnable != null) {
+                failureRunnable.run();
+            }
+        });
+    }
+
+    @Override
+    public boolean isAuthenticated() {
+        return cloudGluonClient.isAuthenticated();
+    }
+
+    @Override
+    public boolean logOut() {
+        cloudGluonClient.signOut();
+        return true;
     }
 
     @Override
@@ -222,10 +259,10 @@ public class DevoxxService extends BaseService {
 
     private ObservableList<Session> internalRetrieveSessions(String listIdentifierSuffix, Runnable onStateSucceeded) {
         ObservableList<Session> internalSessions = FXCollections.observableArrayList();
-        GluonObservableList<String> internalSessionsLocal = DataProvider.retrieveList(localGluonClient.createListDataReader(getAuthenticatedUserId() + "_" + listIdentifierSuffix, String.class));
+        GluonObservableList<String> internalSessionsLocal = DataProvider.retrieveList(localGluonClient.createListDataReader(cloudGluonClient.getAuthenticatedUser().getKey() + "_" + listIdentifierSuffix, String.class));
         internalSessionsLocal.initializedProperty().addListener((obsLocal, ovLocal, nvLocal) -> {
             if (nvLocal) {
-                GluonObservableList<String> internalSessionsCloud = DataProvider.retrieveList(cloudGluonClient.createListDataReader(getAuthenticatedUserId() + "_" + listIdentifierSuffix, String.class));
+                GluonObservableList<String> internalSessionsCloud = DataProvider.retrieveList(cloudGluonClient.createListDataReader(cloudGluonClient.getAuthenticatedUser().getKey() + "_" + listIdentifierSuffix, String.class));
 
                 // keep reference to the list of sessions that were added while loading the internal list
                 // the most likely use case is when a user is not yet logged in and clicks the favorite or
@@ -311,12 +348,58 @@ public class DevoxxService extends BaseService {
 
     @Override
     public ObservableList<Note> internalRetrieveNotes() {
-        return null;
+        return internalRetrieveData("notes", Note.class);
     }
 
     @Override
     public ObservableList<Vote> internalRetrieveVotes() {
-        return null;
+        return internalRetrieveData("votes", Vote.class);
+    }
+
+    private <E extends Identifiable> ObservableList<E> internalRetrieveData(String listIdentifier, Class<E> targetClass) {
+        GluonObservableList<E> internalDataLocal = DataProvider.retrieveList(localGluonClient.createListDataReader(cloudGluonClient.getAuthenticatedUser().getKey() + "_" + listIdentifier, targetClass,
+                SyncFlag.LIST_READ_THROUGH, SyncFlag.LIST_WRITE_THROUGH, SyncFlag.OBJECT_READ_THROUGH, SyncFlag.OBJECT_WRITE_THROUGH));
+        internalDataLocal.initializedProperty().addListener((obsLocal, ovLocal, nvLocal) -> {
+            if (nvLocal) {
+                if (!listIdentifier.equals("notes") || DevoxxSettings.USE_REMOTE_NOTES) {
+                    GluonObservableList<E> internalDataCloud = DataProvider.retrieveList(cloudGluonClient.createListDataReader(cloudGluonClient.getAuthenticatedUser().getKey() + "_" + listIdentifier, targetClass,
+                            SyncFlag.LIST_READ_THROUGH, SyncFlag.LIST_WRITE_THROUGH, SyncFlag.OBJECT_READ_THROUGH, SyncFlag.OBJECT_WRITE_THROUGH));
+                    internalDataCloud.initializedProperty().addListener((obsCloud, ovCloud, nvCloud) -> {
+                        if (nvCloud) {
+                            for (E dataCloud : internalDataCloud) {
+                                boolean existsLocally = false;
+                                for (E dataLocal : internalDataLocal) {
+                                    if (dataLocal.getUuid().equals(dataCloud.getUuid())) {
+                                        existsLocally = true;
+                                        break;
+                                    }
+                                }
+                                if (!existsLocally) {
+                                    internalDataLocal.add(dataCloud);
+                                }
+                            }
+
+                            for (Iterator<E> dataLocalIter = internalDataLocal.iterator(); dataLocalIter.hasNext();) {
+                                boolean existsCloud = false;
+                                E dataLocal = dataLocalIter.next();
+                                for (E dataCloud : internalDataCloud) {
+                                    if (dataCloud.getUuid().equals(dataLocal.getUuid())) {
+                                        existsCloud = true;
+                                        break;
+                                    }
+                                }
+                                if (!existsCloud) {
+                                    dataLocalIter.remove();
+                                }
+                            }
+
+                            Bindings.bindContent(internalDataCloud, internalDataLocal);
+                        }
+                    });
+                }
+            }
+        });
+        return internalDataLocal;
     }
 
     @Override

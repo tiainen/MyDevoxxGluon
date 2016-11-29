@@ -34,6 +34,9 @@ import com.devoxx.util.DevoxxBundle;
 import com.devoxx.util.DevoxxNotifications;
 import com.devoxx.util.DevoxxSettings;
 import com.devoxx.views.dialog.SessionConflictDialog;
+import com.gluonhq.connect.ConnectState;
+import com.gluonhq.connect.GluonObservableObject;
+import com.gluonhq.connect.gluoncloud.User;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
@@ -169,48 +172,11 @@ public class SessionVisuals {
             if (button.getUserData() == LOCK) return;
 
             if (!service.isAuthenticated()) {
-                boolean authenticated = service.authenticate();
-                if (!authenticated) {
+                service.authenticate(() -> handleAuthenticatedAction(listType, button, selected), () -> {
                     quietUpdateBtnState(button, () -> button.setSelected(ov));
-                    return;
-                }
-            }
-
-            // we must use the session stored in the button - not the one provided
-            // as an argument to the buildButton method
-            Session actualSession = (Session) button.getProperties().get(SESSION_KEY);
-
-            if (selected) {
-                // Resolve scheduling conflicts
-                if (listType == SessionListType.SCHEDULED) {
-                    Optional<Session> conflictOption = findConflictingSession(actualSession);
-                    if (conflictOption.isPresent()) {
-                        Session conflict = conflictOption.get();
-                        Optional<Session> dialogResult = new SessionConflictDialog(conflict, actualSession, this).showAndWait();
-                        if (dialogResult.isPresent()) {
-                            Session selectedSession = dialogResult.get();
-                            if (selectedSession.equals(actualSession)) {
-                                // It is important to preserve this order: first remove and then add because of the
-                                // toast messages. This way "session scheduled" will be displayed.
-                                listRemove(conflict, listType);
-                                listAdd(actualSession, listType);
-                                updateButton(button, true, actualSession);
-                            } else {
-                                button.setSelected(false);
-                            }
-                        } else {
-                            button.setSelected(false);
-                        }
-
-
-                    } else {
-                        listAdd(actualSession, listType);
-                    }
-                } else {
-                    listAdd(actualSession, listType);
-                }
+                });
             } else {
-                listRemove(actualSession, listType);
+                handleAuthenticatedAction(listType, button, selected);
             }
         });
 
@@ -218,6 +184,45 @@ public class SessionVisuals {
 
         return button;
 
+    }
+
+    private void handleAuthenticatedAction(SessionListType listType, ToggleButton button, boolean selected) {
+        // we must use the session stored in the button - not the one provided
+        // as an argument to the buildButton method
+        Session actualSession = (Session) button.getProperties().get(SESSION_KEY);
+
+        if (selected) {
+            // Resolve scheduling conflicts
+            if (listType == SessionListType.SCHEDULED) {
+                Optional<Session> conflictOption = findConflictingSession(actualSession);
+                if (conflictOption.isPresent()) {
+                    Session conflict = conflictOption.get();
+                    Optional<Session> dialogResult = new SessionConflictDialog(conflict, actualSession, this).showAndWait();
+                    if (dialogResult.isPresent()) {
+                        Session selectedSession = dialogResult.get();
+                        if (selectedSession.equals(actualSession)) {
+                            // It is important to preserve this order: first remove and then add because of the
+                            // toast messages. This way "session scheduled" will be displayed.
+                            listRemove(conflict, listType);
+                            listAdd(actualSession, listType);
+                            updateButton(button, true, actualSession);
+                        } else {
+                            button.setSelected(false);
+                        }
+                    } else {
+                        button.setSelected(false);
+                    }
+
+
+                } else {
+                    listAdd(actualSession, listType);
+                }
+            } else {
+                listAdd(actualSession, listType);
+            }
+        } else {
+            listRemove(actualSession, listType);
+        }
     }
 
     private static final Object LOCK = new Object();
@@ -251,11 +256,11 @@ public class SessionVisuals {
      * @param listType
      */
     private void listAdd(Session session, SessionListType listType) {
-        if (!service.isAuthenticated() && service.authenticate()) {
+        if (!service.isAuthenticated()) {
+            service.authenticate(() -> listAdd(session, listType));
+        } else {
             retrieveLists();
-        }
 
-        if (service.isAuthenticated()) {
             if (!listContains(session, listType)) {
                 if (listType == SessionListType.SCHEDULED) {
                     devoxxNotifications.addScheduledSessionNotifications(session, false);
@@ -266,7 +271,7 @@ public class SessionVisuals {
             }
         }
     }
-    
+
     /**
      * Remove session from a list
      *
@@ -274,12 +279,12 @@ public class SessionVisuals {
      * @param listType
      */
     private void listRemove(Session session, SessionListType listType) {
-        if (!service.isAuthenticated() && service.authenticate()) {
+        if (!service.isAuthenticated()) {
+            service.authenticate(() -> listRemove(session, listType));
+        } else {
             retrieveLists();
-        }
 
-        if (service.isAuthenticated()) {
-            if (listType == SessionListType.SCHEDULED) {    
+            if (listType == SessionListType.SCHEDULED) {
                 devoxxNotifications.removeScheduledSessionNotifications(session);
             }
 

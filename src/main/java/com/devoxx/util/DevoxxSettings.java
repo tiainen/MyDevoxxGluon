@@ -49,7 +49,7 @@ public class DevoxxSettings {
      * - false: notes don't require authentication and are persisted only locally
      * Default: true
      */
-    public final static boolean USE_REMOTE_NOTES = false;
+    public final static boolean USE_REMOTE_NOTES = true;
     
     /**
      * boolean option to switch on/off the EULA view

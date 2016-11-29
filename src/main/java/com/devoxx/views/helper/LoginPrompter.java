@@ -45,9 +45,7 @@ public class LoginPrompter extends Placeholder {
         this.login = new Button(DevoxxBundle.getString("OTN.BUTTON.LOGIN"));
         this.login.getStyleClass().add("login");
         this.login.setOnAction(e -> {
-            if (service.authenticate()) {
-                onAuthenticated.run();
-            }
+            service.authenticate(onAuthenticated);
         });
         getChildren().add(login);
     }

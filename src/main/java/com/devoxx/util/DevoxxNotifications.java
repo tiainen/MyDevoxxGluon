@@ -45,7 +45,6 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.gluonhq.charm.down.plugins.LocalNotificationsService.NOTIFICATION_KEY;
 import static com.devoxx.util.DevoxxLogging.LOGGING_ENABLED;
 import java.time.ZonedDateTime;
 import static java.time.temporal.ChronoUnit.SECONDS;
@@ -75,31 +74,7 @@ public class DevoxxNotifications {
     public DevoxxNotifications() {
         notificationsService = Services.get(LocalNotificationsService.class);
     }
-    
-    /**
-     * Parses runtime parameters and looks for a notification id
-     * If it is found, we'll process its runnable as soon as possible, and we
-     * won't show the splash
-     * 
-     * @param options a Map with runtime parameters
-     * @return true if a notification id is found
-     */
-    public final boolean findNotificationIdAtStartup(Map<String, String> options) {
-        boolean foundNotificationId = false;
-        if (options != null && !options.isEmpty()) {
-            String notificationId = options.get(NOTIFICATION_KEY);
-            
-            if (notificationId != null && !notificationId.isEmpty()) {
-                if (DevoxxLogging.LOGGING_ENABLED) {
-                    LOG.log(Level.INFO,"Starting app with notification #" + notificationId);
-                }
-                notificationsService.ifPresent(n -> n.processNotification(notificationId));
-                foundNotificationId = true;
-            }
-        }
-        return foundNotificationId;
-    }
-    
+
     /**
      * For a given Scheduled Session, it creates two notifications:
      * - One notifification will be triggered by the device before the session starts

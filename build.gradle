@@ -50,7 +50,6 @@ dependencies {
     compile 'com.google.zxing:core:3.2.1'
     compile 'com.gluonhq:maps:1.0.1'
     compile 'com.gluonhq:glisten-labs:1.0.0-b8'
-//    compile name: 'images'
 //    compile name: 'ScenicView'
 }
 

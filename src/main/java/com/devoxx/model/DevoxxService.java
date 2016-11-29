@@ -134,7 +134,7 @@ public class DevoxxService extends BaseService {
     }
 
     @Override
-    public boolean logOut() {
+    public boolean internalLogOut() {
         cloudGluonClient.signOut();
         return true;
     }

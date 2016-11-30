@@ -77,8 +77,6 @@ public class DevoxxApplication extends MobileApplication {
 
     private DevoxxDrawerPresenter drawerPresenter;
     
-    private DevoxxNotifications devoxxNotifications;
-
     @Override
     public void init() {
 
@@ -88,9 +86,7 @@ public class DevoxxApplication extends MobileApplication {
         // start service data preloading as soon as possible
         Injector.instantiateModelOrService(Service.class);
 
-        // check if the app starts from a notification
-        devoxxNotifications = Injector.instantiateModelOrService(DevoxxNotifications.class);
-        devoxxNotifications.findNotificationIdAtStartup(getParameters().getNamed());
+        Injector.instantiateModelOrService(DevoxxNotifications.class);
 
         for (AppView view : DevoxxView.REGISTRY.getViews()) {
             view.registerView(this);

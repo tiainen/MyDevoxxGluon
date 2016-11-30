@@ -35,7 +35,6 @@ import com.gluonhq.charm.down.plugins.StorageService;
 import com.gluonhq.charm.glisten.afterburner.GluonView;
 import com.gluonhq.charm.glisten.application.MobileApplication;
 import com.gluonhq.charm.glisten.control.Dialog;
-import com.gluonhq.charm.glisten.control.TextField;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Button;
@@ -66,7 +65,6 @@ public abstract class BaseService implements Service {
     private ObservableList<Note> notes;
     private ObservableList<Vote> votes;
 
-    private String authenticatedUserId = "";
     private Conference conference;
 
     protected BaseService() {
@@ -139,57 +137,10 @@ public abstract class BaseService implements Service {
         return votes;
     }
 
-    @Override
-    public boolean authenticate() {
-        if (!isAuthenticated()) {
-            if (DevoxxSettings.AUTO_AUTHENTICATION) {
-                authenticatedUserId = DevoxxSettings.getUserUUID();
-                storeAuthenticatedUser();
-            } else {
-                Dialog<Button> dialog = new Dialog<>();
-//                final AuthenticationView authenticationView = getAuthenticationView();
-//                final View view = authenticationView.getView();
-//                final AuthenticationPresenter presenter = authenticationView.getAuthenticationPresenter();
-//                view.setPrefWidth(MobileApplication.getInstance().getView().getScene().getWidth() - 40);
-//                view.setPrefHeight(MobileApplication.getInstance().getView().getScene().getHeight() - 200);
-
-                Placeholder loginDialogContent = new Placeholder("Temp Login Prompt", "Please enter *any* username below", MaterialDesignIcon.LOCK);
-
-                // FIXME: Too narrow Dialogs in Glisten
-                loginDialogContent.setPrefWidth(MobileApplication.getInstance().getView().getScene().getWidth() - 40);
-
-                TextField usernameField = new TextField();
-                usernameField.setFloatText("User Name");
-                loginDialogContent.getChildren().add(usernameField);
-
-                dialog.setContent(loginDialogContent);
-                Button okButton = new Button(DevoxxBundle.getString("OTN.LOGIN_DIALOG.LOGIN"));
-                Button cancelButton = new Button(DevoxxBundle.getString("OTN.LOGIN_DIALOG.CANCEL"));
-                okButton.setOnAction(e -> {
-                    authenticatedUserId = usernameField.getText();
-                    storeAuthenticatedUser();
-                    dialog.hide();
-                });
-                cancelButton.setOnAction(e -> dialog.hide());
-                dialog.getButtons().addAll(cancelButton, okButton);
-                dialog.showAndWait();
-            }
-        }
-
-        if (isAuthenticated()) {
-            loadAuthenticatedData();
-        }
-
-        return isAuthenticated();
-    }
-
-    @Override
-    public boolean isAuthenticated() {
-        return authenticatedUserId != null && !authenticatedUserId.isEmpty();
-    }
-
     private boolean loggedOut;
-    
+
+    protected abstract boolean internalLogOut();
+
     @Override
     public boolean logOut() {
         loggedOut = false;
@@ -204,10 +155,7 @@ public abstract class BaseService implements Service {
         Button yesButton = new Button(DevoxxBundle.getString("OTN.LOGOUT_DIALOG.YES"));
         Button noButton = new Button(DevoxxBundle.getString("OTN.LOGOUT_DIALOG.NO"));
         yesButton.setOnAction(e -> {
-            loggedOut = removeAuthenticatedUser();
-            if (loggedOut) {
-                authenticatedUserId = "";
-            }
+            loggedOut = internalLogOut();
             dialog.hide();
         });
         noButton.setOnAction(e -> dialog.hide());
@@ -231,64 +179,6 @@ public abstract class BaseService implements Service {
     @Override
     public void setConference (Conference c) {
         this.conference = c;
-    }
-    
-    protected String getAuthenticatedUserId() {
-        return authenticatedUserId;
-    }
-
-    protected void retrieveAuthenticatedUser() {
-        LOG.log(Level.INFO, "Retrieving Authenticated User from private storage.");
-
-        if (rootDir != null) {
-            try {
-                File authenticatedUserInfoFile = new File(rootDir, "authenticatedUser.info");
-                if (authenticatedUserInfoFile.exists()) {
-                    try (BufferedReader reader = new BufferedReader(new FileReader(authenticatedUserInfoFile))) {
-                        authenticatedUserId = reader.readLine();
-                    }
-                }
-            } catch (IOException ex) {
-                LOG.log(Level.SEVERE, "Could not retrieve authenticated user from private storage.", ex);
-            }
-        }
-
-        if (isAuthenticated()) {
-            loadAuthenticatedData();
-        } else if (DevoxxSettings.AUTO_AUTHENTICATION) {
-            authenticate();
-        }
-    }
-
-    private void storeAuthenticatedUser() {
-        if (isAuthenticated()) {
-            LOG.log(Level.INFO, "Storing Authenticated User to private storage.");
-
-            if (rootDir != null) {
-                try {
-                    File authenticatedUserInfoFile = new File(rootDir, "authenticatedUser.info");
-                    try (FileWriter fileWriter = new FileWriter(authenticatedUserInfoFile)) {
-                        fileWriter.write(authenticatedUserId);
-                    }
-                } catch (IOException ex) {
-                    LOG.log(Level.SEVERE, "Could not store authenticated user to private storage.", ex);
-                }
-            }
-        }
-    }
-    
-    private boolean removeAuthenticatedUser() {
-        if (isAuthenticated()) {
-            LOG.log(Level.INFO, "Removing Authenticated User from private storage.");
-
-            if (rootDir != null) {
-                File authenticatedUserInfoFile = new File(rootDir, "authenticatedUser.info");
-                if (authenticatedUserInfoFile.exists()) {
-                    return authenticatedUserInfoFile.delete();
-                }
-            }
-        }
-        return false;
     }
 
     /**

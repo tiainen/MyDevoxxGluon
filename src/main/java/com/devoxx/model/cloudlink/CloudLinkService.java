@@ -25,57 +25,9 @@
  */
 package com.devoxx.model.cloudlink;
 
-import com.devoxx.util.DevoxxLogging;
-import com.devoxx.util.DevoxxSettings;
-import com.gluonhq.charm.glisten.afterburner.GluonView;
-import com.gluonhq.connect.ConnectState;
-import com.gluonhq.connect.GluonObservableList;
-import com.gluonhq.connect.GluonObservableObject;
-import com.gluonhq.connect.converter.JsonIterableInputConverter;
-import com.gluonhq.connect.gluoncloud.AuthenticationMode;
-import com.gluonhq.connect.gluoncloud.GluonClient;
-import com.gluonhq.connect.gluoncloud.GluonClientBuilder;
-import com.gluonhq.connect.gluoncloud.GluonCredentials;
-import com.gluonhq.connect.gluoncloud.OperationMode;
-import com.gluonhq.connect.gluoncloud.SyncFlag;
-import com.gluonhq.connect.provider.DataProvider;
-import com.gluonhq.connect.provider.InputStreamListDataReader;
-import com.gluonhq.connect.source.BasicInputDataSource;
-import com.devoxx.model.BaseService;
-import com.devoxx.model.Exhibitor;
-import com.devoxx.model.Identifiable;
-import com.devoxx.model.Mergeable;
-import com.devoxx.model.News;
-import com.devoxx.model.Note;
-import com.devoxx.model.PushNotification;
-import com.devoxx.model.Session;
-import com.devoxx.model.Speaker;
-import com.devoxx.model.Sponsor;
-import com.devoxx.model.Venue;
-import com.devoxx.model.Vote;
-import javafx.beans.binding.Bindings;
-import javafx.beans.property.ReadOnlyListProperty;
-import javafx.beans.property.ReadOnlyListWrapper;
-import javafx.beans.property.ReadOnlyObjectProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
-import javafx.collections.transformation.SortedList;
-
-import javax.json.JsonObject;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javafx.beans.InvalidationListener;
-
-public class CloudLinkService extends BaseService {
+public class CloudLinkService {
+/*
+    extends BaseService {
 
     private static final Logger LOG = Logger.getLogger(CloudLinkService.class.getName());
 
@@ -459,4 +411,5 @@ public class CloudLinkService extends BaseService {
     public ReadOnlyObjectProperty<Speaker> retrieveSpeaker(String uuid) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+*/
 }

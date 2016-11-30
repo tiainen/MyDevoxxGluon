@@ -92,18 +92,18 @@ public class ScheduleCell extends CharmListCell<Session> {
         }
     }
     private void updateVBox() {
-        listTile.textProperty().clear();
         if ((session != null) && (session.getTalk().getTitle() != null)) {
-            listTile.textProperty().add(session.getTalk().getTitle());
+            listTile.setTextLine(0, session.getTalk().getTitle());
         }
         String trackTitle = session.getTalk().getTrack();
         if (trackTitle == null || trackTitle.isEmpty()) {
-            listTile.textProperty().add(session.getTalk().getTalkType());
+            listTile.setTextLine(1, session.getTalk().getTalkType());
+
         } else {
-            listTile.textProperty().add(trackTitle);
+            listTile.setTextLine(1,trackTitle);
         }
 
-        listTile.textProperty().add(DevoxxBundle.getString("OTN.SCHEDULE.IN_AT", session.getRoomName(),
+        listTile.setTextLine(2, DevoxxBundle.getString("OTN.SCHEDULE.IN_AT", session.getRoomName(),
                         DevoxxSettings.TIME_FORMATTER.format(session.getStartDate()))
                         + (showDate? "\n" + DevoxxSettings.DATE_FORMATTER.format(session.getStartDate()) : ""));
 

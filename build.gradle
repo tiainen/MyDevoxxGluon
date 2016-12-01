@@ -30,7 +30,6 @@ license {
 apply plugin: 'org.javafxports.jfxmobile'
 
 repositories {
-    mavenLocal()
     maven {
         url 'http://nexus.gluonhq.com/nexus/content/repositories/snapshots'
         credentials {

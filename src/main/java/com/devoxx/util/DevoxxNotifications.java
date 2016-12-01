@@ -34,6 +34,8 @@ import com.gluonhq.charm.down.Services;
 import com.gluonhq.charm.down.plugins.LocalNotificationsService;
 import com.gluonhq.charm.down.plugins.Notification;
 import com.devoxx.DevoxxView;
+import com.gluonhq.cloudlink.client.push.PushClient;
+import com.gluonhq.connect.gluoncloud.GluonCredentials;
 import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
 
@@ -73,6 +75,10 @@ public class DevoxxNotifications {
     
     public DevoxxNotifications() {
         notificationsService = Services.get(LocalNotificationsService.class);
+
+        GluonCredentials gluonCredentials = new GluonCredentials(DevoxxNotifications.class.getResourceAsStream("/gluoncloudlink_config.json"));
+        PushClient pushClient = new PushClient("http://betacloud.gluonhq.com", gluonCredentials);
+        pushClient.activate("945674729015");
     }
 
     /**

@@ -89,6 +89,7 @@ public class DevoxxService extends BaseService {
             .build();
 
         cloudGluonClient = GluonClientBuilder.create()
+            .host("http://betacloud.gluonhq.com/3")
             .credentials(gluonCredentials)
             .authenticationMode(AuthenticationMode.USER)
             .operationMode(OperationMode.CLOUD_FIRST)

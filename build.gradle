@@ -89,7 +89,6 @@ jfxmobile {
         }
     }
     ios {
-        launcherClassName = 'com.gluonhq.charm.down.notifications.CustomLauncher'
         infoPList = file('src/ios/Default-Info.plist')
         forceLinkClasses = [
                 'com.devoxx.**.*',

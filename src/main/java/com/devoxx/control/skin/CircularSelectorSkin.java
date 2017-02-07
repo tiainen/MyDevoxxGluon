@@ -117,7 +117,8 @@ public class CircularSelectorSkin<T> extends SkinBase<CircularSelector<T>> {
                 RotateTransition transition = new RotateTransition(getSkinnable().getTransitionDuration(), group);
                 transition.setByAngle((-absoluteAngle.get() - cangle) % 360);
                 absoluteAngle.set(-cangle);
-                transition.setOnFinished(ae -> getSkinnable().setSelectedItem(item));
+                //transition.setOnFinished(ae -> getSkinnable().setSelectedItem(item));
+                getSkinnable().setSelectedItem(item);
                 transition.play();
             });
 

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+        <key>CFBundleIdentifier</key>
+        <string>com.devoxx.mydevoxx.swift</string>
+        <key>CFBundleVersion</key>
+        <!-- buildnumber --><string>155</string>
+        <key>CFBundleShortVersionString</key>
+        <string>2.0.1</string>
+        <key>CFBundleExecutable</key>
+        <string>DevoxxClient</string>
+        <key>CFBundleIconFiles</key>
+        <array>
+                <string>Icon-60</string>
+                <string>Icon-76</string>
+                <string>Icon-Small-40</string>
+                <string>Icon-Small</string>
+        </array>
+        <key>CFBundleIconFiles~ipad</key>
+        <array>
+                <string>Icon-76</string>
+                <string>Icon-Small-40</string>
+                <string>Icon-Small</string>
+        </array>
+        <key>CFBundleName</key>
+        <string>My Devoxx</string>
+        <key>CFBundlePackageType</key>
+        <string>APPL</string>
+        <key>LSRequiresIPhoneOS</key>
+        <true/>
+        <key>UIRequiredDeviceCapabilities</key>
+        <array>
+                <string>armv7</string>
+        </array>
+        <key>UIDeviceFamily</key>
+        <array>
+                <integer>1</integer>
+                <integer>2</integer>
+        </array>
+        <key>UIRequiresFullScreen</key>
+        <string>YES</string>        
+        <key>UISupportedInterfaceOrientations</key>
+        <array>
+                <string>UIInterfaceOrientationPortrait</string>
+                <!--<string>UIInterfaceOrientationLandscapeLeft</string>
+                <string>UIInterfaceOrientationLandscapeRight</string>
+                <string>UIInterfaceOrientationPortraitUpsideDown</string> -->
+        </array>
+        <key>UISupportedInterfaceOrientations~ipad</key>
+        <array>
+                <string>UIInterfaceOrientationPortrait</string>
+                <!-- <string>UIInterfaceOrientationLandscapeLeft</string>
+                <string>UIInterfaceOrientationLandscapeRight</string>
+                <string>UIInterfaceOrientationPortraitUpsideDown</string> -->
+        </array>
+        <key>UIDeviceFamily</key>
+        <array>
+                <integer>1</integer>
+                <integer>2</integer>
+        </array>
+        <key>UIBackgroundModes</key>
+        <array>
+            <string>remote-notification</string>
+        </array>
+        <key>MinimumOSVersion</key>
+	<string>8.0</string>        
+        <key>UIRequiresFullScreen</key>
+        <string>YES</string>
+	<key>UIStatusBarStyle</key> 
+	<string>UIStatusBarStyleLightContent</string> 
+	<key>UIViewControllerBasedStatusBarAppearance</key> <false/>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Displaying of the howto video</string>
+	<key>ITSAppUsesNonExemptEncryption</key><false/>
+        <key>NSAppTransportSecurity</key>  
+        <dict>  
+            <key>NSAllowsArbitraryLoads</key><false/>
+            <key>NSExceptionDomains</key>  
+            <dict>  
+                <key>gluonhq.com</key>  
+                <dict>  
+                    <key>NSIncludesSubdomains</key><true/>  
+                    <key>NSExceptionAllowsInsecureHTTPLoads</key><true/>  
+                </dict>
+                <key>www.oracle.com</key>  
+                <dict>  
+                    <key>NSIncludesSubdomains</key><true/>  
+                    <key>NSExceptionAllowsInsecureHTTPLoads</key><true/>  
+                </dict>  
+            </dict>  
+        </dict>  
+</dict>
+</plist>

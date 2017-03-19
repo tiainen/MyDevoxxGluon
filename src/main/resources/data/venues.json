@@ -1,6 +1,0 @@
-[
-  {"uuid":"1","name":"Hilton San Francisco Union Square","location":"333 O'Farrell Street\nSan Francisco, California 94102","latitude":37.785687,"longitude":-122.410380,"phoneNumber":"+14157711400", "url":"http://www3.hilton.com/en/hotels/california/hilton-san-francisco-union-square-SFOFHHH/index.html"},
-  {"uuid":"2","name":"Parc 55 San Francisco","location":"55 Cyril Magnin Street\nSan Francisco, California 94102","latitude": 37.784959, "longitude" : -122.409026, "phoneNumber":"+14153928000", "url":"http://www3.hilton.com/en/hotels/california/parc-55-san-francisco-a-hilton-hotel-SFOSFHH/index.html"},
-  {"uuid":"3","name":"Moscone West","location":"800 Howard Street\nAt the corner Fourth and Howard Streets\nSan Francisco, California 94103","latitude": 37.78320, "longitude" : -122.40345, "phoneNumber":"+14159744000", "url":"http://www.moscone.com/site/do/index"},
-  {"uuid":"4","name":"Moscone Center","location":"747 Howard Street\nAt the corner Third and Howard Streets\nSan Francisco, California 94103","latitude": 37.783973, "longitude" : -122.401226, "phoneNumber":"+14159744000", "url":"http://www.moscone.com/site/do/index"}
-]

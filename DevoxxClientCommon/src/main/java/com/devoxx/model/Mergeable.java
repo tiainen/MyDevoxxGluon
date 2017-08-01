@@ -25,7 +25,7 @@
  */
 package com.devoxx.model;
 
-public interface Mergeable<T> extends Identifiable {
+public interface Mergeable<T> {
 
     boolean merge(T other);
 

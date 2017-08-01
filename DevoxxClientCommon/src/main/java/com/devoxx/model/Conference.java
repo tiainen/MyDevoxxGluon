@@ -91,6 +91,7 @@ public class Conference {
     private String pushEnabled;
     private String timezone;
     private ZoneId timezoneId;
+    private boolean selected;
 
     public String getId() {
         return id;
@@ -394,6 +395,14 @@ public class Conference {
         if (this.fromDate != null && this.toDate != null && this.timezoneId != null) {
             calculateConferenceDays();
         }
+    }
+
+    public boolean isSelected() {
+        return selected;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
     }
 
     @Override

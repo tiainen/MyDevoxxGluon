@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016, Gluon Software
+/*
+ * Copyright (c) 2016, 2017, Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -25,18 +25,21 @@
  */
 package com.devoxx.service;
 
+import com.devoxx.model.Badge;
 import com.devoxx.model.Conference;
 import com.devoxx.model.Exhibitor;
+import com.devoxx.model.Favorite;
 import com.devoxx.model.Floor;
 import com.devoxx.model.Note;
 import com.devoxx.model.ProposalType;
-import com.devoxx.model.PushNotification;
 import com.devoxx.model.Session;
 import com.devoxx.model.Speaker;
 import com.devoxx.model.Sponsor;
 import com.devoxx.model.Track;
 import com.devoxx.model.Vote;
+import com.devoxx.views.helper.SessionVisuals.SessionListType;
 import com.gluonhq.connect.GluonObservableList;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyListProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.collections.ObservableList;
@@ -50,15 +53,6 @@ import java.util.Optional;
  */
 @Singleton
 public interface Service {
-
-    /**
-     * Returns an instance of PushNotification of which the fields will be updated by
-     * the OTN back end. You can listen for changes on the id property to see if a new
-     * notification is being pushed.
-     *
-     * @return
-     */
-    PushNotification retrievePushNotification();
 
     /**
      * Returns a list of conferences.
@@ -168,6 +162,13 @@ public interface Service {
      * @return true if there is an authenticated user, false otherwise.
      */
     boolean isAuthenticated();
+    
+    /**
+     * The ready property can be set to true when the service has finished loading some resources.
+     * This can be used by the wearable service to add listeners and perform some actions
+     * @return a boolean property
+     */
+    BooleanProperty readyProperty();
 
     /**
      * Starts the log out process. This will show a Dialog in which the user can confirm
@@ -203,12 +204,19 @@ public interface Service {
     ObservableList<Note> retrieveNotes();
 
     /**
-     * Returns a list of votes that the authenticated user has cast. Each vote belongs to a specific session.
+     * Returns a list of badges that the authenticated user has scanned. 
      *
      * @return
      * @throws IllegalStateException when no user is currently authenticated
      */
-    ObservableList<Vote> retrieveVotes();
+    ObservableList<Badge> retrieveBadges();
+
+    /**
+     * Returns a list of favored or scheduled sessions from the cloud.
+     * @param sessionListType Type of session
+     * @return A list of favored or scheduled session.
+     */
+    ObservableList<Session> reloadSessionsFromCFP(SessionListType sessionListType);
 
     /**
      * Retrieves the Session for a specific session uuid.
@@ -218,4 +226,15 @@ public interface Service {
     Optional<Session> findSession(String uuid);
 
     void voteTalk(Vote vote);
+
+    /**
+     * Retrieves the list of favorites for the selected conference.
+     * @return An ObservableList of favorites
+     */
+    ObservableList<Favorite> retrieveFavorites();
+
+    /**
+     * Updates the list of favorites from the data source.
+     */
+    void refreshFavorites();
 }

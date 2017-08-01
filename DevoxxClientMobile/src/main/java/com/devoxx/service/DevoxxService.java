@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2016, 2017, Gluon Software
  * All rights reserved.
  *
@@ -26,16 +26,17 @@
 package com.devoxx.service;
 
 import com.airhacks.afterburner.injection.Injector;
+import com.devoxx.model.Badge;
 import com.devoxx.model.Conference;
 import com.devoxx.model.Exhibitor;
 import com.devoxx.model.Favored;
+import com.devoxx.model.Favorite;
+import com.devoxx.model.Favorites;
 import com.devoxx.model.Floor;
-import com.devoxx.model.Identifiable;
 import com.devoxx.model.Link;
 import com.devoxx.model.Note;
 import com.devoxx.model.ProposalType;
 import com.devoxx.model.ProposalTypes;
-import com.devoxx.model.PushNotification;
 import com.devoxx.model.Scheduled;
 import com.devoxx.model.Schedules;
 import com.devoxx.model.SchedulesOfDay;
@@ -52,7 +53,7 @@ import com.devoxx.util.DevoxxBundle;
 import com.devoxx.util.DevoxxNotifications;
 import com.devoxx.util.DevoxxSettings;
 import com.devoxx.views.helper.Placeholder;
-import com.devoxx.views.helper.Util;
+import com.devoxx.views.helper.SessionVisuals.SessionListType;
 import com.gluonhq.charm.down.Services;
 import com.gluonhq.charm.down.plugins.DisplayService;
 import com.gluonhq.charm.down.plugins.RuntimeArgsService;
@@ -64,7 +65,10 @@ import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import com.gluonhq.cloudlink.client.data.DataClient;
 import com.gluonhq.cloudlink.client.data.DataClientBuilder;
 import com.gluonhq.cloudlink.client.data.OperationMode;
+import com.gluonhq.cloudlink.client.data.RemoteFunction;
+import com.gluonhq.cloudlink.client.data.RemoteFunctionBuilder;
 import com.gluonhq.cloudlink.client.data.SyncFlag;
+import com.gluonhq.cloudlink.client.push.PushClient;
 import com.gluonhq.cloudlink.client.user.User;
 import com.gluonhq.cloudlink.client.user.UserClient;
 import com.gluonhq.connect.ConnectState;
@@ -85,10 +89,12 @@ import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyListProperty;
 import javafx.beans.property.ReadOnlyListWrapper;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
@@ -104,6 +110,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -129,39 +138,40 @@ public class DevoxxService implements Service {
             rootDir = Services.get(StorageService.class)
                     .flatMap(StorageService::getPrivateStorage)
                     .orElseThrow(() -> new IOException("Private storage file not available"));
-            RuntimeArgsService ras = Services.get(RuntimeArgsService.class).get();
-            ras.addListener(RuntimeArgsService.LAUNCH_PUSH_NOTIFICATION_KEY, (f) -> {
-                System.out.println(">>> received a silent push notification with contents: " + f);
-                System.out.println("[DBG] writing reload file");
-                File reloadMe = new File (rootDir, "reload");
+            Services.get(RuntimeArgsService.class).ifPresent(ras -> {
+                ras.addListener(RuntimeArgsService.LAUNCH_PUSH_NOTIFICATION_KEY, (f) -> {
+                    System.out.println(">>> received a silent push notification with contents: " + f);
+                    System.out.println("[DBG] writing reload file");
+                    File reloadMe = new File (rootDir, "reload");
                     try {
-                        BufferedWriter br = new BufferedWriter(new OutputStreamWriter(new FileOutputStream (reloadMe)));
+                        BufferedWriter br = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(reloadMe)));
                         br.write(f);
                         br.close();
                         System.out.println("[DBG] writing reload file done");
-                    } catch (FileNotFoundException ex) {
-                        Logger.getLogger(DevoxxService.class.getName()).log(Level.SEVERE, null, ex);
-                        System.out.println("[DBG] exception writing reload file "+ex);
                     } catch (IOException ex) {
-                        Logger.getLogger(DevoxxService.class.getName()).log(Level.SEVERE, null, ex);
+                        LOG.log(Level.SEVERE, null, ex);
                         System.out.println("[DBG] exception writing reload file "+ex);
                     }
-                }
-            );
+                });
+            });
         } catch (IOException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
     }
 
     private GluonObservableList<Conference> conferences;
-    private ReadOnlyObjectWrapper<Conference> conference = new ReadOnlyObjectWrapper<>();
+    private final ReadOnlyObjectWrapper<Conference> conference = new ReadOnlyObjectWrapper<>();
 
-    private DataClient localDataClient;
-    private UserClient authenticationClient;
-    private DataClient cloudDataClient;
+    private final UserClient authenticationClient;
+    private final PushClient pushClient;
+    private final DataClient localDataClient;
+    private final DataClient cloudDataClient;
+    private final DataClient unauthorizedCloudDataClient;
 
-    private StringProperty cfpUserUuid = new SimpleStringProperty(this, "cfpUserUuid", "");
+    private final StringProperty cfpUserUuid = new SimpleStringProperty(this, "cfpUserUuid", "");
 
+    private final BooleanProperty ready = new SimpleBooleanProperty(false);
+    
     /**
      * The sessions field is crucial. It is returned in the
      * retrieveSessions call that is used by the SessionsPresenter. Hence, the content of the sessions
@@ -183,15 +193,21 @@ public class DevoxxService implements Service {
     private ObservableList<Session> favoredSessions;
     private ObservableList<Session> scheduledSessions;
     private ObservableList<Note> notes;
-    private ObservableList<Vote> votes;
+    private ObservableList<Badge> badges;
 
-    private ObservableList<Session> internalFavoredSessions = FXCollections.observableArrayList();
+    private GluonObservableObject<Favorites> allFavorites;
     private ListChangeListener<Session> internalFavoredSessionsListener = null;
-    private ObservableList<Session> internalScheduledSessions = FXCollections.observableArrayList();
     private ListChangeListener<Session> internalScheduledSessionsListener = null;
+    private ObservableList<Session> internalFavoredSessions = FXCollections.observableArrayList();
+    private ObservableList<Session> internalScheduledSessions = FXCollections.observableArrayList();
+    private ObservableList<Favorite> favorites = FXCollections.observableArrayList();
 
     public DevoxxService() {
+        ready.set(false);
+        
         conferences = retrieveConferencesInternal();
+        allFavorites = new GluonObservableObject<>();
+        allFavorites.setState(ConnectState.SUCCEEDED);
 
         localDataClient = DataClientBuilder.create()
             .operationMode(OperationMode.LOCAL_ONLY)
@@ -203,6 +219,22 @@ public class DevoxxService implements Service {
             .authenticateWith(authenticationClient)
             .operationMode(OperationMode.CLOUD_FIRST)
             .build();
+
+        unauthorizedCloudDataClient = DataClientBuilder.create()
+                .operationMode(OperationMode.CLOUD_FIRST)
+                .build();
+
+        // enable push notifications and subscribe to the possibly selected conference
+        pushClient = new PushClient();
+        pushClient.enable(DevoxxNotifications.GCM_SENDER_ID);
+        pushClient.enabledProperty().addListener((obs, ov, nv) -> {
+            if (nv) {
+                Conference conference = getConference();
+                if (conference != null) {
+                    pushClient.subscribe(conference.getId());
+                }
+            }
+        });
 
         cfpUserUuid.addListener((obs, ov, nv) -> {
             if ("".equals(nv)) {
@@ -224,6 +256,16 @@ public class DevoxxService implements Service {
                         // Load all authenticated data once user has been authenticated
                         loadCfpAccount(authenticationClient.getAuthenticatedUser(), this::retrieveAuthenticatedUserSessionInformation);
                     }
+
+                    // unsubscribe from previous push notification topic
+                    if (pushClient.isEnabled()) {
+                        pushClient.unsubscribe(ov.getId());
+                    }
+                }
+
+                // subscribe to push notification topic, named after the conference id
+                if (pushClient.isEnabled()) {
+                    pushClient.subscribe(nv.getId());
                 }
 
                 retrieveSessionsInternal();
@@ -245,6 +287,9 @@ public class DevoxxService implements Service {
                 Bindings.bindContent(proposalTypes, internalProposalTypes);
 
                 exhibitionMaps = new ReadOnlyListWrapper<>(retrieveExhibitionMapsInternal());
+
+                favorites.clear();
+                refreshFavorites();
             }
         });
 
@@ -256,6 +301,16 @@ public class DevoxxService implements Service {
                     public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
                         if (newValue) {
                             findAndSetConference(configuredConference, conferences);
+                            conferences.initializedProperty().removeListener(this);
+                        }
+                    }
+                });
+            } else {
+                conferences.initializedProperty().addListener(new ChangeListener<Boolean>() {
+                    @Override
+                    public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                        if (newValue) {
+                            ready.set(true);
                             conferences.initializedProperty().removeListener(this);
                         }
                     }
@@ -283,6 +338,11 @@ public class DevoxxService implements Service {
         return authenticationClient.isAuthenticated() && cfpUserUuid.isNotEmpty().get();
     }
 
+    @Override
+    public BooleanProperty readyProperty() {
+        return ready;
+    }
+    
     private boolean loggedOut;
 
     @Override
@@ -369,7 +429,7 @@ public class DevoxxService implements Service {
                 String conferenceIdForReload = readConferenceIdFromFile(reload);
                 LOG.log(Level.INFO, "Reload requested for conference: " + conferenceIdForReload + ", current conference: " + getConference().getId());
                 System.out.println("[DBB] reload exists for conference: '" + conferenceIdForReload + "', current conference: '" + getConference().getId()+"'");
-                if (!conferenceIdForReload.isEmpty() && conferenceIdForReload.equals(getConference().getId())) {
+                if (!conferenceIdForReload.isEmpty() && conferenceIdForReload.equalsIgnoreCase(getConference().getId())) {
                     reload.delete();
                     retrieveSessionsInternalCfp();
                     retrieveSpeakersInternalCfp();
@@ -377,6 +437,28 @@ public class DevoxxService implements Service {
                 }
             }
         }
+    }
+
+    @Override
+    public ObservableList<Session> reloadSessionsFromCFP(SessionListType sessionListType) {
+        if (getConference() != null) {
+            if (sessionListType == SessionListType.FAVORITES) {
+                favoredSessions = null;
+                if (internalFavoredSessions != null && internalFavoredSessionsListener != null) {
+                    internalFavoredSessions.removeListener(internalFavoredSessionsListener);
+                    internalFavoredSessions.clear();
+                    return retrieveFavoredSessions();
+                }
+            } else if (sessionListType == SessionListType.SCHEDULED) {
+                scheduledSessions = null;
+                if (internalScheduledSessions != null && internalScheduledSessionsListener != null) {
+                    internalScheduledSessions.removeListener(internalScheduledSessionsListener);
+                    internalScheduledSessions.clear();
+                    return retrieveScheduledSessions();
+                }
+            }
+        }
+        return FXCollections.emptyObservableList();
     }
 
     @Override
@@ -403,8 +485,8 @@ public class DevoxxService implements Service {
      */
     private void loadingOfSessionsFinished(List<Session> newSessions) {
         for (Session session : newSessions) {
-            session.setStartDate(Util.timeToZonedDateTime(session.getFromTimeMillis(), getConference().getConferenceZoneId()));
-            session.setEndDate(Util.timeToZonedDateTime(session.getToTimeMillis(), getConference().getConferenceZoneId()));
+            session.setStartDate(timeToZonedDateTime(session.getFromTimeMillis(), getConference().getConferenceZoneId()));
+            session.setEndDate(timeToZonedDateTime(session.getToTimeMillis(), getConference().getConferenceZoneId()));
         }
 
         sessions.setAll(newSessions);
@@ -422,7 +504,7 @@ public class DevoxxService implements Service {
      * If it can find that file, it will retrieve and parse its content. Once this is 
      * done, the <code>sessions</code> field is filled with the parsed content.
      * <br/>
-     * When the retrieving from the local file is completed (with state failed or succeeeded)),
+     * When the retrieving from the local file is completed (with state failed or succeeded)),
      * it will call retrieveSessionsInternalCfp() to always reload data from the CFP backend.
      */
     private void retrieveSessionsInternal() {
@@ -934,12 +1016,15 @@ public class DevoxxService implements Service {
         }
 
         if (scheduledSessions == null) {
-            DevoxxNotifications notifications = Injector.instantiateModelOrService(DevoxxNotifications.class);
-            // stop recreating notifications, after the list of scheduled sessions is fully retrieved
-            scheduledSessions = internalRetrieveScheduledSessions(notifications::preloadingScheduledSessionsDone);
-            // start recreating notifications as soon as the scheduled sessions are being retrieved
-            notifications.preloadScheduledSessions();
-
+            try {
+                DevoxxNotifications notifications = Injector.instantiateModelOrService(DevoxxNotifications.class);
+                // stop recreating notifications, after the list of scheduled sessions is fully retrieved
+                scheduledSessions = internalRetrieveScheduledSessions(notifications::preloadingScheduledSessionsDone);
+                // start recreating notifications as soon as the scheduled sessions are being retrieved
+                notifications.preloadScheduledSessions();
+                } catch (IllegalStateException ise) {
+                    LOG.log(Level.WARNING, "Can't instantiate Notifications when running a background service");
+            }
         }
 
         return scheduledSessions;
@@ -950,7 +1035,12 @@ public class DevoxxService implements Service {
             throw new IllegalStateException("An authenticated user that was verified at Devoxx CFP must be available when calling this method.");
         }
 
-        GluonObservableObject<Favored> functionSessions = DataProvider.retrieveObject(cloudDataClient.createFunctionObjectDataReader("favored", Favored.class, getConference().getCfpEndpoint(), cfpUserUuid.get()));
+        RemoteFunction fnFavored = RemoteFunctionBuilder.create("favored")
+                .param("0", getConference().getCfpEndpoint())
+                .param("1", cfpUserUuid.get())
+                .build();
+
+        GluonObservableObject<Favored> functionSessions = DataProvider.retrieveObject(cloudDataClient.createObjectDataReader(fnFavored, Favored.class));
         functionSessions.initializedProperty().addListener((obs, ov, nv) -> {
             if (nv) {
                 for (SessionId sessionId : functionSessions.get().getFavored()) {
@@ -958,6 +1048,7 @@ public class DevoxxService implements Service {
                 }
 
                 internalFavoredSessionsListener = initializeSessionsListener(internalFavoredSessions, "favored");
+                ready.set(true);
             }
         });
         functionSessions.stateProperty().addListener((obs, ov, nv) -> {
@@ -974,7 +1065,12 @@ public class DevoxxService implements Service {
             throw new IllegalStateException("An authenticated user that was verified at Devoxx CFP must be available when calling this method.");
         }
 
-        GluonObservableObject<Scheduled> functionSessions = DataProvider.retrieveObject(cloudDataClient.createFunctionObjectDataReader("scheduled", Scheduled.class, getConference().getCfpEndpoint(), cfpUserUuid.get()));
+        RemoteFunction fnScheduled = RemoteFunctionBuilder.create("scheduled")
+                .param("0", getConference().getCfpEndpoint())
+                .param("1", cfpUserUuid.get())
+                .build();
+
+        GluonObservableObject<Scheduled> functionSessions = DataProvider.retrieveObject(cloudDataClient.createObjectDataReader(fnScheduled, Scheduled.class));
         functionSessions.initializedProperty().addListener((obs, ov, nv) -> {
             if (nv) {
                 for (SessionId sessionId : functionSessions.get().getScheduled()) {
@@ -1011,7 +1107,12 @@ public class DevoxxService implements Service {
                 if (c.wasRemoved()) {
                     for (Session session : c.getRemoved()) {
                         LOG.log(Level.INFO, "Removing Session: " + session.getTalk().getId() + " / " + session.getTitle());
-                        GluonObservableObject<String> response = DataProvider.retrieveObject(cloudDataClient.createFunctionObjectDataReader(functionPrefix + "Remove", String.class, getConference().getCfpEndpoint(), cfpUserUuid.get(), session.getTalk().getId()));
+                        RemoteFunction fnRemove = RemoteFunctionBuilder.create(functionPrefix + "Remove")
+                                .param("0", getConference().getCfpEndpoint())
+                                .param("1", cfpUserUuid.get())
+                                .param("2", session.getTalk().getId())
+                                .build();
+                        GluonObservableObject<String> response = DataProvider.retrieveObject(cloudDataClient.createObjectDataReader(fnRemove, String.class));
                         response.stateProperty().addListener((obs, ov, nv) -> {
                             if (nv == ConnectState.FAILED) {
                                 LOG.log(Level.WARNING, "Failed to remove session " + session.getTalk().getId() + " from " + functionPrefix + ": " + response.getException().getMessage());
@@ -1022,7 +1123,12 @@ public class DevoxxService implements Service {
                 if (c.wasAdded()) {
                     for (Session session : c.getAddedSubList()) {
                         LOG.log(Level.INFO, "Adding Session: " + session.getTalk().getId() + " / " + session.getTitle());
-                        GluonObservableObject<String> response = DataProvider.retrieveObject(cloudDataClient.createFunctionObjectDataReader(functionPrefix + "Add", String.class, getConference().getCfpEndpoint(), cfpUserUuid.get(), session.getTalk().getId()));
+                        RemoteFunction fnAdd = RemoteFunctionBuilder.create(functionPrefix + "Add")
+                                .param("0", getConference().getCfpEndpoint())
+                                .param("1", cfpUserUuid.get())
+                                .param("2", session.getTalk().getId())
+                                .build();
+                        GluonObservableObject<String> response = DataProvider.retrieveObject(cloudDataClient.createObjectDataReader(fnAdd, String.class));
                         response.stateProperty().addListener((obs, ov, nv) -> {
                             if (nv == ConnectState.FAILED) {
                                 LOG.log(Level.WARNING, "Failed to add session " + session.getTalk().getId() + " to " + functionPrefix + ": " + response.getException().getMessage());
@@ -1048,18 +1154,18 @@ public class DevoxxService implements Service {
 
         return notes;
     }
-
+    
     @Override
-    public ObservableList<Vote> retrieveVotes() {
-        if (!isAuthenticated()) {
+    public ObservableList<Badge> retrieveBadges() {
+        if (!isAuthenticated() && DevoxxSettings.USE_REMOTE_NOTES) {
             throw new IllegalStateException("An authenticated user must be available when calling this method.");
         }
 
-        if (votes == null) {
-            votes = internalRetrieveVotes();
+        if (badges == null) {
+            badges = internalRetrieveBadges();
         }
 
-        return votes;
+        return badges;
     }
 
     @Override
@@ -1072,8 +1178,16 @@ public class DevoxxService implements Service {
         if (authenticatedUser.getEmail() == null || authenticatedUser.getEmail().isEmpty()) {
             LOG.log(Level.WARNING, "Can not send vote, authenticated user doesn't have an email address.");
         } else {
-            GluonObservableObject<String> voteResult = DataProvider.retrieveObject(cloudDataClient.createFunctionObjectDataReader("voteTalk", String.class,
-                    getConference().getCfpEndpoint(), String.valueOf(vote.getValue()), authenticatedUser.getEmail(), vote.getTalkId(), vote.getDelivery(), vote.getContent(), vote.getOther()));
+            RemoteFunction fnVoteTalk = RemoteFunctionBuilder.create("voteTalk")
+                    .param("0", getConference().getCfpEndpoint())
+                    .param("1", String.valueOf(vote.getValue()))
+                    .param("2", authenticatedUser.getEmail())
+                    .param("3", vote.getTalkId())
+                    .param("4", vote.getDelivery())
+                    .param("5", vote.getContent())
+                    .param("6", vote.getOther())
+                    .build();
+            GluonObservableObject<String> voteResult = DataProvider.retrieveObject(cloudDataClient.createObjectDataReader(fnVoteTalk, String.class));
             voteResult.initializedProperty().addListener((obs, ov, nv) -> {
                 if (nv) {
                     LOG.log(Level.INFO, "Response from vote: " + voteResult.get());
@@ -1087,27 +1201,57 @@ public class DevoxxService implements Service {
         }
     }
 
-    public ObservableList<Note> internalRetrieveNotes() {
-        return internalRetrieveData("notes", Note.class);
+    @Override
+    public ObservableList<Favorite> retrieveFavorites() {
+        return favorites;
     }
 
-    public ObservableList<Vote> internalRetrieveVotes() {
-        return internalRetrieveData("votes", Vote.class);
+    @Override
+    public void refreshFavorites() {
+        if (getConference() != null &&
+                (allFavorites.getState() == ConnectState.SUCCEEDED || allFavorites.getState() == ConnectState.FAILED)) {
+            RemoteFunction fnAllFavorites = RemoteFunctionBuilder.create("allFavorites")
+                    .param("0", getConference().getCfpEndpoint())
+                    .build();
+            allFavorites = DataProvider.retrieveObject(unauthorizedCloudDataClient.createObjectDataReader(fnAllFavorites, new JsonInputConverter<>(Favorites.class)));
+            allFavorites.stateProperty().addListener(new ChangeListener<ConnectState>() {
+                @Override
+                public void changed(ObservableValue<? extends ConnectState> observable, ConnectState oldValue, ConnectState newValue) {
+                    if (newValue == ConnectState.SUCCEEDED) {
+                        for (Favorite favorite : allFavorites.get().getFavorites()) {
+                            int index = 0;
+                            for (; index < favorites.size(); index++) {
+                                if (favorites.get(index).getId().equals(favorite.getId())) {
+                                    favorites.get(index).setFavs(favorite.getFavs());
+                                    break;
+                                }
+                            }
+                            if (index == favorites.size()) {
+                                favorites.add(favorite);
+                            }
+                        }
+                        allFavorites.stateProperty().removeListener(this);
+                    } else if (newValue == ConnectState.FAILED) {
+                        allFavorites.stateProperty().removeListener(this);
+                    }
+                }
+            });
+        }
     }
 
-    private <E extends Identifiable> ObservableList<E> internalRetrieveData(String listIdentifier, Class<E> targetClass) {
-        GluonObservableList<E> internalDataLocal = DataProvider.retrieveList(localDataClient.createListDataReader(authenticationClient.getAuthenticatedUser().getKey() + "_" + listIdentifier, targetClass,
+    private ObservableList<Note> internalRetrieveNotes() {
+        GluonObservableList<Note> internalDataLocal = DataProvider.retrieveList(localDataClient.createListDataReader(authenticationClient.getAuthenticatedUser().getKey() + "_notes", Note.class,
                 SyncFlag.LIST_WRITE_THROUGH, SyncFlag.OBJECT_WRITE_THROUGH));
-        internalDataLocal.initializedProperty().addListener((obsLocal, ovLocal, nvLocal) -> {
-            if (nvLocal) {
-                if (!listIdentifier.equals("notes") || DevoxxSettings.USE_REMOTE_NOTES) {
-                    GluonObservableList<E> internalDataCloud = DataProvider.retrieveList(cloudDataClient.createListDataReader(authenticationClient.getAuthenticatedUser().getKey() + "_" + listIdentifier, targetClass,
+        if (DevoxxSettings.USE_REMOTE_NOTES) {
+            internalDataLocal.initializedProperty().addListener((obsLocal, ovLocal, nvLocal) -> {
+                if (nvLocal) {
+                    GluonObservableList<Note> internalDataCloud = DataProvider.retrieveList(cloudDataClient.createListDataReader(authenticationClient.getAuthenticatedUser().getKey() + "_notes", Note.class,
                             SyncFlag.LIST_WRITE_THROUGH, SyncFlag.OBJECT_WRITE_THROUGH));
                     internalDataCloud.initializedProperty().addListener((obsCloud, ovCloud, nvCloud) -> {
                         if (nvCloud) {
-                            for (E dataCloud : internalDataCloud) {
+                            for (Note dataCloud : internalDataCloud) {
                                 boolean existsLocally = false;
-                                for (E dataLocal : internalDataLocal) {
+                                for (Note dataLocal : internalDataLocal) {
                                     if (dataLocal.getUuid().equals(dataCloud.getUuid())) {
                                         existsLocally = true;
                                         break;
@@ -1118,10 +1262,10 @@ public class DevoxxService implements Service {
                                 }
                             }
 
-                            for (Iterator<E> dataLocalIter = internalDataLocal.iterator(); dataLocalIter.hasNext();) {
+                            for (Iterator<Note> dataLocalIter = internalDataLocal.iterator(); dataLocalIter.hasNext();) {
                                 boolean existsCloud = false;
-                                E dataLocal = dataLocalIter.next();
-                                for (E dataCloud : internalDataCloud) {
+                                Note dataLocal = dataLocalIter.next();
+                                for (Note dataCloud : internalDataCloud) {
                                     if (dataCloud.getUuid().equals(dataLocal.getUuid())) {
                                         existsCloud = true;
                                         break;
@@ -1136,8 +1280,54 @@ public class DevoxxService implements Service {
                         }
                     });
                 }
-            }
-        });
+            });
+        }
+        return internalDataLocal;
+    }
+
+    private ObservableList<Badge> internalRetrieveBadges() {
+        GluonObservableList<Badge> internalDataLocal = DataProvider.retrieveList(localDataClient.createListDataReader(authenticationClient.getAuthenticatedUser().getKey() + "_badges", Badge.class,
+                SyncFlag.LIST_WRITE_THROUGH, SyncFlag.OBJECT_WRITE_THROUGH));
+        if (DevoxxSettings.USE_REMOTE_NOTES) {
+            internalDataLocal.initializedProperty().addListener((obsLocal, ovLocal, nvLocal) -> {
+                if (nvLocal) {
+                    GluonObservableList<Badge> internalDataCloud = DataProvider.retrieveList(cloudDataClient.createListDataReader(authenticationClient.getAuthenticatedUser().getKey() + "_badges", Badge.class,
+                            SyncFlag.LIST_WRITE_THROUGH, SyncFlag.OBJECT_WRITE_THROUGH));
+                    internalDataCloud.initializedProperty().addListener((obsCloud, ovCloud, nvCloud) -> {
+                        if (nvCloud) {
+                            for (Badge dataCloud : internalDataCloud) {
+                                boolean existsLocally = false;
+                                for (Badge dataLocal : internalDataLocal) {
+                                    if (dataLocal.getBadgeId().equals(dataCloud.getBadgeId())) {
+                                        existsLocally = true;
+                                        break;
+                                    }
+                                }
+                                if (!existsLocally) {
+                                    internalDataLocal.add(dataCloud);
+                                }
+                            }
+
+                            for (Iterator<Badge> dataLocalIter = internalDataLocal.iterator(); dataLocalIter.hasNext();) {
+                                boolean existsCloud = false;
+                                Badge dataLocal = dataLocalIter.next();
+                                for (Badge dataCloud : internalDataCloud) {
+                                    if (dataCloud.getBadgeId().equals(dataLocal.getBadgeId())) {
+                                        existsCloud = true;
+                                        break;
+                                    }
+                                }
+                                if (!existsCloud) {
+                                    dataLocalIter.remove();
+                                }
+                            }
+
+                            Bindings.bindContent(internalDataCloud, internalDataLocal);
+                        }
+                    });
+                }
+            });
+        }
         return internalDataLocal;
     }
 
@@ -1146,8 +1336,13 @@ public class DevoxxService implements Service {
             Services.get(SettingsService.class).ifPresent(settingsService -> {
                 String devoxxCfpAccountUuid = settingsService.retrieve(DevoxxSettings.SAVED_ACCOUNT_ID);
                 if (devoxxCfpAccountUuid == null) {
-                    GluonObservableObject<String> accountUuid = DataProvider.retrieveObject(cloudDataClient.createFunctionObjectDataReader("verifyAccount", String.class,
-                            getConference().getCfpEndpoint(), user.getNetworkId(), user.getLoginMethod().name(), user.getEmail()));
+                    RemoteFunction fnVerifyAccount = RemoteFunctionBuilder.create("verifyAccount")
+                            .param("0", getConference().getCfpEndpoint())
+                            .param("1", user.getNetworkId())
+                            .param("2", user.getLoginMethod().name())
+                            .param("3", user.getEmail())
+                            .build();
+                    GluonObservableObject<String> accountUuid = DataProvider.retrieveObject(cloudDataClient.createObjectDataReader(fnVerifyAccount, String.class));
                     accountUuid.initializedProperty().addListener((obs, ov, nv) -> {
                         LOG.log(Level.INFO, "Verified user " + user + " as account with uuid " + accountUuid);
                         cfpUserUuid.set(accountUuid.get());
@@ -1168,30 +1363,26 @@ public class DevoxxService implements Service {
     private void retrieveAuthenticatedUserSessionInformation() {
         if (isAuthenticated()) {
             retrieveNotes();
-            retrieveVotes();
 
             retrieveFavoredSessions();
             retrieveScheduledSessions();
+        } else {
+            ready.set(true);
         }
     }
 
     private void clearCfpAccount() {
         cfpUserUuid.set("");
         notes = null;
-        votes = null;
         favoredSessions = null;
         scheduledSessions = null;
         internalFavoredSessions.clear();
         internalScheduledSessions.clear();
+        ready.set(false);
 
         Services.get(SettingsService.class).ifPresent(settingsService -> {
             settingsService.remove(DevoxxSettings.SAVED_ACCOUNT_ID);
         });
-    }
-
-    @Override
-    public PushNotification retrievePushNotification() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     private void checkFxThread() {
@@ -1267,5 +1458,9 @@ public class DevoxxService implements Service {
         if (authenticationClient.isAuthenticated()) {
             loadCfpAccount(authenticationClient.getAuthenticatedUser(), null);
         }
+    }
+    
+    private static ZonedDateTime timeToZonedDateTime(long time, ZoneId zoneId) {
+        return ZonedDateTime.ofInstant(Instant.ofEpochMilli(time), zoneId);
     }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2016, 2017, Gluon Software
  * All rights reserved.
  *
@@ -26,26 +26,28 @@
 package com.devoxx.views;
 
 import com.devoxx.DevoxxApplication;
-import com.devoxx.service.Service;
+import com.devoxx.DevoxxView;
 import com.devoxx.model.Session;
+import com.devoxx.service.Service;
+import com.devoxx.util.DevoxxBundle;
+import com.devoxx.util.DevoxxSettings;
 import com.devoxx.views.cell.ScheduleCell;
 import com.devoxx.views.cell.ScheduleHeaderCell;
 import com.devoxx.views.helper.FilterSessionsPresenter;
 import com.devoxx.views.helper.LoginPrompter;
-import com.devoxx.views.helper.SessionVisuals;
+import com.devoxx.views.helper.Placeholder;
+import com.devoxx.views.helper.SessionVisuals.SessionListType;
 import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
 import com.gluonhq.charm.glisten.afterburner.GluonView;
 import com.gluonhq.charm.glisten.application.MobileApplication;
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.control.BottomNavigation;
 import com.gluonhq.charm.glisten.control.CharmListView;
+import com.gluonhq.charm.glisten.control.Toast;
 import com.gluonhq.charm.glisten.layout.layer.SidePopupView;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
-import com.devoxx.DevoxxView;
-import com.devoxx.util.DevoxxBundle;
-import com.devoxx.util.DevoxxSettings;
-import com.devoxx.views.helper.Placeholder;
+import javafx.beans.InvalidationListener;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.transformation.FilteredList;
@@ -61,6 +63,12 @@ import javafx.scene.control.ToggleButton;
 
 import javax.inject.Inject;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.function.Predicate;
 
 public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
@@ -74,7 +82,7 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
 
     private static final MaterialDesignIcon SESSIONS_ICON = MaterialDesignIcon.DASHBOARD;
     private static final MaterialDesignIcon SCHEDULER_ICON = MaterialDesignIcon.STAR;
-    private static final MaterialDesignIcon FAVORITE_ICON = SessionVisuals.SessionListType.FAVORITES.getOnIcon();
+    private static final MaterialDesignIcon FAVORITE_ICON = SessionListType.FAVORITES.getOnIcon();
 
     private static final PseudoClass PSEUDO_FILTER_ENABLED = PseudoClass.getPseudoClass("filter-enabled");
 
@@ -90,6 +98,8 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
     @Inject
     private Service service;
 
+    private final Button refreshButton = MaterialDesignIcon.REFRESH.button();
+
     private final ObjectProperty<Predicate<Session>> filterPredicateProperty = new SimpleObjectProperty<>();
     private SidePopupView filterPopup;
     private FilteredList<Session> filteredSessions;
@@ -99,6 +109,8 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
 
     private GluonView filterSessionsView;
     private FilterSessionsPresenter filterPresenter;
+    
+    private ToggleButton favoriteButton;
 
     public void initialize() {
         // navigation between all sessions and the users scheduled sesssions
@@ -131,6 +143,7 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
 
             // check if a reload was requested, each time the sessions view is opened
             service.checkIfReloadRequested();
+            service.refreshFavorites();
         });
 
         // Filter
@@ -154,8 +167,10 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
         BottomNavigation bottomNavigation = new BottomNavigation();
 
         // Show all sessions
+        AppBar appBar = getApp().getAppBar();
         EventHandler<ActionEvent> allHandler = e -> {
             sessions.setCenter(createSessionsList(ContentDisplayMode.ALL));
+            appBar.getActionItems().remove(refreshButton);
         };
         ToggleButton sessionsButton = bottomNavigation.createButton(DevoxxBundle.getString("OTN.BUTTON.SESSIONS"), SESSIONS_ICON.graphic(), allHandler);
 
@@ -165,6 +180,9 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
                 sessions.setCenter(new LoginPrompter(service, SCHEDULE_LOGIN_PROMPT_MESSAGE, SCHEDULER_ICON, () -> sessions.setCenter(createSessionsList(ContentDisplayMode.SCHEDULED))));
             } else {
                 sessions.setCenter(createSessionsList(ContentDisplayMode.SCHEDULED));
+                if (!appBar.getActionItems().contains(refreshButton)) {
+                    appBar.getActionItems().add(0, refreshButton);
+                }
             }
         };
         ToggleButton scheduleButton = bottomNavigation.createButton(DevoxxBundle.getString("OTN.BUTTON.MY_SCHEDULE"), SCHEDULER_ICON.graphic(), scheduleHandler);
@@ -175,9 +193,12 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
                 sessions.setCenter(new LoginPrompter(service, FAVORITE_LOGIN_PROMPT_MESSAGE, FAVORITE_ICON, () -> sessions.setCenter(createSessionsList(ContentDisplayMode.FAVORITE))));
             } else {
                 sessions.setCenter(createSessionsList(ContentDisplayMode.FAVORITE));
+                if (!appBar.getActionItems().contains(refreshButton)) {
+                    appBar.getActionItems().add(0, refreshButton);
+                }
             }
         };
-        ToggleButton favoriteButton = bottomNavigation.createButton(DevoxxBundle.getString("OTN.BUTTON.MY_FAVORITES"), FAVORITE_ICON.graphic(), favoriteHandler);
+        favoriteButton = bottomNavigation.createButton(DevoxxBundle.getString("OTN.BUTTON.MY_FAVORITES"), FAVORITE_ICON.graphic(), favoriteHandler);
 
         bottomNavigation.getActionItems().addAll(sessionsButton, scheduleButton, favoriteButton);
 
@@ -210,8 +231,20 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
             scheduleListView.getStyleClass().add("schedule-view");
             scheduleListView.setHeadersFunction(s -> s.getStartDate().toLocalDate());
             scheduleListView.setHeaderCellFactory(c -> new ScheduleHeaderCell());
-            scheduleListView.setComparator((s1, s2) -> s1.getStartDate().compareTo(s2.getStartDate()));
             scheduleListView.setCellFactory(p -> new ScheduleCell(service));
+            Comparator<Session> sessionComparator = (s1, s2) -> {
+                int compareStartDate = s1.getStartDate().compareTo(s2.getStartDate());
+                if (compareStartDate == 0) {
+                    return s1.getEndDate().compareTo(s2.getEndDate());
+                }
+                return compareStartDate;
+            };
+            scheduleListView.setComparator(sessionComparator);
+            scheduleListView.itemsProperty().addListener((InvalidationListener) c -> {
+                List<Session> copyOfSessions = new ArrayList<>(filteredSessions);
+                Collections.sort(copyOfSessions, sessionComparator);
+                updateSessionsDecoration(copyOfSessions);
+            });
 //            scheduleListView.selectedItemProperty().addListener((observable, oldValue, newValue) -> {
 //                if (newValue != null) {
 //                    DevoxxView.SESSION.switchView().ifPresent(presenter ->
@@ -233,11 +266,23 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
             case SCHEDULED: {
                 scheduleListView.setPlaceholder(new Placeholder(SCHEDULE_EMPTY_LIST_MESSAGE, SCHEDULER_ICON));
                 filteredSessions = new FilteredList<>(service.retrieveScheduledSessions());
+                refreshButton.setOnAction(e -> {
+                    new Toast(DevoxxBundle.getString("OTN.CONTENT_CATALOG.SCHEDULED_SESSIONS.REFRESH")).show();
+                    filteredSessions = new FilteredList<>(service.reloadSessionsFromCFP(SessionListType.SCHEDULED));
+                    filteredSessions.predicateProperty().bind(filterPredicateProperty);
+                    scheduleListView.setItems(filteredSessions);
+                });
                 break;
             }
             case FAVORITE: {
                 scheduleListView.setPlaceholder(new Placeholder(FAVORITE_EMPTY_LIST_MESSAGE, FAVORITE_ICON));
                 filteredSessions = new FilteredList<>(service.retrieveFavoredSessions());
+                refreshButton.setOnAction(e -> {
+                    new Toast(DevoxxBundle.getString("OTN.CONTENT_CATALOG.FAVORITE_SESSIONS.REFRESH")).show();
+                    filteredSessions = new FilteredList<>(service.reloadSessionsFromCFP(SessionListType.FAVORITES));
+                    filteredSessions.predicateProperty().bind(filterPredicateProperty);
+                    scheduleListView.setItems(filteredSessions);
+                });
                 break;
             }
         }
@@ -245,5 +290,55 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
         scheduleListView.setItems(filteredSessions);
 
         return scheduleListView;
+    }
+    
+    public void selectFavorite() {
+        favoriteButton.fire();
+    }
+
+    private void updateSessionsDecoration(List<Session> sessions) {
+        TimeSlot previousTimeSlot = null;
+        boolean colorFlag = true;
+        for (Session session : sessions) {
+            ZonedDateTime sessionStartDateTime = session.getStartDate();
+            ZonedDateTime sessionEndDateTime = session.getEndDate();
+            TimeSlot timeSlot = new TimeSlot(sessionStartDateTime, sessionEndDateTime);
+            if (!timeSlot.equals(previousTimeSlot)) {
+                previousTimeSlot = timeSlot;
+                colorFlag = !colorFlag;
+            }
+            session.setDecorated(colorFlag);
+        }
+    }
+
+    /**
+     * Time-slot of a session based on it's start and end date-time.
+     */
+    private class TimeSlot {
+
+        private final ZonedDateTime startDateTime;
+        private final ZonedDateTime endDateTime;
+
+        TimeSlot(ZonedDateTime startDateTime, ZonedDateTime endDateTime) {
+            this.startDateTime = startDateTime;
+            this.endDateTime = endDateTime;
+        }
+
+        @Override
+        public boolean equals(Object object) {
+            if (this == object) {
+                return true;
+            }
+            if(object instanceof TimeSlot) {
+                TimeSlot obj = (TimeSlot) object;
+                return startDateTime.equals(obj.startDateTime) && endDateTime.equals(obj.endDateTime);
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return (startDateTime.hashCode() ^ endDateTime.hashCode()) + (int) ChronoUnit.MILLIS.between(startDateTime, endDateTime);
+        }
     }
 }

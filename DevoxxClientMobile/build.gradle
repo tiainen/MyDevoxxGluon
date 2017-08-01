@@ -3,7 +3,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'org.javafxports:jfxmobile-plugin:1.3.4'
+        classpath 'org.javafxports:jfxmobile-plugin:1.3.7'
     }
 }
 
@@ -28,12 +28,13 @@ applicationDefaultJvmArgs = [
 
 dependencies {
     compile project(':DevoxxClientCommon')
-    compile 'com.gluonhq:glisten-afterburner:1.1.0'
+    compile 'com.gluonhq:glisten-afterburner:1.2.0'
 
-    compile 'com.gluonhq:charm-cloudlink-client:4.3.1'
-    compile 'com.gluonhq:charm-glisten-connect-view:4.3.1'
-    compile 'com.gluonhq:connect:1.4.0'
+    compile 'com.gluonhq:charm-cloudlink-client:4.3.5'
+    compile 'com.gluonhq:charm-glisten-connect-view:4.3.5'
     compile 'com.gluonhq:maps:1.0.1'
+
+    androidCompile 'com.google.android.gms:play-services-wearable:9.4.0'
 }
 
 configurations.all {
@@ -43,10 +44,10 @@ configurations.all {
 }
 
 jfxmobile {
-    javafxportsVersion = '8.60.8'
     downConfig {
         version charm_down_version
-        plugins 'browser', 'cache', 'connectivity', 'device', 'display', 'lifecycle', 'local-notifications', 'push-notifications', 'runtime-args', 'settings', 'statusbar', 'storage'
+        plugins 'barcode-scan', 'browser', 'cache', 'connectivity', 'device', 'display', 'lifecycle',
+                'local-notifications', 'push-notifications', 'runtime-args', 'settings', 'share', 'statusbar', 'storage', 'video'
     }
     android {
         manifest = 'src/android/AndroidManifest.xml'
@@ -58,6 +59,7 @@ jfxmobile {
         }
     }
     ios {
+        arch = 'arm64'
         infoPList = file('src/ios/Default-Info.plist')
         forceLinkClasses = [
                 'com.devoxx.**.*',
@@ -71,3 +73,29 @@ jfxmobile {
         ]
     }
 }
+
+task printf() << {
+    configurations.runtime.each {
+        println it
+        (it.name.endsWith('jar') ? zipTree(it) : fileTree(it)).each {
+            println "\t$it"
+        }
+    }
+}
+
+project.afterEvaluate {
+    explodeAarDependencies(project.configurations.androidCompile)
+    androidRelease.dependsOn copyWearableAPK
+}
+
+task copyWearableAPK(type: Copy) {
+    description = 'Copying wearable apk into res/raw'
+    from project(':DevoxxClientWearable').file('build/javafxports/android/')
+    into project(':DevoxxClient').file('src/android/res/raw')
+    include 'DevoxxClientWearable.apk'
+    rename ('DevoxxClientWearable.apk', 'devoxx_client_wearable.apk')
+}
+
+// Note: Run androidRelease task for the client project only, and then install on mobile
+tasks.copyWearableAPK.dependsOn ':DevoxxClientWearable:androidRelease'
+

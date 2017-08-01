@@ -52,7 +52,6 @@ public class Exhibitor implements Searchable, Mergeable<Exhibitor> {
         this.booth = booth;
     }
 
-    @Override
     public String getUuid() {
         return uuid;
     }

@@ -53,7 +53,6 @@ public class Sponsor implements Searchable, Mergeable<Sponsor> {
         this.banner = banner;
     }
 
-    @Override
     public String getUuid() {
         return uuid;
     }

@@ -45,9 +45,11 @@ public class DevoxxSettings {
     public final static boolean AUTO_AUTHENTICATION = false;
 
     /**
-     * boolean option to switch on/off the remote notes
-     * - true: notes require authentication and are persisted locally and on the cloud
-     * - false: notes don't require authentication and are persisted only locally
+     * boolean option to switch on/off the remote notes and badges
+     * - true: notes and badges require authentication and are persisted locally 
+     * and on the cloud
+     * - false: notes and badges don't require authentication and are persisted 
+     * only locally
      * Default: true
      */
     public final static boolean USE_REMOTE_NOTES = true;
@@ -65,7 +67,17 @@ public class DevoxxSettings {
     public final static boolean NOTIFICATION_TESTS = false;
 
     /**
-     * Offset in seconds. For tests only
+     * Offset in seconds:
+     *  12 days from Tue 6th Sep to 18th
+     * 
+     * A session scheduled for Sun 18th, 11:45 AM - 12:30PM will be notified:
+     * - US (Florida) +3h: Tue 6th, at 2:30 PM (start) and 3.28 PM (vote)
+     * - Portugal +8h: Tue 6th, at 7:30 PM (start) and 8.28 PM (vote)
+     * - Belgium, Spain +9h: Tue 6th, at 8:30 PM (start) and 9.28 PM (vote)
+     * - India +12 hours 30 minutes: Wed 7th, at 00:00 AM (start) and 00.58 AM (vote)
+     * - New Zealand +19h: Wed 7th, at 6:30 AM (start) and 7.28 AM (vote)
+     * 
+     * Window for testing: between Tuesday 6th and Saturday 10th
      */
     public final static long NOTIFICATION_OFFSET = 12 * 24 * 60 * 60;
 
@@ -77,15 +89,22 @@ public class DevoxxSettings {
 
     public final static Locale LOCALE = Locale.getDefault();
     public static final boolean FAV_AND_SCHEDULE_ENABLED = true;
+    public static final String SKIP_VIDEO = "SKIP_VIDEO";
+    public static final String SKIP_SCH_FAV_DIALOG = "SKIP_SCH_FAV_DIALOG";
+    public static final String SIGN_UP = "sign_up";
     public static final String SAVED_CONFERENCE_ID = "devoxx_cfp_id";
     public static final String SAVED_ACCOUNT_ID = "devoxx_cfp_account";
 
+    private static final String WEARABLE_DAY_PATTERN  = "MMMM dd, uuuu";
     private static final String TIME_PATTERN = "h:mma";
     private static final String NEWS_PATTERN  = "EEEE, h:mma";
 
     public static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL);
+    public static final DateTimeFormatter WEARABLE_DATE_FORMATTER = DateTimeFormatter.ofPattern(WEARABLE_DAY_PATTERN, LOCALE);
     public static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern(TIME_PATTERN, LOCALE);
     public static final DateTimeFormatter NEWS_FORMATTER = DateTimeFormatter.ofPattern(NEWS_PATTERN, LOCALE);
+
+    public static final String TWITTER_URL = "https://www.twitter.com/";
 
     private static String uuid;
     public static String getUserUUID() {

@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016, Gluon Software
+/*
+ * Copyright (c) 2016, 2017, Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -28,14 +28,13 @@ package com.devoxx.views;
 import com.devoxx.DevoxxApplication;
 import com.devoxx.DevoxxView;
 import com.devoxx.model.Link;
-import com.devoxx.service.Service;
 import com.devoxx.model.Session;
 import com.devoxx.model.Speaker;
 import com.devoxx.model.TalkSpeaker;
-import com.devoxx.model.Vote;
+import com.devoxx.service.Service;
 import com.devoxx.util.DevoxxBundle;
 import com.devoxx.util.DevoxxSettings;
-import com.devoxx.views.dialog.VoteDialog;
+import com.devoxx.views.dialog.VotePane;
 import com.devoxx.views.helper.LoginPrompter;
 import com.devoxx.views.helper.Placeholder;
 import com.devoxx.views.helper.SessionNotesEditor;
@@ -46,7 +45,6 @@ import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.control.AvatarPane;
 import com.gluonhq.charm.glisten.control.BottomNavigation;
 import com.gluonhq.charm.glisten.mvc.View;
-import com.gluonhq.charm.glisten.visual.GlistenStyleClasses;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.collections.FXCollections;
@@ -137,38 +135,6 @@ public class SessionPresenter extends GluonPresenter<DevoxxApplication> {
             appBar.getActionItems().removeAll(scheduleBtn, favoriteBtn);
             scheduleBtn = sessionVisuals.getSelectedButton(activeSession);
             favoriteBtn = sessionVisuals.getFavoriteButton(activeSession);
-        }
-
-        if (service.isAuthenticated() && (DevoxxSettings.VOTING_TESTS ||
-                activeSession.getEndDate().minusMinutes(10).isBefore(ZonedDateTime.now(service.getConference().getConferenceZoneId())) &&
-                activeSession.getEndDate().plusDays(1).isAfter(ZonedDateTime.now(service.getConference().getConferenceZoneId())))) {
-            ToggleButton voteButton = new ToggleButton("", MaterialDesignIcon.THUMBS_UP_DOWN.graphic());
-            voteButton.getStyleClass().addAll(GlistenStyleClasses.BUTTON_FLAT, GlistenStyleClasses.BUTTON_ROUND);
-            voteButton.setOnAction(event -> {
-                ObservableList<Vote> votes = service.retrieveVotes();
-                Vote retrievedVote = null;
-                for (Vote currentVote : votes) {
-                    if (currentVote.getTalkId().equals(activeSession.getTalk().getId())) {
-                        retrievedVote = currentVote;
-                        break;
-                    }
-                }
-                VoteDialog voteDialog = new VoteDialog(activeSession.getTitle());
-                if (retrievedVote != null) {
-                    voteDialog.setVote(retrievedVote);
-                } else {
-                    voteDialog.setVote(new Vote(activeSession.getTalk().getId()));
-                }
-                voteDialog.showAndWait().ifPresent(usersVote -> {
-                    service.voteTalk(usersVote);
-                });
-            });
-            if (DevoxxSettings.FAV_AND_SCHEDULE_ENABLED) {
-                appBar.getActionItems().addAll(scheduleBtn, favoriteBtn, voteButton);
-            } else {
-                appBar.getActionItems().add(voteButton);
-            }
-        } else if (DevoxxSettings.FAV_AND_SCHEDULE_ENABLED){
             appBar.getActionItems().addAll(scheduleBtn, favoriteBtn);
         }
     }
@@ -208,16 +174,34 @@ public class SessionPresenter extends GluonPresenter<DevoxxApplication> {
                         service,
                         DevoxxBundle.getString("OTN.SESSION.LOGIN_TO_RECORD_NOTES"),
                         MaterialDesignIcon.MESSAGE,
-                        () -> loadAuthenticatedNotesView(session));
+                        () -> loadView(session, Pane.NOTE));
                 sessionView.setCenter(loginPromptView);
             }
         });
         noteButton.setUserData(Pane.NOTE);
 
+        final ToggleButton voteButton = bottomNavigation.createButton(DevoxxBundle.getString("OTN.BUTTON.VOTE"), MaterialDesignIcon.THUMBS_UP_DOWN.graphic(), e -> {
+            if (service.isAuthenticated()) {
+                if (isVotingPossible(session)) {
+                    sessionView.setCenter(createVotePane(session));
+                } else {
+                    sessionView.setCenter(new Placeholder(DevoxxBundle.getString("OTN.SESSION.VOTE_TIMING"), MaterialDesignIcon.WARNING));
+                }
+            } else {
+                LoginPrompter loginPromptView = new LoginPrompter(
+                        service,
+                        DevoxxBundle.getString("OTN.SESSION.LOGIN_TO_VOTE"),
+                        MaterialDesignIcon.THUMBS_UP_DOWN,
+                        () -> loadView(session, Pane.VOTE));
+                sessionView.setCenter(loginPromptView);
+            }
+        });
+        voteButton.setUserData(Pane.VOTE);
+
         if (session.getTalk() == null || session.getTalk().getSpeakers() == null) {
-            bottomNavigation.getActionItems().addAll(infoButton, noteButton);
+            bottomNavigation.getActionItems().addAll(infoButton, noteButton, voteButton);
         } else {
-            bottomNavigation.getActionItems().addAll(infoButton, speakerButton, noteButton);
+            bottomNavigation.getActionItems().addAll(infoButton, speakerButton, noteButton, voteButton);
         }
 
         infoButton.setSelected(true);
@@ -331,9 +315,33 @@ public class SessionPresenter extends GluonPresenter<DevoxxApplication> {
         return vbox;
     }
 
+    /**
+     * Voting is only enabled if:
+     * 1. VOTING_TESTS flag is set to "true"
+     * 2. The session has started and it has not passed 12 hours since the conference has ended.
+     */
+    private boolean isVotingPossible(Session session) {
+        ZonedDateTime now = ZonedDateTime.now(service.getConference().getConferenceZoneId());
+        return DevoxxSettings.VOTING_TESTS ||
+                now.isAfter(session.getStartDate()) &&
+                        now.isBefore(service.getConference().getEndDate().plusHours(12));
+    }
+
+    private VotePane createVotePane(Session activeSession) {
+        return new VotePane(service, activeSession);
+    }
+
+    private void loadView(Session session, Pane pane) {
+        DevoxxView.SESSION.switchView().ifPresent(presenter -> {
+            SessionPresenter sessionPresenter = (SessionPresenter) presenter;
+            sessionPresenter.showSession(session, pane);
+        });
+    }
+
     public enum Pane {
         INFO,
         SPEAKER,
-        NOTE
+        NOTE,
+        VOTE
     }
 }

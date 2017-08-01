@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016, Gluon Software
+ * Copyright (c) 2016, 2017 Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -26,13 +26,13 @@
 package com.devoxx;
 
 import com.airhacks.afterburner.injection.Injector;
-import com.devoxx.model.Conference;
 import com.devoxx.service.DevoxxService;
 import com.devoxx.service.Service;
 import com.devoxx.util.DevoxxLogging;
 import com.devoxx.util.DevoxxNotifications;
 import com.devoxx.util.DevoxxSearch;
 import com.devoxx.util.DevoxxSettings;
+import com.devoxx.views.DevoxxSplash;
 import com.devoxx.views.helper.ConnectivityUtils;
 import com.devoxx.views.helper.SessionVisuals;
 import com.gluonhq.charm.down.Platform;
@@ -48,19 +48,16 @@ import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import com.gluonhq.cloudlink.client.usage.UsageClient;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 
 import java.util.Locale;
 
 import static com.devoxx.DevoxxView.SEARCH;
+import com.devoxx.views.SessionsPresenter;
 
 public class DevoxxApplication extends MobileApplication {
     
@@ -84,6 +81,8 @@ public class DevoxxApplication extends MobileApplication {
     private Service service;
 
     private DevoxxDrawerPresenter drawerPresenter;
+    private boolean skipVideo = false;
+    private boolean signUp = false;
 
     @Override
     public void init() {
@@ -102,6 +101,21 @@ public class DevoxxApplication extends MobileApplication {
             view.registerView(this);
         }
 
+        Services.get(SettingsService.class).ifPresent(settings -> {
+            String skip = settings.retrieve(DevoxxSettings.SKIP_VIDEO);
+            if (skip != null && !skip.isEmpty()) {
+                skipVideo = Boolean.parseBoolean(skip);
+            }
+            String sign = settings.retrieve(DevoxxSettings.SIGN_UP);
+            if (sign != null && !sign.isEmpty()) {
+                signUp = Boolean.parseBoolean(sign);
+            }
+        });
+        if (!skipVideo) {
+            Services.get(SettingsService.class).ifPresent(settings -> settings.store(DevoxxSettings.SKIP_VIDEO, Boolean.TRUE.toString()));
+            addViewFactory(SPLASH_VIEW, () -> new DevoxxSplash());
+        }
+        
         addLayerFactory(MENU_LAYER, () -> {
             SidePopupView sidePopupView = new SidePopupView(drawerPresenter.getDrawer());
             drawerPresenter.setSidePopupView(sidePopupView);
@@ -154,6 +168,10 @@ public class DevoxxApplication extends MobileApplication {
             }
         });
         
+        if (signUp) {
+            Services.get(SettingsService.class).ifPresent(settings -> settings.remove(DevoxxSettings.SIGN_UP));
+            DevoxxView.SESSIONS.switchView().ifPresent(s -> ((SessionsPresenter) s).selectFavorite());
+        }
     }
 
     private void initConnectivityServices() {

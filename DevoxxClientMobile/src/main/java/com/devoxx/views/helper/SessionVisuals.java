@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016, Gluon Software
+/*
+ * Copyright (c) 2016, 2017, Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -25,20 +25,30 @@
  */
 package com.devoxx.views.helper;
 
-import com.gluonhq.charm.glisten.control.Toast;
-import com.gluonhq.charm.glisten.visual.GlistenStyleClasses;
-import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
-import com.devoxx.service.Service;
+import com.devoxx.model.Favorite;
 import com.devoxx.model.Session;
+import com.devoxx.service.Service;
 import com.devoxx.util.DevoxxBundle;
 import com.devoxx.util.DevoxxNotifications;
 import com.devoxx.util.DevoxxSettings;
 import com.devoxx.views.dialog.SessionConflictDialog;
+import com.gluonhq.charm.down.Services;
+import com.gluonhq.charm.down.plugins.SettingsService;
+import com.gluonhq.charm.glisten.control.Dialog;
+import com.gluonhq.charm.glisten.control.Toast;
+import com.gluonhq.charm.glisten.visual.GlistenStyleClasses;
+import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.Label;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -50,14 +60,17 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.gluonhq.charm.glisten.visual.MaterialDesignIcon.*;
 import static com.devoxx.util.DevoxxLogging.LOGGING_ENABLED;
+import static com.gluonhq.charm.glisten.visual.MaterialDesignIcon.*;
 
 @Singleton
 public class SessionVisuals {
 
     private static final Logger LOG = Logger.getLogger(SessionVisuals.class.getName());
-    
+    private static final String SCH_FAV_DIALOG_MSG_1 = "Add a session to your schedule with ";
+    private static final String SCH_FAV_DIALOG_MSG_2 = "Add a session to your favorites with ";
+    private static final String SCH_FAV_DIALOG_MSG_INTRO = "You can favorite multiple sessions but can only schedule one in the same time slot.";
+
     public enum SessionListType {
         FAVORITES("favorites",  "favorite",  FAVORITE_BORDER, FAVORITE),
         SCHEDULED("scheduled",  "scheduled", STAR_BORDER,     STAR);
@@ -141,8 +154,29 @@ public class SessionVisuals {
 
     }
 
-    public ToggleButton getFavoriteButton(Session session) {
-        return buildButton(SessionListType.FAVORITES, session);
+    public Node getFavoriteButton(Session session) {
+        ToggleButton favButton = buildButton(SessionListType.FAVORITES, session);
+        Label favCounter = new Label();
+        favCounter.getStyleClass().add("fav-counter");
+        Optional<Favorite> favorite = Optional.empty();
+        for (Favorite fav : service.retrieveFavorites()) {
+            if (fav.getId().equals(session.getTalk().getId())) {
+                favorite = Optional.of(fav);
+                break;
+            }
+        }
+        Favorite fav = favorite.orElseGet(() -> {
+            Favorite emptyFavorite = new Favorite();
+            emptyFavorite.setId(session.getTalk().getId());
+            service.retrieveFavorites().add(emptyFavorite);
+            return emptyFavorite;
+        });
+
+        favCounter.textProperty().bind(fav.favsProperty().asString());
+        favCounter.managedProperty().bind(fav.favsProperty().greaterThanOrEqualTo(10));
+        HBox favBox = new HBox(favButton, favCounter);
+        favBox.getStyleClass().add("fav-box");
+        return favBox;
     }
 
     public ToggleButton getSelectedButton(Session session) {
@@ -176,11 +210,8 @@ public class SessionVisuals {
                 handleAuthenticatedAction(listType, button, selected);
             }
         });
-
         updateButton(button, isSelected, session);
-
         return button;
-
     }
 
     private void handleAuthenticatedAction(SessionListType listType, ToggleButton button, boolean selected) {
@@ -209,8 +240,6 @@ public class SessionVisuals {
                     } else {
                         button.setSelected(false);
                     }
-
-
                 } else {
                     listAdd(actualSession, listType);
                 }
@@ -219,6 +248,9 @@ public class SessionVisuals {
             }
         } else {
             listRemove(actualSession, listType);
+        }
+        if (listType == SessionListType.FAVORITES) {
+            service.refreshFavorites();
         }
     }
 
@@ -259,8 +291,18 @@ public class SessionVisuals {
             retrieveLists();
 
             if (!listContains(session, listType)) {
-                if (listType == SessionListType.SCHEDULED) {
-                    devoxxNotifications.addScheduledSessionNotifications(session);
+                if (listType == SessionListType.FAVORITES || listType == SessionListType.SCHEDULED) {
+                    if (listType == SessionListType.SCHEDULED) {
+                        devoxxNotifications.addScheduledSessionNotifications(session);
+                    }
+                    Services.get(SettingsService.class).ifPresent(settings -> {
+                        String skip = settings.retrieve(DevoxxSettings.SKIP_SCH_FAV_DIALOG);
+                        if (skip == null || skip.isEmpty() || !Boolean.parseBoolean(skip)) {
+                            final Dialog<TextFlow> information = createSchFavDialog();
+                            information.showAndWait();
+                            settings.store(DevoxxSettings.SKIP_SCH_FAV_DIALOG, Boolean.TRUE.toString());
+                        }
+                    });
                 }
 
                 getList(listType).add(session);
@@ -328,7 +370,7 @@ public class SessionVisuals {
 
     private static boolean dateInRange( ZonedDateTime dateTime, ZonedDateTime rangeStart, ZonedDateTime rangeEnd ) {
         // DEVOXX-131: Allow overlapping if one session starts right at the same time the other one ends
-        return dateTime.compareTo(rangeStart) > 0 && dateTime.compareTo(rangeEnd) < 0;
+        return dateTime.compareTo(rangeStart) >= 0 && dateTime.compareTo(rangeEnd) < 0;
     }
 
     private void updateButton(ToggleButton button, boolean selected, Session session) {
@@ -360,5 +402,34 @@ public class SessionVisuals {
             }
         }
         toast.show();
+    }
+
+    private Dialog<TextFlow> createSchFavDialog() {
+        final Dialog<TextFlow> information = new Dialog<>();
+        final Node graphicSch = MaterialDesignIcon.STAR.graphic();
+        final Node graphicFav = MaterialDesignIcon.FAVORITE.graphic();
+        final Text schText = new Text(SCH_FAV_DIALOG_MSG_1);
+        final Text favText = new Text(SCH_FAV_DIALOG_MSG_2);
+        graphicSch.getStyleClass().add("sch-dialog-icon");
+        graphicFav.getStyleClass().add("fav-dialog-icon");
+        schText.getStyleClass().add("text");
+        favText.getStyleClass().add("text");
+
+        final TextFlow textFlowSch = new TextFlow(schText, graphicSch);
+        final TextFlow textFlowFav = new TextFlow(favText, graphicFav);
+        final Label schFavText = new Label(SCH_FAV_DIALOG_MSG_INTRO);
+        schFavText.setWrapText(true);
+
+        Button okButton = new Button("OK");
+        okButton.setOnAction(e -> {
+            information.hide();
+        });
+        information.getButtons().add(okButton);
+
+        final VBox content = new VBox(10, schFavText, textFlowSch, textFlowFav);
+        content.getStyleClass().add("sch-fav-dialog");
+        information.setContent(content);
+        information.setTitleText("Scheduling and Favorites");
+        return information;
     }
 }

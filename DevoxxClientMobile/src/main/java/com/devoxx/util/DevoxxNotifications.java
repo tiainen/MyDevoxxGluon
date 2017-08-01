@@ -25,37 +25,35 @@
  */
 package com.devoxx.util;
 
-import com.devoxx.service.Service;
+import com.devoxx.DevoxxView;
 import com.devoxx.model.Session;
-import com.devoxx.model.Vote;
+import com.devoxx.service.Service;
 import com.devoxx.views.SessionPresenter;
-import com.devoxx.views.dialog.VoteDialog;
 import com.gluonhq.charm.down.Services;
 import com.gluonhq.charm.down.plugins.LocalNotificationsService;
 import com.gluonhq.charm.down.plugins.Notification;
-import com.devoxx.DevoxxView;
-import com.gluonhq.cloudlink.client.push.PushClient;
-import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.devoxx.util.DevoxxLogging.LOGGING_ENABLED;
-import java.time.ZonedDateTime;
 import static java.time.temporal.ChronoUnit.SECONDS;
-import java.util.ArrayList;
-import java.util.List;
 
 @Singleton
 public class DevoxxNotifications {
     
     private static final Logger LOG = Logger.getLogger(DevoxxNotifications.class.getName());
+
+    public static final String GCM_SENDER_ID = "945674729015";
     
     private static final String ID_START = "START_";
     private static final String ID_VOTE = "VOTE_";
@@ -67,7 +65,7 @@ public class DevoxxNotifications {
     
     private final Map<String, Notification> scheduledSessionNotificationMap = new HashMap<>();
     private final Map<String, Notification> voteSessionNotificationMap = new HashMap<>();
-        
+
     private ListChangeListener<Session> scheduledSessionslistener;
     
     @Inject
@@ -77,9 +75,6 @@ public class DevoxxNotifications {
     
     public DevoxxNotifications() {
         notificationsService = Services.get(LocalNotificationsService.class);
-
-        PushClient pushClient = new PushClient();
-        pushClient.enable("945674729015");
     }
 
     /**
@@ -286,24 +281,7 @@ public class DevoxxNotifications {
                     // first go to the session
                     DevoxxView.SESSION.switchView().ifPresent(presenter -> {
                         SessionPresenter sessionPresenter = (SessionPresenter) presenter;
-                        sessionPresenter.showSession(session);
-                        
-                        new Thread(() -> {
-                            try {
-                                Thread.sleep(300);
-                            } catch (InterruptedException ex) {
-                                // do nothing
-                            } finally {
-                                Platform.runLater(() -> {
-                                    // then launch vote dialog
-                                    VoteDialog dialog = new VoteDialog(session.getTitle());
-                                    // New vote
-                                    dialog.setVote(new Vote(session.getTalk().getId()));
-                                    dialog.showAndWait()
-                                            .ifPresent(voteResult -> service.voteTalk(voteResult));
-                                });
-                            }
-                        }).start();
+                        sessionPresenter.showSession(session, SessionPresenter.Pane.VOTE);
                     });
                 });
     }

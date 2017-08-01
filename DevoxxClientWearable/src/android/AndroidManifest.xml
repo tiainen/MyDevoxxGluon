@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" 
+          package="com.devoxx" 
+          android:versionCode="1" 
+          android:versionName="1.0">
+        <uses-feature android:name="android.hardware.type.watch" />
+        <uses-permission android:name="android.permission.INTERNET"/>
+        <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+        <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+        <uses-permission android:name="android.permission.WAKE_LOCK" />
+        
+        <uses-sdk android:minSdkVersion="23" android:targetSdkVersion="24"/>
+        
+        <application android:label="My Devoxx" 
+                     android:name="android.support.multidex.MultiDexApplication" 
+                     android:allowBackup="true" 
+                     android:supportsRtl="true"
+                     android:icon="@mipmap/ic_launcher">
+            
+                <uses-library android:name="com.google.android.wearable" android:required="false" />
+                
+                <activity android:name="javafxports.android.FXWearableActivity" 
+                          android:label="My Devoxx">
+                        <meta-data android:name="main.class" android:value="com.devoxx.GluonWearable"/>
+                        <meta-data android:name="preloader.class" android:value="com.devoxx.DevoxxPreloader"/>
+                        <meta-data android:name="debug.port" android:value="0"/>
+                        <intent-filter>
+                                <action android:name="android.intent.action.MAIN"/>
+                                <category android:name="android.intent.category.LAUNCHER"/>
+                        </intent-filter>
+                </activity>
+                
+                <meta-data android:name="com.google.android.gms.version"
+                        android:value="9452000"/>
+        </application>
+</manifest>

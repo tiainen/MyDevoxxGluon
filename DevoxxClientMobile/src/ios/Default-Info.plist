@@ -5,9 +5,9 @@
         <key>CFBundleIdentifier</key>
         <string>com.devoxx.mydevoxx.swift</string>
         <key>CFBundleVersion</key>
-        <!-- buildnumber --><string>155</string>
+        <!-- buildnumber --><string>167</string>
         <key>CFBundleShortVersionString</key>
-        <string>2.0.1</string>
+        <string>2.4.0</string>
         <key>CFBundleExecutable</key>
         <string>DevoxxClient</string>
         <key>CFBundleIconFiles</key>
@@ -90,5 +90,7 @@
                 </dict>  
             </dict>  
         </dict>  
+        <key>NSCameraUsageDescription</key>
+        <string>Barscan requires access to the Camera Service</string>
 </dict>
 </plist>

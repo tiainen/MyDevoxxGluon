@@ -31,7 +31,7 @@ import java.util.UUID;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
-public class Note implements Searchable, Identifiable {
+public class Note implements Searchable {
 
     private String uuid;
     private String sessionUuid;
@@ -45,7 +45,6 @@ public class Note implements Searchable, Identifiable {
         this.sessionUuid = sessionUuid;
     }
 
-    @Override
     public String getUuid() {
         return uuid;
     }

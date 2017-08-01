@@ -11,7 +11,7 @@ buildscript {
     }
 }
 
-ext.charm_down_version = "3.2.4"
+ext.charm_down_version = "3.4.1"
 
 allprojects {
     

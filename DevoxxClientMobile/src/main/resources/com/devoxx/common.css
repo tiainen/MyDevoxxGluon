@@ -76,7 +76,8 @@
 /* Gathering together all cells to standardize styling */
 .venue-cell,
 .exhibitor-cell,
-.note-cell {
+.note-cell,
+.badge-cell {
     -fx-min-height: 4.50em;
     -fx-pref-height: 4.50em;
 }
@@ -86,7 +87,8 @@
 .sponsor-cell > .list-tile > .text-box > .primary-text,
 .exhibitor-cell > .list-tile > .text-box > .primary-text,
 .schedule-cell > .list-tile > .text-box > .primary-text,
-.note-cell > .list-tile > .text-box > .primary-text {
+.note-cell > .list-tile > .text-box > .primary-text,
+.badge-cell > .list-tile > .text-box > .primary-text {
     -fx-text-fill: -primary-swatch-500;
     -fx-font-weight: bold;
     -fx-font-size: 1.1em;
@@ -97,7 +99,8 @@
 .sponsor-cell > .list-tile > .icon-text,
 .exhibitor-cell > .list-tile > .icon-text,
 .schedule-cell > .list-tile > * > .icon-text,
-.note-cell > .list-tile > .icon-text {
+.note-cell > .list-tile > .icon-text,
+.badge-cell > .list-tile > .icon-text {
     -fx-text-fill: -alternate-color;
 }
 
@@ -147,6 +150,10 @@
     -fx-background-insets: 0em;
     -fx-background-color: -track-unknown, white;
 }
+
+.list-cell.schedule-cell:color {
+    -fx-background-color: -track-unknown, derive(-fx-control-inner-background,-7%);
+}
 /*.list-cell.schedule-cell:track-core-platform {*/
     /*-fx-background-color: -track-core-platform, white;*/
 /*}*/
@@ -179,9 +186,16 @@
 .schedule-cell > .list-tile > .text-box > .secondary-text {
     -fx-text-fill: dimgray;
     -fx-font-size: 1.05em;
+    -fx-wrap-text: false;
 }
 .schedule-cell > .list-tile > .text-box > .tertiary-text {
     -fx-text-fill: dimgray;
+    -fx-font-size: 0.95em;
+}
+
+.schedule-cell > .list-tile > .text-box > .tertiary-text > .fav-label,
+.schedule-cell > .list-tile > .text-box > .tertiary-text > .fav-label > .fav-graphic {
+    -fx-text-fill: derive(crimson, 50%);
     -fx-font-size: 0.95em;
 }
 
@@ -190,7 +204,7 @@
 }
 
 .schedule-cell > .list-tile > .secondary-graphic > .indicator {
-    -fx-background-color: -otn-lighter2;
+    -fx-background-color: derive(crimson, 50%);
     -fx-pref-width: 2.5em;
     -fx-pref-height: 2.5em;
     -fx-shape: "M 0 0 L 1 0 L 1 1 Z";
@@ -248,6 +262,15 @@
     -fx-padding: 0.910488em;
     -fx-wrap-text: true;
     -fx-text-alignment: justify;
+}
+
+.app-bar > .action-items > .fav-box {
+    -fx-padding: 0 0.2em 0 0;
+    -fx-alignment: center-left;
+}
+
+.app-bar > .action-items > .fav-box > .label {
+    -fx-text-fill: white;
 }
 
 /* Filter view inside session view */
@@ -362,51 +385,45 @@
     -fx-font-size: 1.2em;
 }
 
-/** Vote and Session-Conflict Dialogs **/
-
-.vote-dialog > .container > .dialog-title {
-    -fx-alignment: center-left;
+.badge-view {
+    -fx-padding: 0.910488em;
 }
 
-.vote-dialog > .container > .dialog-title > .label {
-    -fx-font-size: 1.5em;
+/** Vote Pane **/
+
+.vote-pane {
+    -fx-padding: 1em;
+}
+
+.vote-pane > .title-box {
+    -fx-padding: 0 0 1em 0;
+    -fx-alignment: center;
+}
+
+.vote-pane > .title-box > .title {
+    -fx-font-size: 1.3em;
     -fx-font-family: "Roboto Medium";
     -fx-text-fill: -text-light;
 }
 
-.vote-dialog > .container > .dialog-title > .button {
-    -fx-font-size: 0.666em;
-    -fx-text-fill: -primary-swatch-500;
-}
-
-.vote-dialog > .container > .content {
+.vote-pane > .content {
     -fx-spacing: 1.083333em;
 }
 
-.vote-dialog > .container > .content > .title {
-    -fx-font-size: 1.0em;
-}
-
-.vote-dialog > .container > .content > .session-title {
-    -fx-font-size: 0.9em;
+.vote-pane > .content > .session-title {
     -fx-wrap-text: true;
 }
 
-.vote-dialog > .container > .content > .share-container > .share-text {
+.vote-pane > .content > .share-container > .share-text {
     -fx-font-size: 1.0em;
     -fx-padding: 0.3em 0 0 0;
 }
 
-.vote-dialog > .container > .content > .share-container > .text-area {
+.vote-pane > .content > .share-container > .text-field {
     -fx-text-fill: -lighter-black;
-    -fx-wrap-text: true;
-    -fx-max-height: 6em;
 }
 
-.vote-dialog > .container > .content > .share-container > .text-area:focused > .content {
-    -fx-background-color: white;
-    -fx-background-insets: 0em;
-}
+/** Session-Conflict Dialogs **/
 
 .session-conflict-dialog > .container > .content {
     -fx-spacing: 0.83333em;
@@ -911,4 +928,23 @@
 .glisten-authentication-view > .retry-view > .message {
     -fx-text-alignment: center;
     -fx-padding: 0 0 2em 0;
+}
+
+/** Schedule and Favorite Dialog **/
+
+.sch-fav-dialog > * > .sch-dialog-icon {
+    -fx-font-size: 4.50mm;
+}
+
+.sch-fav-dialog > * > .fav-dialog-icon {
+    -fx-font-size: 4.0mm;
+}
+
+.sch-fav-dialog > * > .text {
+    -fx-fill: #333333;
+}
+
+.sch-fav-dialog > .label,
+.sch-fav-dialog > * > .icon-text {
+    -fx-text-fill: #333333;
 }

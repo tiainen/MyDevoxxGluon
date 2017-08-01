@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016, Gluon Software
+/*
+ * Copyright (c) 2016, 2017, Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -25,36 +25,44 @@
  */
 package com.devoxx.views.cell;
 
+import com.devoxx.DevoxxView;
+import com.devoxx.model.Favorite;
+import com.devoxx.model.Session;
+import com.devoxx.model.TalkSpeaker;
 import com.devoxx.service.Service;
+import com.devoxx.util.DevoxxBundle;
+import com.devoxx.util.DevoxxSettings;
 import com.devoxx.views.SessionPresenter;
 import com.devoxx.views.helper.SessionVisuals;
 import com.gluonhq.charm.glisten.control.CharmListCell;
 import com.gluonhq.charm.glisten.control.ListTile;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
-import com.devoxx.DevoxxView;
-import com.devoxx.model.Session;
-import com.devoxx.util.DevoxxBundle;
-import com.devoxx.util.DevoxxSettings;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.css.PseudoClass;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+
+import java.util.List;
+import java.util.Optional;
 
 public class ScheduleCell extends CharmListCell<Session> {
 
+    private static final PseudoClass PSEUDO_CLASS_COLORED = PseudoClass.getPseudoClass("color");
+
     private final Service service;
     private final ListTile listTile;
-    private Session session;
     private final SecondaryGraphic secondaryGraphic;
+    private Session session;
     private boolean showDate;
-    
-    private PseudoClass oldPseudoClass;
 
     public ScheduleCell(Service service) {
         this(service, false);
@@ -63,7 +71,6 @@ public class ScheduleCell extends CharmListCell<Session> {
     public ScheduleCell(Service service, boolean showDate) {
         this.service = service;
         this.showDate = showDate;
-
 
         secondaryGraphic = new SecondaryGraphic();
 
@@ -93,33 +100,67 @@ public class ScheduleCell extends CharmListCell<Session> {
             setGraphic(null);
         }
     }
+
     private void updateVBox() {
-        if ((session != null) && (session.getTalk().getTitle() != null)) {
-            listTile.setTextLine(0, session.getTalk().getTitle());
-        }
-        String trackTitle = session.getTalk().getTrack();
-        if (trackTitle == null || trackTitle.isEmpty()) {
-            listTile.setTextLine(1, session.getTalk().getTalkType());
+        if (session.getTalk() != null) {
+            if (session.getTalk().getTitle() != null) {
+                listTile.setTextLine(0, session.getTalk().getTitle());
+            }
 
-        } else {
-            listTile.setTextLine(1,trackTitle);
+            List<TalkSpeaker> speakers = session.getTalk().getSpeakers();
+            listTile.setTextLine(1, convertSpeakersToString(speakers));
         }
 
-        listTile.setTextLine(2, DevoxxBundle.getString("OTN.SCHEDULE.IN_AT", session.getRoomName(),
-                        DevoxxSettings.TIME_FORMATTER.format(session.getStartDate()))
-                        + (showDate? "\n" + DevoxxSettings.DATE_FORMATTER.format(session.getStartDate()) : ""));
+        listTile.setTextLine(2, DevoxxBundle.getString("OTN.SCHEDULE.IN_AT",
+                session.getRoomName(),
+                DevoxxSettings.TIME_FORMATTER.format(session.getStartDate())) +
+                (showDate ? "\n" + DevoxxSettings.DATE_FORMATTER.format(session.getStartDate()) : ""));
 
-//        changePseudoClass(session.getTrack().getPseudoClass());
+        Optional<Favorite> favorite = Optional.empty();
+        for (Favorite fav : service.retrieveFavorites()) {
+            if (fav.getId().equals(session.getTalk().getId())) {
+                favorite = Optional.of(fav);
+                break;
+            }
+        }
+        Favorite fav = favorite.orElseGet(() -> {
+            Favorite emptyFavorite = new Favorite();
+            emptyFavorite.setId(session.getTalk().getId());
+            service.retrieveFavorites().add(emptyFavorite);
+            return emptyFavorite;
+        });
 
+        // Hacky Code as it uses internals of ListTile
+        Label label = (Label) ((VBox) listTile.getChildren().get(0)).getChildren().get(2);
+        Label favLabel = new Label();
+        favLabel.textProperty().bind(fav.favsProperty().asString());
+        favLabel.visibleProperty().bind(fav.favsProperty().greaterThanOrEqualTo(10));
+        favLabel.getStyleClass().add("fav-label");
+        Node graphic = MaterialDesignIcon.FAVORITE.graphic();
+        graphic.getStyleClass().add("fav-graphic");
+        favLabel.setGraphic(graphic);
+        favLabel.setGraphicTextGap(1.0);
+        label.setGraphic(favLabel);
+        label.setContentDisplay(ContentDisplay.RIGHT);
 
+        pseudoClassStateChanged(PSEUDO_CLASS_COLORED, session.isDecorated());
     }
-   
-    private void changePseudoClass(PseudoClass pseudoClass) {
-        pseudoClassStateChanged(oldPseudoClass, false);
-        pseudoClassStateChanged(pseudoClass, true);
-        oldPseudoClass = pseudoClass;
+
+    private String convertSpeakersToString(List<TalkSpeaker> speakers) {
+        if (speakers.size() > 0) {
+            StringBuilder speakerTitle = new StringBuilder();
+            for (int index = 0; index < speakers.size(); index++) {
+                if (index < speakers.size() - 1) {
+                    speakerTitle.append(speakers.get(index).getName()).append(", ");
+                } else {
+                    speakerTitle.append(speakers.get(index).getName());
+                }
+            }
+            return speakerTitle.toString();
+        }
+        return "";
     }
-    
+
     private class SecondaryGraphic extends Pane {
 
         private final Node chevron;

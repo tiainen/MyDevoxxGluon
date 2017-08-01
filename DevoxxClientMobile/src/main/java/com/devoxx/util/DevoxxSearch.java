@@ -46,6 +46,7 @@ public class DevoxxSearch {
     static {
         CELL_MAP.put(Exhibitor.class.getSimpleName(),   ExhibitorCell.class);
         CELL_MAP.put(Note.class.getSimpleName(),        NoteCell.class);
+        CELL_MAP.put(Badge.class.getSimpleName(),       BadgeCell.class);
         CELL_MAP.put(Session.class.getSimpleName(),     ScheduleCell.class);
         CELL_MAP.put(Speaker.class.getSimpleName(),     SpeakerCell.class);
 //        CELL_MAP.put(Sponsor.class.getSimpleName(),     SponsorCell.class);
@@ -62,7 +63,8 @@ public class DevoxxSearch {
     );
 
     private final Collection<Supplier<Collection<? extends Searchable>>> authSearchables = Arrays.asList(
-            () -> service.retrieveNotes()
+            () -> service.retrieveNotes(),
+            () -> service.retrieveBadges()
     );
 
 

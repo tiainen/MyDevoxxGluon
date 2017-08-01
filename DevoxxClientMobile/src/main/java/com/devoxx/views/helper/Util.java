@@ -44,9 +44,6 @@ import javafx.scene.layout.Region;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.function.Supplier;
 
 public class Util {
@@ -161,7 +158,4 @@ public class Util {
         }
     }
 
-    public static ZonedDateTime timeToZonedDateTime(long time, ZoneId zoneId) {
-        return ZonedDateTime.ofInstant(Instant.ofEpochMilli(time), zoneId);
-    }
 }

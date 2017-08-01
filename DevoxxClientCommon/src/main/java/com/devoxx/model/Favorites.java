@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016, Gluon Software
+/*
+ * Copyright (c) 2017, Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -25,36 +25,24 @@
  */
 package com.devoxx.model;
 
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import java.util.List;
 
-public class PushNotification {
+public class Favorites {
 
-    private StringProperty id = new SimpleStringProperty("");
-    private StringProperty title = new SimpleStringProperty("");
-    private StringProperty body = new SimpleStringProperty("");
+    private List<Favorite> favorites;
 
-    public String getId() {
-        return id.get();
+    public Favorites() {
     }
 
-    public StringProperty idProperty() {
-        return id;
+    public Favorites(List<Favorite> favorites) {
+        this.favorites = favorites;
     }
 
-    public String getTitle() {
-        return title.get();
+    public List<Favorite> getFavorites() {
+        return favorites;
     }
 
-    public StringProperty titleProperty() {
-        return title;
-    }
-
-    public String getBody() {
-        return body.get();
-    }
-
-    public StringProperty bodyProperty() {
-        return body;
+    public void setFavorites(List<Favorite> favorites) {
+        this.favorites = favorites;
     }
 }

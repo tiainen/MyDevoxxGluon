@@ -52,6 +52,8 @@ public class DevoxxView {
     public static final AppView SPONSOR         = view( SponsorPresenter.class,        MaterialDesignIcon.PAYMENT);
     public static final AppView VENUE           = view( VenuePresenter.class,          MaterialDesignIcon.ACCESSIBILITY,      SHOW_IN_DRAWER);
     public static final AppView NOTES           = view( NotesPresenter.class,          MaterialDesignIcon.EVENT_NOTE,         SHOW_IN_DRAWER);
+    public static final AppView BADGES          = view( BadgesPresenter.class,         MaterialDesignIcon.CONTACTS/*,            SHOW_IN_DRAWER*/);
+    public static final AppView BADGE           = view( BadgePresenter.class,          MaterialDesignIcon.CONTACTS);
     public static final AppView SEARCH          = view( SearchPresenter.class,         MaterialDesignIcon.SEARCH);
     public static final AppView ABOUT           = view( AboutPresenter.class,          MaterialDesignIcon.AC_UNIT,            SHOW_IN_DRAWER);
     public static final AppView CONF_SELECTOR   = view( ConfSelectorPresenter.class,   MaterialDesignIcon.ANNOUNCEMENT,       SHOW_IN_DRAWER, HOME_VIEW, SKIP_VIEW_STACK);

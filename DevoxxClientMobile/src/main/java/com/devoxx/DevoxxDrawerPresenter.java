@@ -30,7 +30,6 @@ import com.devoxx.service.Service;
 import com.devoxx.views.helper.Util;
 import com.gluonhq.charm.glisten.afterburner.AppView;
 import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
-import com.gluonhq.charm.glisten.application.MobileApplication;
 import com.gluonhq.charm.glisten.control.NavigationDrawer;
 import com.gluonhq.charm.glisten.layout.layer.SidePopupView;
 import com.gluonhq.charm.glisten.mvc.View;
@@ -50,6 +49,7 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import com.gluonhq.charm.glisten.control.Toast;
+import javafx.scene.Node;
 import javafx.scene.image.Image;
 
 @Singleton
@@ -120,6 +120,24 @@ public class DevoxxDrawerPresenter extends GluonPresenter<DevoxxApplication> {
         if (conference != null) {
             String conferenceShortName = conference.getShortName();
             if (conferenceShortName != null) {
+                if (conferenceShortName.equals("BE")) {
+                    for (Node item : drawer.getItems()) {
+                        if (((NavigationDrawer.Item) item).getTitle().equals(DevoxxBundle.getString("OTN.VIEW.NOTES"))) {
+                            final int index = drawer.getItems().indexOf(item) + 1;
+                            if (! ((NavigationDrawer.Item) drawer.getItems().get(index)).getTitle().equals(DevoxxBundle.getString("OTN.VIEW.BADGES"))) {
+                                drawer.getItems().add(index, DevoxxView.BADGES.getMenuItem());
+                            }
+                            break;
+                        }
+                    }
+                } else {
+                    for (Node item : drawer.getItems()) {
+                        if (((NavigationDrawer.Item) item).getTitle().equals(DevoxxBundle.getString("OTN.VIEW.BADGES"))) {
+                            drawer.getItems().remove(item);
+                            break;
+                        }
+                    }
+                }
                 return conferenceShortName;
             }
         }

@@ -25,6 +25,7 @@
  */
 package com.devoxx.util;
 
+import com.gluonhq.charm.down.Platform;
 import com.gluonhq.charm.down.Services;
 
 import com.gluonhq.charm.down.plugins.Cache;
@@ -38,6 +39,9 @@ import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -59,7 +63,15 @@ public class ImageCache {
     private static final int MAX_FILE_LENGTH = 2_000_000; // bytes
 
     private static final Cache<String, Image> memoryImageCache;
-    
+
+    private static final AtomicInteger THREAD_NUMBER = new AtomicInteger(0);
+    private static ExecutorService executorService = Executors.newFixedThreadPool(5, runnable -> {
+        Thread thread = Executors.defaultThreadFactory().newThread(runnable);
+        thread.setName("ImageProgressListenerThread-" + THREAD_NUMBER.getAndIncrement());
+        thread.setDaemon(true);
+        return thread;
+    });
+
     static {
         memoryImageCache =  (Cache<String, Image>) Services.get(CacheService.class)
             .map(c -> (Cache) c.getCache("OTNImageCache"))
@@ -79,8 +91,10 @@ public class ImageCache {
             this.imageId = imageId;
             this.downloadFinished = downloadFinished;
             this.progress = progress;
-            // Limit download size: if size exceeds maximum it will be cancelled
-            limitDownloadSize();
+            if (!Platform.isIOS()) {
+                // Limit download size: if size exceeds maximum it will be cancelled
+                limitDownloadSize();
+            }
         }
 
         @Override
@@ -107,7 +121,7 @@ public class ImageCache {
         }
         
         private void limitDownloadSize() {
-            Thread t = new Thread(() -> {
+            executorService.execute(() -> {
                 try {
                     URL url = new URL(imageId);
                     URLConnection conn = url.openConnection();
@@ -119,8 +133,6 @@ public class ImageCache {
                     image.cancel();
                 }
             });
-            t.setDaemon(true);
-            t.start();
         }
     }
 

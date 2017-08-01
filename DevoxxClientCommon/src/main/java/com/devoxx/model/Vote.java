@@ -31,7 +31,7 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
-public class Vote implements Identifiable {
+public class Vote {
 
     private String uuid;
     private String talkId;
@@ -53,7 +53,6 @@ public class Vote implements Identifiable {
         this.other.set(other);
     }
 
-    @Override
     public String getUuid() {
         return uuid;
     }

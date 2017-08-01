@@ -27,6 +27,7 @@ package com.devoxx.views.helper;
 
 import com.devoxx.model.Speaker;
 import com.devoxx.util.DevoxxBundle;
+import static com.devoxx.util.DevoxxSettings.TWITTER_URL;
 import com.gluonhq.charm.down.Services;
 import com.gluonhq.charm.down.plugins.BrowserService;
 import com.gluonhq.charm.glisten.control.Avatar;
@@ -43,8 +44,7 @@ import java.net.URISyntaxException;
 public class SpeakerCard extends Region {
 
     private static final double PADDING = 2;
-    private static final String TWITTER_URL = "https://www.twitter.com/";
-
+    
     private final Avatar avatar;
     private final ImageView imageView;
     private final Region imageSpacer;

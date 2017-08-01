@@ -46,10 +46,10 @@
     "latitude": "51.535625",
     "longitude": "-0.105840",
     "floors": [
-       {"img": "https://s3-eu-west-1.amazonaws.com/cfpdevoxx/uk/DevoxxUKExhibitionFloorplan.jpg", "title": "Exhibition", "tabpos": "1", "target": "phone"},
-       {"img": "https://s3-eu-west-1.amazonaws.com/cfpdevoxx/uk/SessionRoomsDevoxxUK2016.jpg", "title": "Session Rooms", "tabpos": "2", "target": "phone"},
-       {"img": "https://s3-eu-west-1.amazonaws.com/cfpdevoxx/uk/DevoxxUKExhibitionFloorplan.jpg", "title": "Exhibition", "tabpos": "1", "target": "tablet"},
-       {"img": "https://s3-eu-west-1.amazonaws.com/cfpdevoxx/uk/SessionRoomsDevoxxUK2016.jpg", "title": "Session Rooms", "tabpos": "2", "target": "tablet"}
+       {"img": "https://s3-eu-west-1.amazonaws.com/cfpdevoxx/uk/DevoxxUK2017ExhibitionFloorPlan.png", "title": "Exhibition", "tabpos": "1", "target": "phone"},
+       {"img": "https://s3-eu-west-1.amazonaws.com/cfpdevoxx/uk/ConferenceRoomlayout2017.png", "title": "Session Rooms", "tabpos": "2", "target": "phone"},
+       {"img": "https://s3-eu-west-1.amazonaws.com/cfpdevoxx/uk/DevoxxUK2017ExhibitionFloorPlan.png", "title": "Exhibition", "tabpos": "1", "target": "tablet"},
+       {"img": "https://s3-eu-west-1.amazonaws.com/cfpdevoxx/uk/ConferenceRoomlayout2017.png", "title": "Session Rooms", "tabpos": "2", "target": "tablet"}
   	],
     "capacity": "1200",
     "sessions": "110",

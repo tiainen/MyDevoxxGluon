@@ -43,6 +43,7 @@ public class Session implements Searchable {
     private ZonedDateTime endDate;
     private Break aBreak;
     private Talk talk;
+    private boolean decorated;
 
     public Session() {}
 
@@ -155,6 +156,14 @@ public class Session implements Searchable {
 
     public void setTalk(Talk talk) {
         this.talk = talk;
+    }
+
+    public boolean isDecorated() {
+        return decorated;
+    }
+
+    public void setDecorated(boolean decorated) {
+        this.decorated = decorated;
     }
 
     @Override

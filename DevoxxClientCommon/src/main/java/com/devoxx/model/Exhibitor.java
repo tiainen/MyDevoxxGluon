@@ -26,8 +26,9 @@
 package com.devoxx.model;
 
 import java.util.Locale;
+import java.util.Objects;
 
-public class Exhibitor implements Searchable, Mergeable<Exhibitor> {
+public class Exhibitor extends Searchable implements Mergeable<Exhibitor> {
     private String uuid;
     private String name;
     private String location;
@@ -90,55 +91,43 @@ public class Exhibitor implements Searchable, Mergeable<Exhibitor> {
             return false;
         } 
         String lowerKeyword = keyword.toLowerCase(Locale.ROOT);
-        return ((getBooth() != null && getBooth().toLowerCase(Locale.ROOT).contains(lowerKeyword)) || 
-                (getDescription() != null && getDescription().toLowerCase(Locale.ROOT).contains(lowerKeyword)) || 
-                (getLocation() != null && getLocation().toLowerCase(Locale.ROOT).contains(lowerKeyword)) ||
-                (getName() != null && getName().toLowerCase(Locale.ROOT).contains(lowerKeyword)) ||
-                (getSummary() != null && getSummary().toLowerCase(Locale.ROOT).contains(lowerKeyword)));
+
+        return containsKeyword(getBooth(), lowerKeyword)       ||
+               containsKeyword(getDescription(), lowerKeyword) ||
+               containsKeyword(getLocation(), lowerKeyword)    ||
+               containsKeyword(getName(), lowerKeyword)        ||
+               containsKeyword(getSummary(), lowerKeyword);
+
     }
 
     @Override
     public boolean merge(Exhibitor other) {
         boolean changed = false;
-        if ((other.name == null && this.name != null) ||
-                (other.name != null && this.name == null) ||
-                (other.name != null && !other.name.equals(this.name))) {
+        if (!Objects.equals(other.name, this.name)) {
             changed = true;
             this.name = other.name;
         }
-        if ((other.location == null && this.location != null) ||
-                (other.location != null && this.location == null) ||
-                (other.location != null && !other.location.equals(this.location))) {
+        if (!Objects.equals(other.location, this.location)) {
             changed = true;
             this.location = other.location;
         }
-        if ((other.summary == null && this.summary != null) ||
-                (other.summary != null && this.summary == null) ||
-                (other.summary != null && !other.summary.equals(this.summary))) {
+        if (!Objects.equals(other.summary, this.summary)) {
             changed = true;
             this.summary = other.summary;
         }
-        if ((other.description == null && this.description != null) ||
-                (other.description != null && this.description == null) ||
-                (other.description != null && !other.description.equals(this.description))) {
+        if (!Objects.equals(other.description, this.description)) {
             changed = true;
             this.description = other.description;
         }
-        if ((other.picture == null && this.picture != null) ||
-                (other.picture != null && this.picture == null) ||
-                (other.picture != null && !other.picture.equals(this.picture))) {
+        if (!Objects.equals(other.picture, this.picture)) {
             changed = true;
             this.picture = other.picture;
         }
-        if ((other.url == null && this.url != null) ||
-                (other.url != null && this.url == null) ||
-                (other.url != null && !other.url.equals(this.url))) {
+        if (!Objects.equals(other.url, this.url)) {
             changed = true;
             this.url = other.url;
         }
-        if ((other.booth == null && this.booth != null) ||
-                (other.booth != null && this.booth == null) ||
-                (other.booth != null && !other.booth.equals(this.booth))) {
+        if (!Objects.equals(other.booth, this.booth)) {
             changed = true;
             this.booth = other.booth;
         }

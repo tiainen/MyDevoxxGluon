@@ -28,7 +28,7 @@ package com.devoxx.model;
 import java.util.List;
 import java.util.Locale;
 
-public class Speaker implements Searchable {
+public class Speaker extends Searchable {
     private String uuid;
     private String bio;
     private String bioAsHtml;
@@ -165,10 +165,11 @@ public class Speaker implements Searchable {
             return false;
         }
         String lowerKeyword = keyword.toLowerCase(Locale.ROOT);
-        return (getFirstName().toLowerCase(Locale.ROOT).contains(lowerKeyword)) ||
-                (getLastName().toLowerCase(Locale.ROOT).contains(lowerKeyword)) ||
-                (getCompany() != null && getCompany().toLowerCase(Locale.ROOT).contains(lowerKeyword)) ||
-                (getSummary() != null && getSummary().toLowerCase(Locale.ROOT).contains(lowerKeyword));
+        return containsKeyword(getFirstName(), lowerKeyword) ||
+               containsKeyword(getLastName(), lowerKeyword)  ||
+               containsKeyword(getCompany(), lowerKeyword)   ||
+               containsKeyword(getSummary(), lowerKeyword);
+
     }
 
     @Override

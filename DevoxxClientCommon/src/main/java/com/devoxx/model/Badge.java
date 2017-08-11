@@ -29,7 +29,7 @@ import java.util.Locale;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
-public class Badge implements Searchable {
+public class Badge extends Searchable {
 
     @SuppressWarnings("unused")
     public Badge() {
@@ -82,21 +82,26 @@ public class Badge implements Searchable {
             return false;
         } 
         final String lowerKeyword = keyword.toLowerCase(Locale.ROOT);
-        return (getFirstName() != null && getFirstName().toLowerCase(Locale.ROOT).contains(lowerKeyword)) || 
-                (getLastName() != null && getLastName().toLowerCase(Locale.ROOT).contains(lowerKeyword)) || 
-                (getCompany() != null && getCompany().toLowerCase(Locale.ROOT).contains(lowerKeyword)) || 
-                (getEmail() != null && getEmail().toLowerCase(Locale.ROOT).contains(lowerKeyword)) || 
-                (getDetails()!= null && getDetails().toLowerCase(Locale.ROOT).contains(lowerKeyword));
+
+        return containsKeyword(getFirstName(), lowerKeyword) ||
+               containsKeyword(getLastName(), lowerKeyword)  ||
+               containsKeyword(getCompany(), lowerKeyword)   ||
+               containsKeyword(getEmail(), lowerKeyword)     ||
+               containsKeyword(getDetails(), lowerKeyword);
+
     }
-    
+
+    private String safeStr( String s ) {
+        return s == null? "": s.trim();
+    }
+
     public String toCSV() {
-        StringBuilder csv = new StringBuilder();
-        csv.append(getFirstName() != null ? getFirstName() : "");
-        csv.append(",").append(getLastName() != null ? getLastName() : "");
-        csv.append(",").append(getCompany() != null ? getCompany() : "");
-        csv.append(",").append(getEmail() != null ? getEmail() : "");
-        csv.append(",").append(getDetails() != null ? getDetails() : "");
-        return csv.toString();
+        return String.join(",",
+                     safeStr(getFirstName()),
+                     safeStr(getLastName()),
+                     safeStr(getCompany()),
+                     safeStr(getEmail()),
+                     safeStr(getDetails()) );
     }
     
 }

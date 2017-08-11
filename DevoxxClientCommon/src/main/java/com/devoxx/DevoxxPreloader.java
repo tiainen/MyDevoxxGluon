@@ -70,7 +70,7 @@ public class DevoxxPreloader extends Preloader {
         // FIXME: hide stage only when IS_DESKTOP, when OTN-464 gets solved
         if (!Platform.isAndroid() && Type.BEFORE_START.equals(info.getType())) {
             // On iOS we shouldn't hide the stage, but for now we do it to solve OTN-454
-            // This will leave a black screen for a sort while until the new stage is shown 
+            // This will leave a black screen for a short while until the new stage is shown
             stage.hide();
         }
     }

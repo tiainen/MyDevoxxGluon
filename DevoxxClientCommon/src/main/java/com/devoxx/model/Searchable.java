@@ -25,8 +25,14 @@
  */
 package com.devoxx.model;
 
-public interface Searchable {
+import java.util.Locale;
+
+public abstract class Searchable {
     
-    boolean contains(String keyword);
-    
+    abstract boolean contains(String keyword);
+
+    // assumes keyword != null and already a lower case
+    static <T> boolean containsKeyword( final T source, final String keyword ) {
+        return source != null && source.toString().toLowerCase(Locale.ROOT).contains(keyword);
+    }
 }

@@ -32,15 +32,17 @@ import com.devoxx.util.DevoxxBundle;
 import java.time.ZonedDateTime;
 
 public enum TimePeriod {
-    MORE_THAN_ONE_HOUR_AGO("OTN.FILTER.TIME_PERIOD.MORE_THAN_ONE_HOUR"),
-    MORE_THAN_TWO_HOURS_AGO("OTN.FILTER.TIME_PERIOD.MORE_THAN_TWO_HOURS"),
-    MORE_THAN_FOUR_HOURS_AGO("OTN.FILTER.TIME_PERIOD.MORE_THAN_FOUR_HOURS"),
-    ALL("OTN.FILTER.TIME_PERIOD.ALL");
+    MORE_THAN_ONE_HOUR_AGO("OTN.FILTER.TIME_PERIOD.MORE_THAN_ONE_HOUR", 1),
+    MORE_THAN_TWO_HOURS_AGO("OTN.FILTER.TIME_PERIOD.MORE_THAN_TWO_HOURS", 2),
+    MORE_THAN_FOUR_HOURS_AGO("OTN.FILTER.TIME_PERIOD.MORE_THAN_FOUR_HOURS", 4),
+    ALL("OTN.FILTER.TIME_PERIOD.ALL", 4);
 
     private String i18nKey;
+    private long hours;
 
-    TimePeriod(String i18nKey) {
+    TimePeriod(String i18nKey, long hours) {
         this.i18nKey = i18nKey;
+        this.hours = hours;
     }
 
     @Override
@@ -49,18 +51,7 @@ public enum TimePeriod {
     }
 
     public static boolean isSessionWithinPeriod(Session session, TimePeriod timePeriod) {
-        if (timePeriod == ALL) {
-            return true;
-        }
-
-        ZonedDateTime now = ZonedDateTime.now();
-        ZonedDateTime sessionEndDate = session.getEndDate();
-        if (timePeriod == MORE_THAN_ONE_HOUR_AGO) {
-            return now.minusHours(1).isBefore(sessionEndDate);
-        } else if (timePeriod == MORE_THAN_TWO_HOURS_AGO) {
-            return now.minusHours(2).isBefore(sessionEndDate);
-        } else { // MORE_THAN_FOUR_HOURS_AGO
-            return now.minusHours(4).isBefore(sessionEndDate);
-        }
+        return timePeriod == ALL ||
+               ZonedDateTime.now().minusHours(timePeriod.hours).isBefore(session.getEndDate());
     }
 }

@@ -28,8 +28,9 @@ package com.devoxx.model;
 import com.devoxx.util.SponsorCategory;
 
 import java.util.Locale;
+import java.util.Objects;
 
-public class Sponsor implements Searchable, Mergeable<Sponsor> {
+public class Sponsor extends Searchable implements Mergeable<Sponsor> {
     private String uuid;
     private SponsorCategory section;
     private String name;
@@ -91,42 +92,33 @@ public class Sponsor implements Searchable, Mergeable<Sponsor> {
             return false;
         } 
         String lowerKeyword = keyword.toLowerCase(Locale.ROOT);
-        return ((getName() != null && getName().toLowerCase(Locale.ROOT).contains(lowerKeyword)) || 
-                (getDescription() != null && getDescription().toLowerCase(Locale.ROOT).contains(lowerKeyword)) || 
-                (getSection()!= null && getSection().toString().toLowerCase(Locale.ROOT).contains(lowerKeyword)) ||
-                (getSummary() != null && getSummary().toLowerCase(Locale.ROOT).contains(lowerKeyword)));
+        return containsKeyword(getName(), lowerKeyword)        ||
+               containsKeyword(getDescription(), lowerKeyword) ||
+               containsKeyword(getSection(), lowerKeyword)     ||
+               containsKeyword(getSummary(), lowerKeyword);
+
     }
 
     @Override
     public boolean merge(Sponsor other) {
         boolean changed = false;
-        if ((other.section == null && this.section != null) ||
-                (other.section != null && this.section == null) ||
-                (other.section != null && !other.section.equals(this.section))) {
+        if (!Objects.equals(other.section, this.section)) {
             changed = true;
             this.section = other.section;
         }
-        if ((other.name == null && this.name != null) ||
-                (other.name != null && this.name == null) ||
-                (other.name != null && !other.name.equals(this.name))) {
+        if (!Objects.equals(other.name, this.name)) {
             changed = true;
             this.name = other.name;
         }
-        if ((other.summary == null && this.summary != null) ||
-                (other.summary != null && this.summary == null) ||
-                (other.summary != null && !other.summary.equals(this.summary))) {
+        if (!Objects.equals(other.summary, this.summary)) {
             changed = true;
             this.summary = other.summary;
         }
-        if ((other.description == null && this.description != null) ||
-                (other.description != null && this.description == null) ||
-                (other.description != null && !other.description.equals(this.description))) {
+        if (!Objects.equals(other.description, this.description)) {
             changed = true;
             this.description = other.description;
         }
-        if ((other.picture == null && this.picture != null) ||
-                (other.picture != null && this.picture == null) ||
-                (other.picture != null && !other.picture.equals(this.picture))) {
+        if (!Objects.equals(other.picture, this.picture)) {
             changed = true;
             this.picture = other.picture;
         }

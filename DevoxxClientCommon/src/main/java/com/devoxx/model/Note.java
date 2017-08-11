@@ -31,7 +31,7 @@ import java.util.UUID;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
-public class Note implements Searchable {
+public class Note extends Searchable {
 
     private String uuid;
     private String sessionUuid;
@@ -64,9 +64,8 @@ public class Note implements Searchable {
     public boolean contains(String keyword) {
         if (keyword == null || keyword.isEmpty()) {
             return false;
-        } 
-        return getContent() != null && 
-               getContent().toLowerCase(Locale.ROOT).contains(keyword.toLowerCase(Locale.ROOT));
+        }
+        return containsKeyword(getContent(), keyword.toLowerCase(Locale.ROOT));
     }
     
 }

@@ -251,9 +251,12 @@ public class Conference {
         return today.until(getEndDate(), ChronoUnit.DAYS);
     }
 
+
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-M-d'T'HH:mm:ss.SSSX");
+
     private void calculateConferenceDays() {
-        this.startDate = LocalDateTime.parse(fromDate, DateTimeFormatter.ofPattern("yyyy-M-d'T'HH:mm:ss.SSSX")).atZone(getConferenceZoneId());
-        this.endDate = LocalDateTime.parse(toDate, DateTimeFormatter.ofPattern("yyyy-M-d'T'HH:mm:ss.SSSX")).atZone(getConferenceZoneId());
+        this.startDate = LocalDateTime.parse(fromDate, DATE_FORMATTER).atZone(getConferenceZoneId());
+        this.endDate = LocalDateTime.parse(toDate, DATE_FORMATTER).atZone(getConferenceZoneId());
         long numberOfDays = DAYS.between(startDate, endDate) + 1;
         days = new ZonedDateTime[(int) numberOfDays];
         days[0] = dayOnly(startDate, getConferenceZoneId());

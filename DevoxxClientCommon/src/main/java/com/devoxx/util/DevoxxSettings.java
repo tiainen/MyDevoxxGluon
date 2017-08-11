@@ -31,6 +31,7 @@ import com.gluonhq.charm.down.plugins.SettingsService;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.UUID;
 
 public class DevoxxSettings {
@@ -119,24 +120,21 @@ public class DevoxxSettings {
         return uuid;
     }
 
+    private  static final String LAST_VOTE_CAST = "LAST_VOTE_CAST";
+
     private static Long lastVoteCast = null;
     public static long getLastVoteCast() {
         if (lastVoteCast == null) {
-            String lastVoteCastString = Services.get(SettingsService.class)
-                    .map(s -> s.retrieve("LAST_VOTE_CAST"))
-                    .orElse(null);
-            if (lastVoteCastString != null) {
-                lastVoteCast = Long.parseLong(lastVoteCastString);
-            } else {
-                lastVoteCast = 0L;
-            }
+            lastVoteCast = Services.get(SettingsService.class)
+                    .flatMap(s -> Optional.ofNullable(s.retrieve(LAST_VOTE_CAST)))
+                    .map(Long::parseLong)
+                    .orElse(0L);
         }
-
         return lastVoteCast;
     }
 
     public static void setLastVoteCast(long updatedLastVoteCast) {
         lastVoteCast = updatedLastVoteCast;
-        Services.get(SettingsService.class).ifPresent(s -> s.store("LAST_VOTE_CAST", String.valueOf(lastVoteCast)));
+        Services.get(SettingsService.class).ifPresent(s -> s.store(LAST_VOTE_CAST, String.valueOf(lastVoteCast)));
     }
 }

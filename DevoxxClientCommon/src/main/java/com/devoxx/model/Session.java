@@ -29,7 +29,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import java.time.ZonedDateTime;
 import java.util.Locale;
 
-public class Session implements Searchable {
+public class Session extends Searchable {
 
     private String slotId;
     private String roomId;
@@ -172,8 +172,8 @@ public class Session implements Searchable {
             return false;
         } 
         String lowerKeyword = keyword.toLowerCase(Locale.ROOT);
-        return (getTitle().toLowerCase(Locale.ROOT).contains(lowerKeyword)) ||
-                (getRoomName() != null && getRoomName().toLowerCase(Locale.ROOT).contains(lowerKeyword));
+        return containsKeyword(getTitle(), lowerKeyword) ||
+               containsKeyword(getRoomName(), lowerKeyword);
     }
 
     public String getTitle() {

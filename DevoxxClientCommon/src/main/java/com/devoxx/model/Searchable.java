@@ -29,7 +29,7 @@ import java.util.Locale;
 
 public abstract class Searchable {
     
-    abstract boolean contains(String keyword);
+    public abstract boolean contains(String keyword);
 
     // assumes keyword != null and already a lower case
     static <T> boolean containsKeyword( final T source, final String keyword ) {

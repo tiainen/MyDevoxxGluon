@@ -73,8 +73,8 @@ public class ImageCache {
     });
 
     static {
-        memoryImageCache =  (Cache<String, Image>) Services.get(CacheService.class)
-            .map(c -> (Cache) c.getCache("OTNImageCache"))
+        memoryImageCache =  Services.get(CacheService.class)
+            .map(c -> c.<String, Image>getCache("OTNImageCache"))
             .orElseGet(null);
     }
     private static final Optional<File> imageStore = initImageStore(); // null if storage is not available

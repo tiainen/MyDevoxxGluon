@@ -70,23 +70,22 @@ public class DevoxxSearch {
 
     /**
      * Returns a list of items based on a contains term
-     * @param keyword 
-     * @return 
+     * @param term term to search for
+     * @return list of item containing term
      */
-    public ObservableList<Searchable> search(String keyword) {
+    public ObservableList<Searchable> search(String term) {
 
-        ObservableList<Searchable> results = FXCollections.observableArrayList();
-        results.addAll(find(keyword, searchables));
+        ObservableList<Searchable> results = FXCollections.observableArrayList(find(term, searchables));
         if (service.isAuthenticated()) {
-            results.addAll(find(keyword, authSearchables));
+            results.addAll(find(term, authSearchables));
         }
         return results;
     }
     
     /**
      * Returns a list of items based on a contains term, from a list of items
-     * @param keyword 
-     * @param previousSearch 
+     * @param keyword term to search for
+     * @param previousSearch previous search results
      * @return 
      */
     public ObservableList<Searchable> refineSearch(String keyword, ObservableList<Searchable> previousSearch) {

@@ -187,7 +187,7 @@ public class DevoxxNotifications {
         }
         
         // add the notification for new ones if they haven't started yet
-        if (dateTimeStart != null && dateTimeStart.isAfter(now)) {
+        if (dateTimeStart.isAfter(now)) {
             return Optional.of(getStartNotification(session, dateTimeStart));
         }
         return Optional.empty();
@@ -209,7 +209,7 @@ public class DevoxxNotifications {
         }
         
         // add the notification if the session hasn't finished yet
-        if (dateTimeVote != null && dateTimeVote.isAfter(now)) {
+        if (dateTimeVote.isAfter(now)) {
             return Optional.of(getVoteNotification(session, dateTimeVote));
         }
         return Optional.empty();
@@ -255,12 +255,12 @@ public class DevoxxNotifications {
                 DevoxxBundle.getString("OTN.VISUALS.IS_ABOUT_TO_START", session.getTitle()),
                 DevoxxNotifications.class.getResourceAsStream("/icon.png"),
                 dateTimeStart,
-                () -> {
+                () ->
                     DevoxxView.SESSION.switchView().ifPresent(presenter -> {
                         SessionPresenter sessionPresenter = (SessionPresenter) presenter;
                         sessionPresenter.showSession(session);
-                    });
-                });
+                    })
+                );
     }
     
     /**

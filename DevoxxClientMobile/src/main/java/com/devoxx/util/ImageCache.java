@@ -73,8 +73,8 @@ public class ImageCache {
     });
 
     static {
-        memoryImageCache =  (Cache<String, Image>) Services.get(CacheService.class)
-            .map(c -> (Cache) c.getCache("OTNImageCache"))
+        memoryImageCache =  Services.get(CacheService.class)
+            .map(c -> c.<String, Image>getCache("OTNImageCache"))
             .orElseGet(null);
     }
     private static final Optional<File> imageStore = initImageStore(); // null if storage is not available
@@ -218,7 +218,7 @@ public class ImageCache {
     private static Image get(String urlString, Supplier<Image> defaultImage, Consumer<Image> downloadFinished, boolean allowDownload, boolean allowPlaceholder, DoubleProperty progress) {
 
         // 1. If empty image -> default image
-        if (urlString == null || urlString.trim().isEmpty()) {
+        if ( !Strings.isNullOrEmpty(urlString)) {
             if (progress != null) {
                 progress.set(1);
             }

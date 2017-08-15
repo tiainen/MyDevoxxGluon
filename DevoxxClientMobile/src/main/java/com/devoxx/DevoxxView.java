@@ -38,7 +38,7 @@ import static com.gluonhq.charm.glisten.afterburner.AppView.Flag.*;
 
 public class DevoxxView {
 
-    public static final AppViewRegistry REGISTRY = new AppViewRegistry();
+    static final AppViewRegistry REGISTRY = new AppViewRegistry();
 
     public static final AppView SESSIONS        = view( SessionsPresenter.class,       MaterialDesignIcon.DASHBOARD,          SHOW_IN_DRAWER);
     public static final AppView SESSION         = view( SessionPresenter.class,        MaterialDesignIcon.RECORD_VOICE_OVER);
@@ -58,7 +58,7 @@ public class DevoxxView {
     public static final AppView ABOUT           = view( AboutPresenter.class,          MaterialDesignIcon.AC_UNIT,            SHOW_IN_DRAWER);
     public static final AppView CONF_SELECTOR   = view( ConfSelectorPresenter.class,   MaterialDesignIcon.ANNOUNCEMENT,       SHOW_IN_DRAWER, HOME_VIEW, SKIP_VIEW_STACK);
 
-    static AppView view(Class<? extends GluonPresenter<?>> presenterClass, MaterialDesignIcon menuIcon, AppView.Flag... flags ) {
+    private static AppView view(Class<? extends GluonPresenter<?>> presenterClass, MaterialDesignIcon menuIcon, AppView.Flag... flags ) {
         return REGISTRY.createView( name(presenterClass),
                                     DevoxxBundle.getString( "OTN.VIEW." + name(presenterClass)),
                                     presenterClass,

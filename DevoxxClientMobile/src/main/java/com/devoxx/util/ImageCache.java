@@ -218,7 +218,7 @@ public class ImageCache {
     private static Image get(String urlString, Supplier<Image> defaultImage, Consumer<Image> downloadFinished, boolean allowDownload, boolean allowPlaceholder, DoubleProperty progress) {
 
         // 1. If empty image -> default image
-        if (urlString == null || urlString.trim().isEmpty()) {
+        if ( !Strings.isNullOrEmpty(urlString)) {
             if (progress != null) {
                 progress.set(1);
             }

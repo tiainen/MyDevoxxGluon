@@ -28,10 +28,7 @@ package com.devoxx;
 import com.airhacks.afterburner.injection.Injector;
 import com.devoxx.service.DevoxxService;
 import com.devoxx.service.Service;
-import com.devoxx.util.DevoxxLogging;
-import com.devoxx.util.DevoxxNotifications;
-import com.devoxx.util.DevoxxSearch;
-import com.devoxx.util.DevoxxSettings;
+import com.devoxx.util.*;
 import com.devoxx.views.DevoxxSplash;
 import com.devoxx.views.helper.ConnectivityUtils;
 import com.devoxx.views.helper.SessionVisuals;
@@ -103,17 +100,19 @@ public class DevoxxApplication extends MobileApplication {
 
         Services.get(SettingsService.class).ifPresent(settings -> {
             String skip = settings.retrieve(DevoxxSettings.SKIP_VIDEO);
-            if (skip != null && !skip.isEmpty()) {
+            if (!Strings.isNullOrEmpty(skip)) {
                 skipVideo = Boolean.parseBoolean(skip);
             }
             String sign = settings.retrieve(DevoxxSettings.SIGN_UP);
-            if (sign != null && !sign.isEmpty()) {
+            if (!Strings.isNullOrEmpty(sign)) {
                 signUp = Boolean.parseBoolean(sign);
             }
         });
         if (!skipVideo) {
-            Services.get(SettingsService.class).ifPresent(settings -> settings.store(DevoxxSettings.SKIP_VIDEO, Boolean.TRUE.toString()));
-            addViewFactory(SPLASH_VIEW, () -> new DevoxxSplash());
+            Services.get(SettingsService.class).ifPresent(settings ->
+                    settings.store(DevoxxSettings.SKIP_VIDEO, Boolean.TRUE.toString())
+            );
+            addViewFactory(SPLASH_VIEW, DevoxxSplash::new);
         }
         
         addLayerFactory(MENU_LAYER, () -> {

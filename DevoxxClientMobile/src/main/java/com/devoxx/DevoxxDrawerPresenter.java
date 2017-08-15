@@ -104,9 +104,9 @@ public class DevoxxDrawerPresenter extends GluonPresenter<DevoxxApplication> {
     @PostConstruct
     public void postConstruct() {
         header.text.setText(DevoxxBundle.getString("OTN.DRAWER.CONF_NAME", getConferenceShortName(service.getConference())));
-        service.conferenceProperty().addListener((obs, ov, nv) -> {
-            header.text.setText(DevoxxBundle.getString("OTN.DRAWER.CONF_NAME", getConferenceShortName(nv)));
-        });
+        service.conferenceProperty().addListener((obs, ov, nv) ->
+            header.text.setText(DevoxxBundle.getString("OTN.DRAWER.CONF_NAME", getConferenceShortName(nv)))
+        );
     }
 
     private void updateDrawer(View view) {

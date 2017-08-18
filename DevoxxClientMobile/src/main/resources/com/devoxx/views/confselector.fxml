@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.gluonhq.charm.glisten.mvc.View?>
+
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<View fx:id="confSelectorView" styleClass="conf-selector-view" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.devoxx.views.ConfSelectorPresenter">
+    <center>
+        <BorderPane fx:id="content" styleClass="conf-selector" View.Alignment="CENTER">
+            <top>
+                <VBox spacing="5.0" alignment="TOP_CENTER" BorderPane.alignment="CENTER">
+                    <Label styleClass="title" text="%OTN.CONFERENCE_SELECTOR.CHOOSE_YOUR_DEVOXX"/>
+                    <Label styleClass="country" fx:id="countryLabel"/>
+                </VBox>
+            </top>
+            <bottom>
+                <VBox spacing="5.0" alignment="CENTER">
+                    <Label fx:id="dateLabel" styleClass="info"/>
+                    <Label fx:id="venueLabel" styleClass="info"/>
+                    <Button fx:id="countryButton" styleClass="go" onAction="#selectCountry" text="%OTN.CONFERENCE_SELECTOR.GO">
+                        <VBox.margin><Insets><left>25.0</left><right>25.0</right></Insets></VBox.margin>
+                    </Button>
+                    <GridPane>
+                        <VBox.margin><Insets><top>25.0</top></Insets></VBox.margin>
+                        <columnConstraints>
+                            <ColumnConstraints percentWidth="33.33"/>
+                            <ColumnConstraints percentWidth="33.34"/>
+                            <ColumnConstraints percentWidth="33.33"/>
+                        </columnConstraints>
+                        <VBox GridPane.columnIndex="0" GridPane.rowIndex="0" alignment="CENTER" spacing="5.0">
+                            <Label styleClass="box" fx:id="daysLabel"/>
+                            <Label styleClass="box" text="%OTN.CONFERENCE_SELECTOR.BOX.DAYS"/>
+                        </VBox>
+                        <VBox GridPane.columnIndex="1" GridPane.rowIndex="0" alignment="CENTER" spacing="5.0">
+                            <Label styleClass="box" fx:id="talksLabel"/>
+                            <Label styleClass="box" text="%OTN.CONFERENCE_SELECTOR.BOX.TALKS"/>
+                        </VBox>
+                        <VBox GridPane.columnIndex="2" GridPane.rowIndex="0" alignment="CENTER" spacing="5.0">
+                            <Label styleClass="box" fx:id="capacityLabel"/>
+                            <Label styleClass="box" text="%OTN.CONFERENCE_SELECTOR.BOX.CAPACITY"/>
+                        </VBox>
+                    </GridPane>
+                </VBox>
+            </bottom>
+        </BorderPane>
+    </center>
+</View>

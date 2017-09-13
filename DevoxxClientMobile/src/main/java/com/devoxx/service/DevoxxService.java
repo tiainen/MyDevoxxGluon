@@ -135,10 +135,8 @@ public class DevoxxService implements Service {
                     System.out.println(">>> received a silent push notification with contents: " + f);
                     System.out.println("[DBG] writing reload file");
                     File reloadMe = new File (rootDir, "reload");
-                    try {
-                        BufferedWriter br = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(reloadMe)));
+                    try (BufferedWriter br = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(reloadMe)))) {
                         br.write(f);
-                        br.close();
                         System.out.println("[DBG] writing reload file done");
                     } catch (IOException ex) {
                         LOG.log(Level.SEVERE, null, ex);
@@ -1068,7 +1066,7 @@ public class DevoxxService implements Service {
             scanner = new Scanner(reload);
             String lineSeparator = System.getProperty("line.separator");
             while (scanner.hasNextLine()) {
-                fileContent.append(scanner.nextLine() + lineSeparator);
+                fileContent.append(scanner.nextLine()).append(lineSeparator);
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -1083,11 +1081,13 @@ public class DevoxxService implements Service {
 
     private String findConferenceIdFromString(String fileContent) {
         try {
-            String trimmedContent = fileContent.replaceAll("\"", "").replaceAll(" ", "").replaceAll("\\}", ",");
+            String trimmedContent = fileContent.replaceAll("\"", "")
+                                               .replaceAll(" ", "")
+                                               .replaceAll("\\}", ",");
             String[] keyValue = trimmedContent.split(",");
-            for (int i = 0; i < keyValue.length; i++) {
-                if (keyValue[i].contains("body")) {
-                    return keyValue[i].split(":")[1];
+            for (String aKeyValue : keyValue) {
+                if (aKeyValue.contains("body")) {
+                    return aKeyValue.split(":")[1];
                 }
             }
         } catch (Exception e) {

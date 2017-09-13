@@ -3,7 +3,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'org.javafxports:jfxmobile-plugin:1.3.7'
+        classpath 'org.javafxports:jfxmobile-plugin:1.3.8'
     }
 }
 
@@ -14,6 +14,7 @@ repositories {
     maven {
         url 'http://nexus.gluonhq.com/nexus/content/repositories/releases'
     }
+    mavenLocal()
 }
 
 mainClassName = 'com.devoxx.DevoxxApplication'
@@ -30,8 +31,8 @@ dependencies {
     compile project(':DevoxxClientCommon')
     compile 'com.gluonhq:glisten-afterburner:1.2.0'
 
-    compile 'com.gluonhq:charm-cloudlink-client:4.3.5'
-    compile 'com.gluonhq:charm-glisten-connect-view:4.3.5'
+    compile 'com.gluonhq:charm-cloudlink-client:4.4.0-SNAPSHOT'
+    compile 'com.gluonhq:charm-glisten-connect-view:4.4.0-SNAPSHOT'
     compile 'com.gluonhq:maps:1.0.1'
 
     androidCompile 'com.google.android.gms:play-services-wearable:9.4.0'

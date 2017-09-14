@@ -511,7 +511,6 @@ public class DevoxxService implements Service {
         GluonObservableObject<Schedules> schedules = fnSchedules.call(Schedules.class);
         schedules.addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
-                System.out.println("schedules = " + schedules);
                 // define number of links
                 List<Link> linksToProcess = new ArrayList<>();
                 for (Link link : newValue.getLinks()) {

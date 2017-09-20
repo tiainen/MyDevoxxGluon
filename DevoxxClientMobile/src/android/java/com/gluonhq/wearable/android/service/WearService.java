@@ -146,7 +146,9 @@ public class WearService extends WearableListenerService {
             try {
                 Thread.sleep(2000);
                 LOG.log(Level.WARNING, String.format("Wearable Service: Error sending message [%d/%d]", count, max));
-            } catch (InterruptedException ie) {}
+            } catch (InterruptedException ie) {
+                //no-op
+            }
         }
     }
     
@@ -223,9 +225,9 @@ public class WearService extends WearableListenerService {
         ArrayList<DataMap> conferencesDataMap = new ArrayList<>();
         
         if (service.getConference() == null || service.getConference().getId() == null || service.getConference().getId().isEmpty()) {
-            Services.get(SettingsService.class).ifPresent(settingsService -> {
-                configuredConference = settingsService.retrieve(DevoxxSettings.SAVED_CONFERENCE_ID);
-            });    
+            Services.get(SettingsService.class).ifPresent(settingsService ->
+                configuredConference = settingsService.retrieve(DevoxxSettings.SAVED_CONFERENCE_ID)
+            );
         } else {
             configuredConference = service.getConference().getId();
         }
@@ -238,8 +240,7 @@ public class WearService extends WearableListenerService {
             conferenceDataMap.putString(WearableConstants.DATAMAP_COUNTRY, conference.getCountry());
             conferenceDataMap.putString(WearableConstants.DATAMAP_COUNTRY_ID, conference.getId());
             conferenceDataMap.putBoolean(WearableConstants.DATAMAP_COUNTRY_SELECTED,
-                    configuredConference != null ?
-                            conference.getId().equals(configuredConference) : false);
+                    configuredConference != null && conference.getId().equals(configuredConference));
             
             conferenceDataMap.putString(WearableConstants.DATAMAP_COUNTRY_TIMEZONE, conference.getTimezone());
             conferenceDataMap.putString(WearableConstants.DATAMAP_COUNTRY_FROM_DAY, conference.getFromDate());
@@ -297,12 +298,10 @@ public class WearService extends WearableListenerService {
     
     private void setFavSession(String sessionSlotId, boolean fav) {
         if (service.readyProperty().get()) {
-                doSetFavSession(sessionSlotId, fav);
+            doSetFavSession(sessionSlotId, fav);
         } else {
-            service.readyProperty().addListener((obs, ov, nv) -> {
-                doSetFavSession(sessionSlotId, fav);
-            });
-        }  
+            service.readyProperty().addListener((obs, ov, nv) -> doSetFavSession(sessionSlotId, fav));
+        }
     }
 
     private void doSetFavSession(String sessionSlotId, boolean fav) {
@@ -373,9 +372,7 @@ public class WearService extends WearableListenerService {
         if (service.readyProperty().get()) {
             getSpeakers(sessionSlotId);
         } else {
-            service.readyProperty().addListener((obs, ov, nv) -> {
-                getSpeakers(sessionSlotId);
-            });
+            service.readyProperty().addListener((obs, ov, nv) -> getSpeakers(sessionSlotId));
         }
         
     }
@@ -501,8 +498,7 @@ public class WearService extends WearableListenerService {
             } else {
                 is2 = new URL(path).openStream();
             }
-            final Bitmap decodeStream1 = BitmapFactory.decodeStream(is2, null, o2);
-            return decodeStream1;
+            return BitmapFactory.decodeStream(is2, null, o2);
         } catch (IOException e) {
             LOG.log(Level.WARNING, "Wearable Service: Error in decodeAndScaleInputStream", e);
         }
@@ -576,6 +572,7 @@ public class WearService extends WearableListenerService {
                     String url = TWITTER_URL + data.substring(1);
                     b.launchExternalBrowser(url);
                 } catch (IOException | URISyntaxException ex) {
+                    //no-op
                 }
             });
         }

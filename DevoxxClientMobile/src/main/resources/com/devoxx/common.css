@@ -254,7 +254,8 @@
     -fx-max-width: infinity;
 }
 
-.session-view .session-info > .info {
+.session-view .session-info > .info,
+.session-view .session-info > .audience-level {
     -fx-text-fill: -otn-lighter2;
 }
 
@@ -262,6 +263,23 @@
     -fx-padding: 0.910488em;
     -fx-wrap-text: true;
     -fx-text-alignment: justify;
+}
+
+.session-view .tag-container {
+    -fx-vgap: 5;
+    -fx-hgap: 5;
+    -fx-padding: 5 5 10 5;
+}
+
+.session-view .tag {
+    -fx-padding: 5;
+    -fx-font-size: 12;
+    -fx-background-color: #E8B286;
+    -fx-background-radius: 2;
+}
+
+.session-view .tag > .icon-text {
+    -fx-font-size: 15;
 }
 
 .app-bar > .action-items > .fav-box {

@@ -1,4 +1,4 @@
 .gradle/
 build/
 .idea/
-/src/main/resources/gluoncloudlink_config.json
+DevoxxClientMobile/src/main/resources/gluoncloudlink_config.json

@@ -30,6 +30,7 @@ import com.devoxx.DevoxxView;
 import com.devoxx.model.Link;
 import com.devoxx.model.Session;
 import com.devoxx.model.Speaker;
+import com.devoxx.model.Tag;
 import com.devoxx.model.TalkSpeaker;
 import com.devoxx.service.Service;
 import com.devoxx.util.DevoxxBundle;
@@ -56,12 +57,14 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
 import javax.inject.Inject;
 import java.time.ZonedDateTime;
+import java.util.List;
 
 public class SessionPresenter extends GluonPresenter<DevoxxApplication> {
 
@@ -149,7 +152,21 @@ public class SessionPresenter extends GluonPresenter<DevoxxApplication> {
             Label sessionSummary = new Label(session.getSummary());
             sessionSummary.setWrapText(true);
             sessionSummary.getStyleClass().add("session-summary");
-            sessionView.setCenter(createScrollPane(sessionSummary));
+
+            final FlowPane flowPane = new FlowPane();
+            flowPane.getStyleClass().add("tag-container");
+            final List<Tag> tags = session.getTalk().getTags();
+            if (tags != null) {
+                for (Tag tag : tags) {
+                    if (tag.getValue() != null && !tag.getValue().isEmpty())
+                        flowPane.getChildren().add(createTag(tag.getValue()));
+                }
+            }
+
+            final ScrollPane scrollPane = createScrollPane(sessionSummary);
+            final VBox vBox = new VBox(scrollPane, flowPane);
+            VBox.setVgrow(scrollPane, Priority.ALWAYS);
+            sessionView.setCenter(vBox);
         });
         infoButton.setUserData(Pane.INFO);
 
@@ -213,7 +230,6 @@ public class SessionPresenter extends GluonPresenter<DevoxxApplication> {
         sessionNotesEditor = new SessionNotesEditor(session.getTalk().getId(), service);
         sessionView.setCenter(sessionNotesEditor);
     }
-
     
     private ObservableList<Speaker> fetchSpeakers(Session activeSession) {
         ObservableList<Speaker> speakers = FXCollections.observableArrayList();
@@ -312,7 +328,29 @@ public class SessionPresenter extends GluonPresenter<DevoxxApplication> {
         VBox vbox = new VBox(sessionTitle, sessionInfo);
         vbox.getStyleClass().add("session-info");
 
+        // Check for audience level
+        if (session.getTalk().getAudienceLevel() != null) {
+            Label audienceLevel = fetchLabelForAudienceLevel(session.getTalk().getAudienceLevel());
+            audienceLevel.getStyleClass().add("audience-level");
+            vbox.getChildren().add(audienceLevel);
+        }
         return vbox;
+    }
+
+    private Label fetchLabelForAudienceLevel(String audienceLevel) {
+        if (audienceLevel.equalsIgnoreCase("L1")) {
+            return new Label(DevoxxBundle.getString("OTN.SESSION.AUDIENCE_LEVEL.BEGINNER"));
+        } else if (audienceLevel.equalsIgnoreCase("L2")) {
+            return new Label(DevoxxBundle.getString("OTN.SESSION.AUDIENCE_LEVEL.INTERMEDIATE"));
+        } else {
+            return new Label(DevoxxBundle.getString("OTN.SESSION.AUDIENCE_LEVEL.EXPERT"));
+        }
+    }
+
+    private Label createTag(String tagText) {
+        final Label tag = new Label(tagText, MaterialDesignIcon.LOCAL_OFFER.graphic());
+        tag.getStyleClass().add("tag");
+        return tag;
     }
 
     /**

@@ -28,13 +28,13 @@
         </rowConstraints>
          <children>
             <Label text="%OTN.BADGE.FIRST_NAME" />
-            <TextField fx:id="firstName" editable="false" GridPane.columnIndex="1" />
+            <TextField fx:id="firstName" disable="true" GridPane.columnIndex="1" />
             <Label text="%OTN.BADGE.LAST_NAME" GridPane.rowIndex="1" />
-            <TextField fx:id="lastName" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <TextField fx:id="lastName" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
             <Label text="%OTN.BADGE.COMPANY" GridPane.rowIndex="2" />
-            <TextField fx:id="company" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            <TextField fx:id="company" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="2" />
             <Label text="%OTN.BADGE.EMAIL" GridPane.rowIndex="3" />
-            <TextField fx:id="email" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+            <TextField fx:id="email" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="3" />
             <TextArea fx:id="details" prefHeight="80.0" promptText="%OTN.BADGE.DETAILS.PROMPT" GridPane.columnSpan="2" GridPane.rowIndex="5" />
             <Label text="%OTN.BADGE.DETAILS" GridPane.columnSpan="2" GridPane.rowIndex="4" />
             <Pane GridPane.columnSpan="2" GridPane.rowIndex="6" GridPane.vgrow="ALWAYS" />

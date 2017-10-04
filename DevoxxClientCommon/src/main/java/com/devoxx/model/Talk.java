@@ -35,20 +35,24 @@ public class Talk {
     private String track;
     private String trackId;
     private String lang;
+    private String audienceLevel;
     private String summary;
     private String summaryAsHtml;
+    private List<Tag> tags;
     private List<TalkSpeaker> speakers;
 
     public Talk() {}
 
-    public Talk(String id, String title, String talkType, String track, String lang, String summary, String summaryAsHtml, List<TalkSpeaker> speakers) {
+    public Talk(String id, String title, String talkType, String track, String lang, String audienceLevel, String summary, String summaryAsHtml, List<Tag> tags, List<TalkSpeaker> speakers) {
         this.id = id;
         this.title = title;
         this.talkType = talkType;
         this.track = track;
         this.lang = lang;
+        this.audienceLevel = audienceLevel;
         this.summary = summary;
         this.summaryAsHtml = summaryAsHtml;
+        this.tags = tags;
         this.speakers = speakers;
     }
 
@@ -76,12 +80,20 @@ public class Talk {
         return lang;
     }
 
+    public String getAudienceLevel() {
+        return audienceLevel;
+    }
+
     public String getSummary() {
         return summary;
     }
 
     public String getSummaryAsHtml() {
         return summaryAsHtml;
+    }
+
+    public List<Tag> getTags() {
+        return tags;
     }
 
     public List<TalkSpeaker> getSpeakers() {
@@ -128,6 +140,13 @@ public class Talk {
     }
 
     /**
+     * @param audienceLevel the audience level to set
+     */
+    public void setAudienceLevel(String audienceLevel) {
+        this.audienceLevel = audienceLevel;
+    }
+
+    /**
      * @param summary the summary to set
      */
     public void setSummary(String summary) {
@@ -139,6 +158,13 @@ public class Talk {
      */
     public void setSummaryAsHtml(String summaryAsHtml) {
         this.summaryAsHtml = summaryAsHtml;
+    }
+
+    /**
+     * @param tags the tags to set
+     */
+    public void setTags(List<Tag> tags) {
+        this.tags = tags;
     }
 
     /**

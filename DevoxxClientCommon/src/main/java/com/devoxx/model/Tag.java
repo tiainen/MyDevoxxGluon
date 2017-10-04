@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017, Gluon Software
+ * Copyright (c) 2016, Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -25,25 +25,21 @@
  */
 package com.devoxx.model;
 
-import java.util.List;
+public class Tag {
+    
+    private String value;
 
-public class Tracks {
+    public Tag() {}
 
-    private String content;
-    private List<Track> tracks;
-
-    public Tracks() {
+    public Tag(String value) {
+        this.value = value;
     }
 
-    public Tracks(List<Track> tracks) {
-        this.tracks = tracks;
+    public String getValue() {
+        return value;
     }
 
-    public List<Track> getTracks() {
-        return tracks;
-    }
-
-    public void setTracks(List<Track> tracks) {
-        this.tracks = tracks;
+    public void setValue(String value) {
+        this.value = value;
     }
 }

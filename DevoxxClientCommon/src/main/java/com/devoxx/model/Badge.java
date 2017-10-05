@@ -96,12 +96,13 @@ public class Badge extends Searchable {
     }
 
     public String toCSV() {
-        return String.join(",",
-                     safeStr(getFirstName()),
-                     safeStr(getLastName()),
-                     safeStr(getCompany()),
-                     safeStr(getEmail()),
-                     safeStr(getDetails()) );
+        StringBuilder csv = new StringBuilder();
+        csv.append(safeStr(getFirstName()));
+        csv.append(",").append(safeStr(getLastName()));
+        csv.append(",").append(safeStr(getCompany()));
+        csv.append(",").append(safeStr(getEmail()));
+        csv.append(",").append(safeStr(getDetails()));
+        return csv.toString();
     }
     
 }

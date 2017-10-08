@@ -39,8 +39,8 @@ public class Badge extends Searchable {
         if (qr != null && ! qr.isEmpty() && qr.split("::").length == 5) {
             String[] split = qr.split("::");
             badgeId.set(split[0]);
-            firstName.set(split[1]);
-            lastName.set(split[2]);
+            lastName.set(split[1]);
+            firstName.set(split[2]);
             company.set(split[3]);
             email.set(split[4]);
         }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <wearableApp package="com.devoxx">
-    <versionCode>241</versionCode>
+    <versionCode>242</versionCode>
     <versionName>1.0</versionName>
     <rawPathResId>devoxx_client_wearable</rawPathResId>
 </wearableApp>

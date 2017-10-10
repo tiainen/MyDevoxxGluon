@@ -933,6 +933,7 @@ public class DevoxxService implements Service {
     private void clearCfpAccount() {
         cfpUserUuid.set("");
         notes = null;
+        badges = null;
         favoredSessions = null;
         scheduledSessions = null;
         internalFavoredSessions.clear();

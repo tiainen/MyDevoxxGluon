@@ -33,13 +33,10 @@ import com.devoxx.model.Favored;
 import com.devoxx.model.Favorite;
 import com.devoxx.model.Favorites;
 import com.devoxx.model.Floor;
-import com.devoxx.model.Link;
 import com.devoxx.model.Note;
 import com.devoxx.model.ProposalType;
 import com.devoxx.model.ProposalTypes;
 import com.devoxx.model.Scheduled;
-import com.devoxx.model.Schedules;
-import com.devoxx.model.SchedulesOfDay;
 import com.devoxx.model.Session;
 import com.devoxx.model.SessionId;
 import com.devoxx.model.Speaker;
@@ -81,7 +78,6 @@ import com.gluonhq.connect.provider.InputStreamListDataReader;
 import com.gluonhq.connect.provider.ListDataReader;
 import com.gluonhq.connect.provider.RestClient;
 import com.gluonhq.connect.source.BasicInputDataSource;
-import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
@@ -108,14 +104,9 @@ import java.io.OutputStreamWriter;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -450,37 +441,6 @@ public class DevoxxService implements Service {
         return sessions.getReadOnlyProperty();
     }
 
-    /**
-     * Refreshes the global sessions list with the provided sessions list, by setting the provided
-     * sessions to the global sessions. Everything that is currently listed in the global sessions
-     * list will be cleared.
-     *
-     * @param newSessions The new list of sessions to be set on the global list of sessions.
-     */
-    private void loadingOfSessionsFinished(List<Session> newSessions) {
-        for (Session session : newSessions) {
-            session.setStartDate(timeToZonedDateTime(session.getFromTimeMillis(), getConference().getConferenceZoneId()));
-            session.setEndDate(timeToZonedDateTime(session.getToTimeMillis(), getConference().getConferenceZoneId()));
-        }
-
-        sessions.setAll(newSessions);
-
-        retrieveAuthenticatedUserSessionInformation();
-    }
-
-    /**
-     * This method will first try to read sessions from a conference-specific json file
-     * in the app-specific storage.
-     * If it can't find this file, it will call retrieveSessionsInternalCfp() which will
-     * retrieve the sessions from the CFP backend, and it will immediately return while
-     * the list might not be complete.
-     * <br/>
-     * If it can find that file, it will retrieve and parse its content. Once this is
-     * done, the <code>sessions</code> field is filled with the parsed content.
-     * <br/>
-     * When the retrieving from the local file is completed (with state failed or succeeded)),
-     * it will call retrieveSessionsInternalCfp() to always reload data from the CFP backend.
-     */
     private void retrieveSessionsInternal() {
         // if a retrieval is ongoing, don't initiate again
         if (!retrievingSessions.compareAndSet(false, true)) {
@@ -490,100 +450,35 @@ public class DevoxxService implements Service {
 
         sessions.clear();
 
-        ObservableList<Session> internalSessionsList = FXCollections.observableArrayList();
-
-        RemoteFunctionObject fnSchedules = RemoteFunctionBuilder.create("schedules")
+        RemoteFunctionList fnSessions = RemoteFunctionBuilder.create("sessions")
                 .param("cfpEndpoint", getConference().getCfpEndpoint())
                 .param("conferenceId", getConference().getId())
-                .object();
+                .list();
 
-        GluonObservableObject<Schedules> schedules = fnSchedules.call(Schedules.class);
-        schedules.addListener((observable, oldValue, newValue) -> {
-            if (newValue != null) {
-                // define number of links
-                List<Link> linksToProcess = new ArrayList<>();
-                for (Link link : newValue.getLinks()) {
-                    if (link.getHref() != null && !link.getHref().isEmpty()) {
-                        linksToProcess.add(link);
-                    }
-                }
-
-                CountDownLatch fillSessionsCountDownLatch = new CountDownLatch(linksToProcess.size());
-                final AtomicInteger processed = new AtomicInteger(0);
-                Thread thread = new Thread(() -> {
-                    try {
-                        boolean ok = fillSessionsCountDownLatch.await(2, TimeUnit.MINUTES);
-                        LOG.log(Level.FINE, "Fill sessions countdown latch ok? " + ok + "; Links processed successfully: " + processed.get() + " / " + linksToProcess.size());
-
-                        // only refresh global sessions and store info when all links are processed without problems
-                        if (ok && processed.get() == linksToProcess.size()) {
-                            Platform.runLater(() -> {
-                                loadingOfSessionsFinished(internalSessionsList);
-                                retrievingSessions.set(false);
-                            });
-                        } else {
-                            retrievingSessions.set(false);
-                        }
-                    } catch (InterruptedException e) {
-                        retrievingSessions.set(false);
-                        LOG.log(Level.INFO, "FillSessions thread was interrupted.", e);
-                    }
-                }, "FillSessions");
-                thread.setDaemon(true);
-                thread.start();
-
-                LOG.log(Level.FINE, "Need to process " + linksToProcess.size() + " links.");
-                for (Link link : linksToProcess) {
-                    fillAllSessionsOfDay(internalSessionsList, link, fillSessionsCountDownLatch, processed);
+        GluonObservableList<Session> sessionsList = fnSessions.call(Session.class);
+        ListChangeListener<Session> sessionsListChangeListener = change -> {
+            while (change.next()) {
+                for (Session session : change.getAddedSubList()) {
+                    session.setStartDate(timeToZonedDateTime(session.getFromTimeMillis(), getConference().getConferenceZoneId()));
+                    session.setEndDate(timeToZonedDateTime(session.getToTimeMillis(), getConference().getConferenceZoneId()));
                 }
             }
-        });
-
-        // when the loading of sessions failed, set retrieving boolean to false
-        schedules.stateProperty().addListener((obs, ov, nv) -> {
-            if (nv == ConnectState.FAILED) {
+        };
+        sessionsList.addListener(sessionsListChangeListener);
+        sessionsList.stateProperty().addListener((obs, ov, nv) -> {
+            if (nv == ConnectState.SUCCEEDED || nv == ConnectState.FAILED) {
                 retrievingSessions.set(false);
-                LOG.log(Level.INFO, "Failed to retrieve links.", schedules.getException());
+                sessionsList.removeListener(sessionsListChangeListener);
+            }
+            if (nv == ConnectState.SUCCEEDED) {
+                retrieveAuthenticatedUserSessionInformation();
+            }
+            if (nv == ConnectState.FAILED) {
+                sessionsList.getException().printStackTrace();
             }
         });
-    }
 
-    /**
-     * Retrieve all sessions for a specific day, and add them to the list of all sessions.
-     * Adding sessions happens on the FX App thread, so no concurrency issues are expected.
-     * @param allSessions the list of all sessions from all days, passed by the caller.
-     * @param link a link containing info about the URL for retrieving the sessions for a specific day
-     */
-    private void fillAllSessionsOfDay(ObservableList<Session> allSessions, Link link,
-            CountDownLatch fillSessionsCountDownLatch, AtomicInteger processed) {
-        String day = link.getHref().substring(link.getHref().lastIndexOf('/') + 1);
-
-        RemoteFunctionObject fnScheduleOfDay = RemoteFunctionBuilder.create("scheduleOfDay")
-                .param("cfpEndpoint", getConference().getCfpEndpoint())
-                .param("conferenceId", getConference().getId())
-                .param("day", day)
-                .object();
-
-        GluonObservableObject<SchedulesOfDay> scheduleOfDay = fnScheduleOfDay.call(SchedulesOfDay.class);
-        scheduleOfDay.stateProperty().addListener((obs, oldState, newState) -> {
-            LOG.log(Level.FINE, "scheduleOfDay State for link " + link + ": " + oldState + " -> " + newState);
-            if (newState == ConnectState.FAILED) {
-                fillSessionsCountDownLatch.countDown();
-                scheduleOfDay.getException().printStackTrace();
-            } else if (newState == ConnectState.SUCCEEDED) {
-                processed.incrementAndGet();
-                fillSessionsCountDownLatch.countDown();
-            }
-        });
-        scheduleOfDay.addListener((observable, oldValue, newValue) -> {
-            if (newValue != null) {
-                for (Session session : newValue.getSlots()) {
-                    if (session.getTalk() != null) {
-                        allSessions.add(session);
-                    }
-                }
-            }
-        });
+        sessions.set(sessionsList);
     }
 
     @Override
@@ -1038,6 +933,7 @@ public class DevoxxService implements Service {
     private void clearCfpAccount() {
         cfpUserUuid.set("");
         notes = null;
+        badges = null;
         favoredSessions = null;
         scheduledSessions = null;
         internalFavoredSessions.clear();

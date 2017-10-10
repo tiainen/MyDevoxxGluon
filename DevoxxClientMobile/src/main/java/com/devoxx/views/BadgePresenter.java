@@ -123,6 +123,13 @@ public class BadgePresenter extends GluonPresenter<DevoxxApplication> {
                 saveBadge();
             }
         });
+        
+        // Fix for keyboard not showing on Android.
+        // As TextArea is the only focusable control, 
+        // it receives focus by default.
+        // Set the focus on the View, such that TextArea receives
+        // focus when tapped.
+        badgeView.setOnShown(event -> badgeView.requestFocus());
     }
 
     public void setBadgeId(String badgeId) {

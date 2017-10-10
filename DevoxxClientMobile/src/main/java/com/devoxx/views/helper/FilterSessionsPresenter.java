@@ -110,9 +110,6 @@ public class FilterSessionsPresenter extends GluonPresenter<DevoxxApplication> {
         }
         tracks.addListener((ListChangeListener<Track>) c -> {
             while (c.next()) {
-                for (Track track : c.getAddedSubList()) {
-                    addTrackCheckBox(track);
-                }
                 for (Track track : c.getRemoved()) {
                     for (Iterator<Node> iterator = trackFilter.getChildren().iterator(); iterator.hasNext();) {
                         Node node = iterator.next();
@@ -120,6 +117,9 @@ public class FilterSessionsPresenter extends GluonPresenter<DevoxxApplication> {
                             iterator.remove();
                         }
                     }
+                }
+                for (Track track : c.getAddedSubList()) {
+                    addTrackCheckBox(track);
                 }
                 updateIsFilterApplied();
             }
@@ -131,9 +131,6 @@ public class FilterSessionsPresenter extends GluonPresenter<DevoxxApplication> {
         }
         proposalTypes.addListener((ListChangeListener<ProposalType>) c -> {
             while (c.next()) {
-                for (ProposalType type : c.getAddedSubList()) {
-                    addProposalTypeCheckBox(type);
-                }
                 for (ProposalType type : c.getRemoved()) {
                     for (Iterator<Node> iterator = typeFilter.getChildren().iterator(); iterator.hasNext();) {
                         Node node = iterator.next();
@@ -141,6 +138,9 @@ public class FilterSessionsPresenter extends GluonPresenter<DevoxxApplication> {
                             iterator.remove();
                         }
                     }
+                }
+                for (ProposalType type : c.getAddedSubList()) {
+                    addProposalTypeCheckBox(type);
                 }
                 updateIsFilterApplied();
             }

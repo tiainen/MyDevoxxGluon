@@ -36,6 +36,7 @@ import com.devoxx.model.Floor;
 import com.devoxx.model.Link;
 import com.devoxx.model.Note;
 import com.devoxx.model.ProposalType;
+import com.devoxx.model.ProposalTypes;
 import com.devoxx.model.Scheduled;
 import com.devoxx.model.Schedules;
 import com.devoxx.model.SchedulesOfDay;
@@ -44,6 +45,7 @@ import com.devoxx.model.SessionId;
 import com.devoxx.model.Speaker;
 import com.devoxx.model.Sponsor;
 import com.devoxx.model.Track;
+import com.devoxx.model.Tracks;
 import com.devoxx.model.Vote;
 import com.devoxx.util.DevoxxBundle;
 import com.devoxx.util.DevoxxNotifications;
@@ -82,7 +84,6 @@ import com.gluonhq.connect.source.BasicInputDataSource;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
-import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyListProperty;
 import javafx.beans.property.ReadOnlyListWrapper;
@@ -172,9 +173,7 @@ public class DevoxxService implements Service {
     private final ReadOnlyListWrapper<Speaker> speakers = new ReadOnlyListWrapper<>(FXCollections.observableArrayList());
     private final AtomicBoolean retrievingSpeakers = new AtomicBoolean(false);
 
-    private ObservableList<Track> internalTracks = null;
     private ReadOnlyListWrapper<Track> tracks = new ReadOnlyListWrapper<>(FXCollections.observableArrayList());
-    private ObservableList<ProposalType> internalProposalTypes = null;
     private ReadOnlyListWrapper<ProposalType> proposalTypes = new ReadOnlyListWrapper<>(FXCollections.observableArrayList());
     private ReadOnlyListWrapper<Floor> exhibitionMaps;
 
@@ -257,19 +256,9 @@ public class DevoxxService implements Service {
 
                 retrieveSpeakersInternal();
 
-                if (internalTracks != null) {
-                    internalTracks.clear();
-                    Bindings.unbindContent(tracks, internalTracks);
-                }
-                internalTracks = retrieveTracksInternal();
-                Bindings.bindContent(tracks, internalTracks);
+                retrieveTracksInternal();
 
-                if (internalProposalTypes != null) {
-                    internalProposalTypes.clear();
-                    Bindings.unbindContent(proposalTypes, internalProposalTypes);
-                }
-                internalProposalTypes = retrieveProposalTypesInternal();
-                Bindings.bindContent(proposalTypes, internalProposalTypes);
+                retrieveProposalTypesInternal();
 
                 exhibitionMaps = new ReadOnlyListWrapper<>(retrieveExhibitionMapsInternal());
 
@@ -687,13 +676,14 @@ public class DevoxxService implements Service {
         return tracks.getReadOnlyProperty();
     }
 
-    private ObservableList<Track> retrieveTracksInternal() {
-        RemoteFunctionList fnTracks = RemoteFunctionBuilder.create("tracks")
+    private void retrieveTracksInternal() {
+        RemoteFunctionObject fnTracks = RemoteFunctionBuilder.create("tracks")
                 .param("cfpEndpoint", getConference().getCfpEndpoint())
                 .param("conferenceId", getConference().getId())
-                .list();
+                .object();
 
-        return fnTracks.call(Track.class);
+        GluonObservableObject<Tracks> gluonTracks = fnTracks.call(Tracks.class);
+        gluonTracks.addListener((obs, ov, nv) -> tracks.setAll(gluonTracks.get().getTracks()));
     }
 
     @Override
@@ -701,13 +691,14 @@ public class DevoxxService implements Service {
         return proposalTypes.getReadOnlyProperty();
     }
 
-    private ObservableList<ProposalType> retrieveProposalTypesInternal() {
-        RemoteFunctionList fnTracks = RemoteFunctionBuilder.create("proposalTypes")
+    private void retrieveProposalTypesInternal() {
+        RemoteFunctionObject fnProposalTypes = RemoteFunctionBuilder.create("proposalTypes")
                 .param("cfpEndpoint", getConference().getCfpEndpoint())
                 .param("conferenceId", getConference().getId())
-                .list();
+                .object();
 
-        return fnTracks.call(ProposalType.class);
+        GluonObservableObject<ProposalTypes> gluonProposalTypes = fnProposalTypes.call(ProposalTypes.class);
+        gluonProposalTypes.addListener((obs, ov, nv) -> proposalTypes.setAll(gluonProposalTypes.get().getProposalTypes()));
     }
 
     @Override

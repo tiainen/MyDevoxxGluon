@@ -139,7 +139,7 @@ public class ScheduleCell extends CharmListCell<Session> {
         Node graphic = MaterialDesignIcon.FAVORITE.graphic();
         graphic.getStyleClass().add("fav-graphic");
         favLabel.setGraphic(graphic);
-        favLabel.setGraphicTextGap(1.0);
+        favLabel.prefHeightProperty().bind(label.heightProperty());
         label.setGraphic(favLabel);
         label.setContentDisplay(ContentDisplay.RIGHT);
 

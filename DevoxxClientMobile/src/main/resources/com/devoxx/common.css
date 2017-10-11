@@ -199,6 +199,11 @@
     -fx-font-size: 0.95em;
 }
 
+.schedule-cell > .list-tile > .text-box > .tertiary-text > .fav-label {
+    -fx-alignment: bottom-left;
+    -fx-graphic-text-gap: 1.0;
+}
+
 .schedule-cell > .list-tile > .secondary-graphic {
     -fx-padding: 0em;
 }

@@ -55,9 +55,10 @@ import java.util.Locale;
 
 import static com.devoxx.DevoxxView.SEARCH;
 import com.devoxx.views.SessionsPresenter;
+import com.gluonhq.charm.down.plugins.DeviceService;
 
 public class DevoxxApplication extends MobileApplication {
-    
+
     public static final String MENU_LAYER = "SideMenu";
     public static final String POPUP_FILTER_SESSIONS_MENU = "FilterSessionsMenu";
 
@@ -139,12 +140,26 @@ public class DevoxxApplication extends MobileApplication {
             }
         });
 
+        String deviceFactorSuffix = Services.get(DeviceService.class)
+                .map(s -> {
+                    if (Platform.isAndroid() && s.getModel() != null) {
+                        for (String device : DevoxxSettings.DEVICES_WITH_SANS_CSS) {
+                            if (s.getModel().toLowerCase(Locale.ROOT).startsWith(device)) {
+                                return "_sans";
+                            }
+                        }
+                    }
+                    return "";
+                })
+                .orElse("");
+
         String formFactorSuffix = Services.get(DisplayService.class)
                 .map(s -> s.isTablet() ? "_tablet" : "")
                 .orElse("");
 
-        String stylesheetName = String.format("devoxx_%s%s.css",
+        String stylesheetName = String.format("devoxx_%s%s%s.css",
                 Platform.getCurrent().name().toLowerCase(Locale.ROOT),
+                deviceFactorSuffix,
                 formFactorSuffix);
         scene.getStylesheets().add(DevoxxApplication.class.getResource(stylesheetName).toExternalForm());
         

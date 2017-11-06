@@ -30,6 +30,8 @@ import com.gluonhq.charm.down.plugins.SettingsService;
 
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
@@ -106,6 +108,11 @@ public class DevoxxSettings {
     public static final DateTimeFormatter NEWS_FORMATTER = DateTimeFormatter.ofPattern(NEWS_PATTERN, LOCALE);
 
     public static final String TWITTER_URL = "https://www.twitter.com/";
+
+    /**
+     * List of devices that don't support Roboto Medium font, and will use OpenSans instead
+     */
+    public static final List<String> DEVICES_WITH_SANS_CSS = Arrays.asList("oneplus");
 
     private static String uuid;
     public static String getUserUUID() {

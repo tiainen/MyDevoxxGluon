@@ -25,17 +25,17 @@
  */
 package com.devoxx.views.helper;
 
+import com.devoxx.DevoxxApplication;
 import com.devoxx.filter.TimePeriod;
 import com.devoxx.model.Conference;
 import com.devoxx.model.ProposalType;
-import com.devoxx.service.Service;
-import com.devoxx.model.Track;
-import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
-import com.gluonhq.charm.glisten.application.MobileApplication;
-import com.devoxx.DevoxxApplication;
 import com.devoxx.model.Session;
+import com.devoxx.model.Track;
+import com.devoxx.service.Service;
 import com.devoxx.util.DevoxxBundle;
 import com.devoxx.util.DevoxxSettings;
+import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
+import com.gluonhq.charm.glisten.application.MobileApplication;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -59,6 +59,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 import javax.inject.Inject;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Iterator;
 import java.util.function.Predicate;
@@ -66,7 +67,8 @@ import java.util.function.Predicate;
 import static com.devoxx.DevoxxApplication.POPUP_FILTER_SESSIONS_MENU;
 
 public class FilterSessionsPresenter extends GluonPresenter<DevoxxApplication> {
-    public static final TimePeriod DEFAULT_TIME_PERIOD = TimePeriod.MORE_THAN_ONE_HOUR_AGO;
+
+    private static final TimePeriod DEFAULT_TIME_PERIOD = TimePeriod.MORE_THAN_ONE_HOUR_AGO;
 
     @FXML private VBox dayFilter;
 
@@ -177,9 +179,21 @@ public class FilterSessionsPresenter extends GluonPresenter<DevoxxApplication> {
                 selectedTimePeriod = (TimePeriod) radioButton.getUserData();
                 updateIsFilterApplied();
             });
+            if (timePeriod == DEFAULT_TIME_PERIOD) {
+                radioButton.setSelected(true);
+            }
             periodRadioBtContainer.getChildren().add(radioButton);
         }
-        resetPeriodUI();
+        if (service.getConference() != null) {
+            updateTimePeriodSelection();
+            resetPeriodUI();
+        }
+        service.conferenceProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                updateTimePeriodSelection();
+                resetPeriodUI();
+            }
+        });
 
         if (service.getConference() != null) {
             updateDayFilter(service.getConference());
@@ -208,13 +222,23 @@ public class FilterSessionsPresenter extends GluonPresenter<DevoxxApplication> {
         updateSearchPredicate();
     }
 
+    private void updateTimePeriodSelection() {
+        Conference conference = service.getConference();
+        ZonedDateTime now = ZonedDateTime.now(conference.getConferenceZoneId());
+        if (conference.getStartDate().isAfter(now) || conference.getEndDate().isBefore(now)) {
+            selectedTimePeriod = TimePeriod.ALL;
+        } else {
+            selectedTimePeriod = DEFAULT_TIME_PERIOD;
+        }
+    }
+
     private void resetPeriodUI() {
-        if (DEFAULT_TIME_PERIOD == TimePeriod.ALL) {
+        if (selectedTimePeriod == TimePeriod.ALL) {
             periodAll.setSelected(true);
         } else {
             periodAll.setSelected(false);
             for (Node child : periodRadioBtContainer.getChildren()) {
-                if (child.getUserData() == DEFAULT_TIME_PERIOD) {
+                if (child.getUserData() == selectedTimePeriod) {
                     ((RadioButton) child).setSelected(true);
                     return;
                 }

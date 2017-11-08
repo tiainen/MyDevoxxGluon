@@ -30,6 +30,7 @@ import com.devoxx.DevoxxView;
 import com.devoxx.model.Badge;
 import com.devoxx.service.Service;
 import com.devoxx.util.DevoxxBundle;
+import com.devoxx.util.DevoxxCountry;
 import com.devoxx.util.DevoxxSettings;
 import com.devoxx.views.cell.BadgeCell;
 import com.devoxx.views.helper.LoginPrompter;
@@ -78,7 +79,7 @@ public class BadgesPresenter extends GluonPresenter<DevoxxApplication> {
             Services.get(ShareService.class).ifPresent(s -> {
                 File root = Services.get(StorageService.class).flatMap(storage -> storage.getPublicStorage("Documents")).orElse(null);
                 if (root != null) {
-                    File file = new File(root, "DevoxxBE-badges.csv");
+                    File file = new File(root, "Devoxx" + DevoxxCountry.getConfShortName(service.getConference().getCountry()) + "-badges.csv");
                     if (file.exists()) {
                         file.delete();
                     }
@@ -135,7 +136,7 @@ public class BadgesPresenter extends GluonPresenter<DevoxxApplication> {
                     Badge badge = new Badge(qr);
                     if (badge.getBadgeId() != null) {
                         boolean exists = false;
-                        for (Badge b : service.retrieveBadges()) {
+                        for (Badge b : badges) {
                             if (b.getBadgeId().equals(badge.getBadgeId())) {
                                 Toast toast = new Toast(DevoxxBundle.getString("OTN.BADGES.QR.EXISTS"));
                                 toast.show();

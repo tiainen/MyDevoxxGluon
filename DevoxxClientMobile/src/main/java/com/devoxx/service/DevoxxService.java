@@ -862,7 +862,7 @@ public class DevoxxService implements Service {
 
     @Override
     public void refreshFavorites() {
-        if (getConference() != null &&
+        if (getConference() != null && DevoxxSettings.conferenceHasFavoriteCount(getConference()) && 
                 (allFavorites.getState() == ConnectState.SUCCEEDED || allFavorites.getState() == ConnectState.FAILED)) {
             RemoteFunctionObject fnAllFavorites = RemoteFunctionBuilder.create("allFavorites")
                     .param("0", getConference().getCfpEndpoint())
@@ -945,6 +945,9 @@ public class DevoxxService implements Service {
     private void retrieveAuthenticatedUserSessionInformation() {
         if (isAuthenticated()) {
             retrieveNotes();
+            if (DevoxxSettings.conferenceHasBadgeView(getConference())) {
+                retrieveBadges();
+            }
 
             retrieveFavoredSessions();
             retrieveScheduledSessions();

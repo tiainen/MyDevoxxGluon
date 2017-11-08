@@ -30,6 +30,7 @@ import com.devoxx.DevoxxView;
 import com.devoxx.control.CircularSelector;
 import com.devoxx.model.Conference;
 import com.devoxx.service.Service;
+import com.devoxx.util.DevoxxCountry;
 import com.devoxx.util.DevoxxSettings;
 import com.gluonhq.charm.down.Services;
 import com.gluonhq.charm.down.plugins.SettingsService;
@@ -75,7 +76,8 @@ public class ConfSelectorPresenter extends GluonPresenter<DevoxxApplication> {
         if (item == null) {
             image = new Image(ConfSelectorPresenter.class.getResource(CONF_CIRCLE_NAME).toExternalForm());
         } else {
-            URL imageSource = ConfSelectorPresenter.class.getResource("splash_btn_" + item.getShortName().toLowerCase(Locale.ROOT) + ".png");
+            URL imageSource = ConfSelectorPresenter.class.getResource("splash_btn_" + 
+                    DevoxxCountry.getConfShortName(item.getCountry()).toLowerCase(Locale.ROOT) + ".png");
             if (imageSource != null) {
                 image = new Image(imageSource.toExternalForm());
             } else {

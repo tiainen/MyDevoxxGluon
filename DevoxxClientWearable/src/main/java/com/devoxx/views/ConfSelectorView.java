@@ -33,6 +33,7 @@ import com.gluonhq.charm.glisten.mvc.View;
 import com.devoxx.control.CircularSelector;
 import com.devoxx.model.Conference;
 import com.devoxx.model.WearableModel;
+import com.devoxx.util.DevoxxCountry;
 import com.devoxx.util.WearableConstants;
 import com.devoxx.views.helper.WearUtils;
 import com.gluonhq.charm.down.Platform;
@@ -41,6 +42,7 @@ import com.gluonhq.charm.down.plugins.WearableService;
 import com.gluonhq.charm.glisten.application.MobileApplication;
 import java.net.URL;
 import java.util.List;
+import java.util.Locale;
 import javafx.animation.PauseTransition;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -59,7 +61,8 @@ public class ConfSelectorView extends View {
         if (item == null) {
             image = new Image(ConfSelectorView.class.getResource("circle.png").toExternalForm());
         } else {
-            URL imageSource = ConfSelectorView.class.getResource("splash_btn_" + item.getShortName().toLowerCase() + ".png");
+            URL imageSource = ConfSelectorView.class.getResource("splash_btn_" + 
+                    DevoxxCountry.getConfShortName(item.getCountry()).toLowerCase(Locale.ROOT) + ".png");
             if (imageSource != null) {
                 image = new Image(imageSource.toExternalForm());
             } else {

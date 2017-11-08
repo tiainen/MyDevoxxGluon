@@ -113,13 +113,11 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
     private ToggleButton favoriteButton;
 
     public void initialize() {
-        // navigation between all sessions and the users scheduled sesssions
-        if (DevoxxSettings.FAV_AND_SCHEDULE_ENABLED) {
-            final BottomNavigation bottomNavigation = createBottomNavigation();
-            sessions.setBottom(bottomNavigation);
-        } else {
-            sessions.setCenter(createSessionsList(ContentDisplayMode.ALL));
-        }
+        createView();
+        service.conferenceProperty().addListener((obs, ov, nv) -> {
+            sessions.setBottom(null);
+            createView();
+        });
 
         final Button filterButton = createFilterButton();
 
@@ -130,7 +128,7 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
             appBar.getActionItems().addAll(getApp().getSearchButton(), filterButton);
 
             // Will never be null
-            if (DevoxxSettings.FAV_AND_SCHEDULE_ENABLED) {
+            if (DevoxxSettings.FAV_AND_SCHEDULE_ENABLED && DevoxxSettings.conferenceHasSchFav(service.getConference())) {
                 lastSelectedButton.setSelected(true);
                 if (currentHandler != null) {
                     currentHandler.handle(null);
@@ -161,6 +159,15 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
             }
             return filterPopup;
         });
+    }
+
+    private void createView() {
+        // navigation between all sessions and the users scheduled sesssions
+        if (DevoxxSettings.FAV_AND_SCHEDULE_ENABLED && DevoxxSettings.conferenceHasSchFav(service.getConference())) {
+            sessions.setBottom(createBottomNavigation());
+        } else {
+            sessions.setCenter(createSessionsList(ContentDisplayMode.ALL));
+        }
     }
 
     private BottomNavigation createBottomNavigation() {

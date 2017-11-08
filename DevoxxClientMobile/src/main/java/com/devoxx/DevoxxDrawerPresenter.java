@@ -40,6 +40,7 @@ import java.util.Optional;
 import static com.gluonhq.charm.glisten.application.MobileApplication.HOME_VIEW;
 
 import com.devoxx.util.DevoxxBundle;
+import com.devoxx.util.DevoxxCountry;
 import com.devoxx.util.DevoxxSettings;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
@@ -118,9 +119,9 @@ public class DevoxxDrawerPresenter extends GluonPresenter<DevoxxApplication> {
 
     private String getConferenceShortName(Conference conference) {
         if (conference != null) {
-            String conferenceShortName = conference.getShortName();
+            String conferenceShortName = DevoxxCountry.getConfShortName(conference.getCountry());
             if (conferenceShortName != null) {
-                if (conferenceShortName.equals("BE")) {
+                if (DevoxxSettings.conferenceHasBadgeView(conference)) {
                     for (Node item : drawer.getItems()) {
                         if (((NavigationDrawer.Item) item).getTitle().equals(DevoxxBundle.getString("OTN.VIEW.NOTES"))) {
                             final int index = drawer.getItems().indexOf(item) + 1;

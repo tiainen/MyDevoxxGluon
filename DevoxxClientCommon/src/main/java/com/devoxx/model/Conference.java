@@ -34,9 +34,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -47,16 +45,6 @@ public class Conference {
     private static final Logger LOG = Logger.getLogger(Conference.class.getName());
 
     private static final ZoneId DEFAULT_CONFERENCE_ZONE_ID = ZoneId.of("Europe/Brussels");
-
-    private static final Map<String, String> conferenceShortNames = new HashMap<>();
-    static {
-        conferenceShortNames.put("France", "FR");
-        conferenceShortNames.put("UK", "UK");
-        conferenceShortNames.put("Poland", "PL");
-        conferenceShortNames.put("Belgium", "BE");
-        conferenceShortNames.put("Morocco", "MA");
-        conferenceShortNames.put("United States", "US");
-    }
 
     private String id;
     private String confType;
@@ -99,10 +87,6 @@ public class Conference {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public String getShortName() {
-        return conferenceShortNames.get(country);
     }
 
     public String getConfType() {

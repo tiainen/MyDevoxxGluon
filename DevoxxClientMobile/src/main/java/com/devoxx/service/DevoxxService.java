@@ -93,6 +93,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.scene.control.Button;
 
 import java.io.BufferedWriter;
@@ -104,6 +105,8 @@ import java.io.OutputStreamWriter;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -166,7 +169,7 @@ public class DevoxxService implements Service {
 
     private ReadOnlyListWrapper<Track> tracks = new ReadOnlyListWrapper<>(FXCollections.observableArrayList());
     private ReadOnlyListWrapper<ProposalType> proposalTypes = new ReadOnlyListWrapper<>(FXCollections.observableArrayList());
-    private ReadOnlyListWrapper<Floor> exhibitionMaps;
+    private ReadOnlyListWrapper<Floor> exhibitionMaps = new ReadOnlyListWrapper<>(FXCollections.observableArrayList());
 
     // user specific data
     private ObservableList<Session> favoredSessions;
@@ -251,7 +254,7 @@ public class DevoxxService implements Service {
 
                 retrieveProposalTypesInternal();
 
-                exhibitionMaps = new ReadOnlyListWrapper<>(retrieveExhibitionMapsInternal());
+                retrieveExhibitionMapsInternal();
 
                 favorites.clear();
                 refreshFavorites();
@@ -261,25 +264,33 @@ public class DevoxxService implements Service {
         Services.get(SettingsService.class).ifPresent(settingsService -> {
             String configuredConference = settingsService.retrieve(DevoxxSettings.SAVED_CONFERENCE_ID);
             if (configuredConference != null) {
-                conferences.initializedProperty().addListener(new ChangeListener<Boolean>() {
-                    @Override
-                    public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-                        if (newValue) {
-                            findAndSetConference(configuredConference, conferences);
-                            conferences.initializedProperty().removeListener(this);
+                if (conferences.isInitialized()) {
+                    findAndSetConference(configuredConference, conferences);
+                } else {
+                    conferences.initializedProperty().addListener(new ChangeListener<Boolean>() {
+                        @Override
+                        public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                            if (newValue) {
+                                findAndSetConference(configuredConference, conferences);
+                                conferences.initializedProperty().removeListener(this);
+                            }
                         }
-                    }
-                });
+                    });
+                }
             } else {
-                conferences.initializedProperty().addListener(new ChangeListener<Boolean>() {
-                    @Override
-                    public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-                        if (newValue) {
-                            ready.set(true);
-                            conferences.initializedProperty().removeListener(this);
+                if (conferences.isInitialized()) {
+                    ready.set(true);
+                } else {
+                    conferences.initializedProperty().addListener(new ChangeListener<Boolean>() {
+                        @Override
+                        public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                            if (newValue) {
+                                ready.set(true);
+                                conferences.initializedProperty().removeListener(this);
+                            }
                         }
-                    }
-                });
+                    });
+                }
             }
         });
     }
@@ -606,20 +617,32 @@ public class DevoxxService implements Service {
         return exhibitionMaps.getReadOnlyProperty();
     }
 
-    private ObservableList<Floor> retrieveExhibitionMapsInternal() {
-        boolean isTablet = Services.get(DisplayService.class).map(DisplayService::isTablet).orElse(false);
-        boolean isPhone = Services.get(DisplayService.class).map(DisplayService::isPhone).orElse(false);
-        boolean isDesktop = Services.get(DisplayService.class).map(DisplayService::isDesktop).orElse(true);
+    private void retrieveExhibitionMapsInternal() {
+        Task<List<Floor>> task = new Task<List<Floor>>() {
+            @Override
+            protected List<Floor> call() throws Exception {
+                boolean isTablet = Services.get(DisplayService.class).map(DisplayService::isTablet).orElse(false);
+                boolean isPhone = Services.get(DisplayService.class).map(DisplayService::isPhone).orElse(false);
+                boolean isDesktop = Services.get(DisplayService.class).map(DisplayService::isDesktop).orElse(true);
 
-        ObservableList<Floor> floors = FXCollections.observableArrayList();
-        for (Floor floor : getConference().getFloors()) {
-            if (floor.getImg().startsWith("http") &&
-                    (("phone".equals(floor.getTarget()) && isPhone) ||
-                            ("tablet".equals(floor.getTarget()) && (isDesktop || isTablet)))) {
-                floors.add(floor);
+                List<Floor> floors = new ArrayList<>();
+                for (Floor floor : getConference().getFloors()) {
+                    if (floor.getImg().startsWith("http") &&
+                            (("phone".equals(floor.getTarget()) && isPhone) ||
+                                    ("tablet".equals(floor.getTarget()) && (isDesktop || isTablet)))) {
+                        floors.add(floor);
+                    }
+                }
+
+                return floors;
             }
-        }
-        return floors;
+        };
+
+        task.setOnSucceeded(event -> exhibitionMaps.setAll(task.getValue()));
+
+        Thread retrieveExhibitionMapsThread = new Thread(task);
+        retrieveExhibitionMapsThread.setDaemon(true);
+        retrieveExhibitionMapsThread.start();
     }
 
     @Override

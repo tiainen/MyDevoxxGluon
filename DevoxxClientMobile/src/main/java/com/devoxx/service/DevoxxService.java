@@ -922,7 +922,9 @@ public class DevoxxService implements Service {
     private void retrieveAuthenticatedUserSessionInformation() {
         if (isAuthenticated()) {
             retrieveNotes();
-            retrieveBadges();
+            if (DevoxxSettings.conferenceHasBadgeView(getConference())) {
+                retrieveBadges();
+            }
 
             retrieveFavoredSessions();
             retrieveScheduledSessions();

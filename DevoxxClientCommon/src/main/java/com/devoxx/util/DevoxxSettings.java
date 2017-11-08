@@ -25,12 +25,14 @@
  */
 package com.devoxx.util;
 
+import com.devoxx.model.Conference;
 import com.gluonhq.charm.down.Services;
 import com.gluonhq.charm.down.plugins.SettingsService;
 
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -108,11 +110,31 @@ public class DevoxxSettings {
     public static final DateTimeFormatter NEWS_FORMATTER = DateTimeFormatter.ofPattern(NEWS_PATTERN, LOCALE);
 
     public static final String TWITTER_URL = "https://www.twitter.com/";
-
+    
     /**
      * List of devices that don't support Roboto Medium font, and will use OpenSans instead
      */
     public static final List<String> DEVICES_WITH_SANS_CSS = Arrays.asList("oneplus");
+    
+    /**
+     * List of conferences countries that support the Badges View
+     */
+    private static final EnumSet<DevoxxCountry> CONFERENCE_COUNTRIES_WITH_BADGES = EnumSet.of(DevoxxCountry.BE);
+
+    /**
+     * List of conferences contries that don't support favorite count
+     */
+    private static final EnumSet<DevoxxCountry> CONFERENCE_COUNTRIES_WITHOUT_FAVORITE_COUNT = EnumSet.of(DevoxxCountry.MA);
+
+    /**
+     * List of conferences contries that don't support voting
+     */
+    private static final EnumSet<DevoxxCountry> CONFERENCE_COUNTRIES_WITHOUT_VOTING = EnumSet.of(DevoxxCountry.MA);
+
+    /**
+     * List of conferences contries that don't support favorite and schedule
+     */
+    private static final EnumSet<DevoxxCountry> CONFERENCE_COUNTRIES_WITHOUT_SCH_FAV = EnumSet.of(DevoxxCountry.MA);
 
     private static String uuid;
     public static String getUserUUID() {
@@ -143,5 +165,30 @@ public class DevoxxSettings {
     public static void setLastVoteCast(long updatedLastVoteCast) {
         lastVoteCast = updatedLastVoteCast;
         Services.get(SettingsService.class).ifPresent(s -> s.store(LAST_VOTE_CAST, String.valueOf(lastVoteCast)));
+    }
+    
+    public static boolean conferenceHasBadgeView(Conference conference) {
+        return conferenceInSet(CONFERENCE_COUNTRIES_WITH_BADGES, conference);
+    }
+    
+    public static boolean conferenceHasVoting(Conference conference) {
+        return ! conferenceInSet(CONFERENCE_COUNTRIES_WITHOUT_VOTING, conference);
+    }
+    
+    public static boolean conferenceHasFavoriteCount(Conference conference) {
+        return ! conferenceInSet(CONFERENCE_COUNTRIES_WITHOUT_FAVORITE_COUNT, conference);
+    }
+    
+    public static boolean conferenceHasSchFav(Conference conference) {
+        return ! conferenceInSet(CONFERENCE_COUNTRIES_WITHOUT_SCH_FAV, conference);
+    }
+    
+    private static boolean conferenceInSet(EnumSet set, Conference conference) {
+        if (conference == null) {
+            return false;
+        }
+        return DevoxxCountry.fromCountry(conference.getCountry())
+                .map(set::contains)
+                .orElse(false);
     }
 }

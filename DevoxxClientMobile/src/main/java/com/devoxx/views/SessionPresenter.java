@@ -134,8 +134,8 @@ public class SessionPresenter extends GluonPresenter<DevoxxApplication> {
 
         // update app bar
         final AppBar appBar = sessionView.getApplication().getAppBar();
-        if (DevoxxSettings.FAV_AND_SCHEDULE_ENABLED) {
-            appBar.getActionItems().removeAll(scheduleBtn, favoriteBtn);
+        appBar.getActionItems().removeAll(scheduleBtn, favoriteBtn);
+        if (DevoxxSettings.FAV_AND_SCHEDULE_ENABLED && DevoxxSettings.conferenceHasSchFav(service.getConference())) {
             scheduleBtn = sessionVisuals.getSelectedButton(activeSession);
             favoriteBtn = sessionVisuals.getFavoriteButton(activeSession);
             appBar.getActionItems().addAll(scheduleBtn, favoriteBtn);
@@ -216,9 +216,13 @@ public class SessionPresenter extends GluonPresenter<DevoxxApplication> {
         voteButton.setUserData(Pane.VOTE);
 
         if (session.getTalk() == null || session.getTalk().getSpeakers() == null) {
-            bottomNavigation.getActionItems().addAll(infoButton, noteButton, voteButton);
+            bottomNavigation.getActionItems().addAll(infoButton, noteButton);
         } else {
-            bottomNavigation.getActionItems().addAll(infoButton, speakerButton, noteButton, voteButton);
+            bottomNavigation.getActionItems().addAll(infoButton, speakerButton, noteButton);
+        }
+        
+        if (DevoxxSettings.conferenceHasVoting(service.getConference())) {
+            bottomNavigation.getActionItems().add(voteButton);
         }
 
         infoButton.setSelected(true);

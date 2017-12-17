@@ -7,7 +7,7 @@
         <key>CFBundleVersion</key>
         <!-- buildnumber --><string>246</string>
         <key>CFBundleShortVersionString</key>
-        <string>2.5.0</string>
+        <string>2.6.0</string>
         <key>CFBundleExecutable</key>
         <string>DevoxxClient</string>
         <key>CFBundleIconFiles</key>
@@ -92,7 +92,6 @@
         </dict>  
         <key>NSCameraUsageDescription</key>
         <string>Barscan requires access to the Camera Service</string>
-</dict>
     <key>UILaunchImages</key>
     <array>
     <dict>

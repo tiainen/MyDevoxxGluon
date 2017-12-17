@@ -24,7 +24,7 @@
                 <string>Icon-Small</string>
         </array>
         <key>CFBundleName</key>
-        <string>My Devoxx</string>
+        <string>Devoxx</string>
         <key>CFBundlePackageType</key>
         <string>APPL</string>
         <key>LSRequiresIPhoneOS</key>

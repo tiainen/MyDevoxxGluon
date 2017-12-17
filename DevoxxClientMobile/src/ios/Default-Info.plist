@@ -92,7 +92,6 @@
         </dict>  
         <key>NSCameraUsageDescription</key>
         <string>Barscan requires access to the Camera Service</string>
-</dict>
     <key>UILaunchImages</key>
     <array>
     <dict>

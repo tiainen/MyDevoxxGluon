@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, 2017, Gluon Software
+ * Copyright (c) 2016, 2017, 2018, Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -48,6 +48,7 @@ import com.gluonhq.charm.glisten.layout.layer.SidePopupView;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import javafx.beans.InvalidationListener;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.transformation.FilteredList;
@@ -73,6 +74,7 @@ import java.util.function.Predicate;
 
 public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
     private static final String SESSIONS_PLACEHOLDER_MESSAGE = DevoxxBundle.getString("OTN.CONTENT_CATALOG.ALL_SESSIONS.PLACEHOLDER_MESSAGE");
+    private static final String SESSIONS_PLACEHOLDER_FILTER_MESSAGE = DevoxxBundle.getString("OTN.CONTENT_CATALOG.ALL_SESSIONS.PLACEHOLDER_FILTER_MESSAGE");
 
     private static final String SCHEDULE_LOGIN_PROMPT_MESSAGE = DevoxxBundle.getString("OTN.CONTENT_CATALOG.SCHEDULED_SESSIONS.LOGIN_PROMPT");
     private static final String SCHEDULE_EMPTY_LIST_MESSAGE = DevoxxBundle.getString("OTN.CONTENT_CATALOG.SCHEDULED_SESSIONS.EMPTY_LIST_MESSAGE");
@@ -266,12 +268,22 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
 
         switch (mode) {
             case ALL: {
-                scheduleListView.setPlaceholder(new Placeholder(SESSIONS_PLACEHOLDER_MESSAGE, SESSIONS_ICON));
+                scheduleListView.placeholderProperty().bind(Bindings.createObjectBinding(() -> {
+                    if (filterPresenter.isFilterApplied()) {
+                        return new Placeholder(SESSIONS_PLACEHOLDER_FILTER_MESSAGE, SESSIONS_ICON);
+                    }
+                    return new Placeholder(SESSIONS_PLACEHOLDER_MESSAGE, SESSIONS_ICON);
+                }, filterPresenter.filterAppliedProperty()));
                 filteredSessions = new FilteredList<>(service.retrieveSessions());
                 break;
             }
             case SCHEDULED: {
-                scheduleListView.setPlaceholder(new Placeholder(SCHEDULE_EMPTY_LIST_MESSAGE, SCHEDULER_ICON));
+                scheduleListView.placeholderProperty().bind(Bindings.createObjectBinding(() -> {
+                    if (filterPresenter.isFilterApplied()) {
+                        return new Placeholder(SESSIONS_PLACEHOLDER_FILTER_MESSAGE, SCHEDULER_ICON);
+                    }
+                    return new Placeholder(SCHEDULE_EMPTY_LIST_MESSAGE, SCHEDULER_ICON);
+                }, filterPresenter.filterAppliedProperty()));
                 filteredSessions = new FilteredList<>(service.retrieveScheduledSessions());
                 refreshButton.setOnAction(e -> {
                     new Toast(DevoxxBundle.getString("OTN.CONTENT_CATALOG.SCHEDULED_SESSIONS.REFRESH")).show();
@@ -282,7 +294,12 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
                 break;
             }
             case FAVORITE: {
-                scheduleListView.setPlaceholder(new Placeholder(FAVORITE_EMPTY_LIST_MESSAGE, FAVORITE_ICON));
+                scheduleListView.placeholderProperty().bind(Bindings.createObjectBinding(() -> {
+                    if (filterPresenter.isFilterApplied()) {
+                        return new Placeholder(SESSIONS_PLACEHOLDER_FILTER_MESSAGE, FAVORITE_ICON);
+                    }
+                    return new Placeholder(FAVORITE_EMPTY_LIST_MESSAGE, FAVORITE_ICON);
+                }, filterPresenter.filterAppliedProperty()));
                 filteredSessions = new FilteredList<>(service.retrieveFavoredSessions());
                 refreshButton.setOnAction(e -> {
                     new Toast(DevoxxBundle.getString("OTN.CONTENT_CATALOG.FAVORITE_SESSIONS.REFRESH")).show();

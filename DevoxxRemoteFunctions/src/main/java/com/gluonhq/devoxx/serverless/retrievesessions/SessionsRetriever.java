@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 public class SessionsRetriever {
 
-    private static final Logger LOGGER = Logger.getLogger(SessionsHandler.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(SessionsRetriever.class.getName());
 
     private static final Client client = ClientBuilder.newClient();
 

@@ -1,0 +1,23 @@
+apply plugin: 'java'
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    compile 'org.glassfish.jersey.core:jersey-client:2.26'
+    compile 'org.glassfish.jersey.inject:jersey-hk2:2.26'
+    compile "org.glassfish:javax.json:1.0.4"
+    compile 'com.amazonaws:aws-lambda-java-core:1.1.0'
+}
+
+task buildAwsLambda(type: Zip) {
+    from compileJava
+    from processResources
+    into('lib') {
+        from configurations.runtime
+    }
+    classifier = 'aws-lambda'
+}
+
+build.dependsOn buildAwsLambda

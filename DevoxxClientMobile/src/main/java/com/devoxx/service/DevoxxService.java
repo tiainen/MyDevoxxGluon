@@ -65,6 +65,7 @@ import com.gluonhq.cloudlink.client.data.RemoteFunctionList;
 import com.gluonhq.cloudlink.client.data.RemoteFunctionObject;
 import com.gluonhq.cloudlink.client.data.SyncFlag;
 import com.gluonhq.cloudlink.client.push.PushClient;
+import com.gluonhq.cloudlink.client.user.LoginMethod;
 import com.gluonhq.cloudlink.client.user.User;
 import com.gluonhq.cloudlink.client.user.UserClient;
 import com.gluonhq.connect.ConnectState;
@@ -918,22 +919,32 @@ public class DevoxxService implements Service {
             Services.get(SettingsService.class).ifPresent(settingsService -> {
                 String devoxxCfpAccountUuid = settingsService.retrieve(DevoxxSettings.SAVED_ACCOUNT_ID);
                 if (devoxxCfpAccountUuid == null) {
-                    RemoteFunctionObject fnVerifyAccount = RemoteFunctionBuilder.create("verifyAccount")
-                            .param("0", getConference().getCfpEndpoint())
-                            .param("1", user.getNetworkId())
-                            .param("2", user.getLoginMethod().name())
-                            .param("3", user.getEmail())
-                            .object();
-                    GluonObservableObject<String> accountUuid = fnVerifyAccount.call(String.class);
-                    accountUuid.initializedProperty().addListener((obs, ov, nv) -> {
-                        LOG.log(Level.INFO, "Verified user " + user + " as account with uuid " + accountUuid);
-                        cfpUserUuid.set(accountUuid.get());
-                        settingsService.store(DevoxxSettings.SAVED_ACCOUNT_ID, accountUuid.get());
+                    if (user.getLoginMethod() == LoginMethod.Type.CUSTOM) {
+                        LOG.log(Level.INFO, "Logged in user " + user + " as account with uuid " + user.getNetworkId());
+                        cfpUserUuid.set(user.getNetworkId());
+                        settingsService.store(DevoxxSettings.SAVED_ACCOUNT_ID, user.getNetworkId());
 
                         if (successRunnable != null) {
                             successRunnable.run();
                         }
-                    });
+                    } else {
+                        RemoteFunctionObject fnVerifyAccount = RemoteFunctionBuilder.create("verifyAccount")
+                                .param("0", getConference().getCfpEndpoint())
+                                .param("1", user.getNetworkId())
+                                .param("2", user.getLoginMethod().name())
+                                .param("3", user.getEmail())
+                                .object();
+                        GluonObservableObject<String> accountUuid = fnVerifyAccount.call(String.class);
+                        accountUuid.initializedProperty().addListener((obs, ov, nv) -> {
+                            LOG.log(Level.INFO, "Verified user " + user + " as account with uuid " + accountUuid);
+                            cfpUserUuid.set(accountUuid.get());
+                            settingsService.store(DevoxxSettings.SAVED_ACCOUNT_ID, accountUuid.get());
+
+                            if (successRunnable != null) {
+                                successRunnable.run();
+                            }
+                        });
+                    }
                 } else {
                     LOG.log(Level.INFO, "Verified user " + user + " retrieved from settings " + devoxxCfpAccountUuid);
                     cfpUserUuid.set(devoxxCfpAccountUuid);

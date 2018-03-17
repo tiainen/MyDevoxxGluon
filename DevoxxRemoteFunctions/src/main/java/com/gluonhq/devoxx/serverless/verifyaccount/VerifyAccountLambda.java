@@ -23,7 +23,7 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.gluonhq.devoxx.serverless.retrievesessions;
+package com.gluonhq.devoxx.serverless.verifyaccount;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
@@ -40,14 +40,16 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 
-public class SessionsLambda implements RequestStreamHandler {
+public class VerifyAccountLambda implements RequestStreamHandler {
 
+    @Override
     public void handleRequest(InputStream input, OutputStream output, Context context) throws IOException {
         try (JsonReader reader = Json.createReader(input)) {
             JsonObject jsonInput = reader.readObject();
             String cfpEndpoint = jsonInput.getString("cfpEndpoint");
-            String conferenceId = jsonInput.getString("conferenceId");
-            String jsonOutput = new SessionsRetriever().retrieve(cfpEndpoint, conferenceId);
+            String email = jsonInput.getString("email");
+            String password = jsonInput.getString("password");
+            String jsonOutput = new AccountVerifier().verify(cfpEndpoint, email, password);
             try (Writer writer = new OutputStreamWriter(output)) {
                 writer.write(jsonOutput);
             }
@@ -55,9 +57,9 @@ public class SessionsLambda implements RequestStreamHandler {
     }
 
     public static void main(String[] args) throws IOException {
-        InputStream input = new ByteArrayInputStream("{\"cfpEndpoint\":\"https://cfp.devoxx.be/api\",\"conferenceId\":\"DVBE17\"}".getBytes(StandardCharsets.UTF_8));
+        InputStream input = new ByteArrayInputStream("{\"cfpEndpoint\":\"https://cfp.devoxx.be/api\",\"email\":\"my@email.com\",\"password\":\"mypwd\"}".getBytes(StandardCharsets.UTF_8));
         ByteArrayOutputStream output = new ByteArrayOutputStream();
-        new SessionsLambda().handleRequest(input, output, null);
+        new VerifyAccountLambda().handleRequest(input, output, null);
         System.out.println("output = " + new String(output.toByteArray(), StandardCharsets.UTF_8));
     }
 }

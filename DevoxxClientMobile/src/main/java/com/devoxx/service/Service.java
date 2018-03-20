@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, 2017, Gluon Software
+ * Copyright (c) 2016, 2018 Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -35,10 +35,12 @@ import com.devoxx.model.ProposalType;
 import com.devoxx.model.Session;
 import com.devoxx.model.Speaker;
 import com.devoxx.model.Sponsor;
+import com.devoxx.model.SponsorBadge;
 import com.devoxx.model.Track;
 import com.devoxx.model.Vote;
 import com.devoxx.views.helper.SessionVisuals.SessionListType;
 import com.gluonhq.connect.GluonObservableList;
+import com.gluonhq.connect.GluonObservableObject;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyListProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -135,7 +137,7 @@ public interface Service {
      *
      * @return
      */
-    ReadOnlyListProperty<Sponsor> retrieveSponsors();
+    ObservableList<Sponsor> retrieveSponsors();
 
     /**
      * Starts the authentication process. This will show a View in which the user can authenticate
@@ -212,6 +214,14 @@ public interface Service {
     ObservableList<Badge> retrieveBadges();
 
     /**
+     * Returns a list of badges that the authenticated sponsor has scanned. 
+     *
+     * @return
+     * @throws IllegalStateException when no user is currently authenticated
+     */
+    ObservableList<SponsorBadge> retrieveBadgesFor(String sponsor);
+
+    /**
      * Returns a list of favored or scheduled sessions from the cloud.
      * @param sessionListType Type of session
      * @return A list of favored or scheduled session.
@@ -237,4 +247,11 @@ public interface Service {
      * Updates the list of favorites from the data source.
      */
     void refreshFavorites();
+
+    /**
+     * Authenticates the password for the sponsor
+     * @param password The password for the sponsor
+     * @return The GluonObservableObject with response
+     */
+    GluonObservableObject<String> authenticateSponsor(String password);
 }

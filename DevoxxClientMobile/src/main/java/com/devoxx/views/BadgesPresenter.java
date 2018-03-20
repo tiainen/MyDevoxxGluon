@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017, Gluon Software
+ * Copyright (c) 2017, 2018 Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -28,95 +28,56 @@ package com.devoxx.views;
 import com.devoxx.DevoxxApplication;
 import com.devoxx.DevoxxView;
 import com.devoxx.model.Badge;
+import com.devoxx.model.Sponsor;
 import com.devoxx.service.Service;
 import com.devoxx.util.DevoxxBundle;
-import com.devoxx.util.DevoxxCountry;
 import com.devoxx.util.DevoxxSettings;
 import com.devoxx.views.cell.BadgeCell;
 import com.devoxx.views.helper.LoginPrompter;
-import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
-import com.gluonhq.charm.glisten.control.AppBar;
-import com.gluonhq.charm.glisten.control.CharmListView;
-import com.gluonhq.charm.glisten.mvc.View;
 import com.devoxx.views.helper.Placeholder;
 import com.gluonhq.charm.down.Services;
 import com.gluonhq.charm.down.plugins.BarcodeScanService;
-import com.gluonhq.charm.down.plugins.ShareService;
-import com.gluonhq.charm.down.plugins.StorageService;
+import com.gluonhq.charm.down.plugins.SettingsService;
+import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
+import com.gluonhq.charm.glisten.control.AppBar;
+import com.gluonhq.charm.glisten.control.CharmListView;
 import com.gluonhq.charm.glisten.control.Toast;
 import com.gluonhq.charm.glisten.layout.layer.FloatingActionButton;
+import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
-import java.util.Optional;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.layout.VBox;
+
 import javax.inject.Inject;
+import java.util.Optional;
 
 public class BadgesPresenter extends GluonPresenter<DevoxxApplication> {
-    private static final Logger LOG = Logger.getLogger(BadgesPresenter.class.getName());
+    
     private static final String ANONYMOUS_MESSAGE = DevoxxBundle.getString("OTN.BADGES.ANONYMOUS_MESSAGE");
     private static final String EMPTY_LIST_MESSAGE = DevoxxBundle.getString("OTN.BADGES.EMPTY_LIST_MESSAGE");
-
-    @Inject
-    private Service service;
-
+    
     @FXML
     private View badgesView;
 
+    @FXML
+    private VBox content;
+
+    @Inject
+    private Service service;
+    
     private CharmListView<Badge, String> lvBadges;
 
     public void initialize() {
-        Button shareButton = MaterialDesignIcon.SHARE.button(e -> {
-            Services.get(ShareService.class).ifPresent(s -> {
-                File root = Services.get(StorageService.class).flatMap(storage -> storage.getPublicStorage("Documents")).orElse(null);
-                if (root != null) {
-                    File file = new File(root, "Devoxx" + DevoxxCountry.getConfShortName(service.getConference().getCountry()) + "-badges.csv");
-                    if (file.exists()) {
-                        file.delete();
-                    }
-                    try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-                        writer.write("First Name,Last Name,Company,Email,Details");
-                        writer.newLine();
-                        for (Badge badge : service.retrieveBadges()) {
-                            writer.write(badge.toCSV());
-                            writer.newLine();
-                        }
-                    } catch (IOException ex) {
-                        LOG.log(Level.WARNING, "Error writing csv file ", ex);
-                    }
-                    s.share(DevoxxBundle.getString("OTN.BADGES.SHARE.SUBJECT"), 
-                            DevoxxBundle.getString("OTN.BADGES.SHARE.MESSAGE", DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT).format(LocalDate.now())), 
-                            "text/plain", file);
-                } else {
-                    LOG.log(Level.WARNING, "Error accessing local storage");
-                }
-            });
-        });
         lvBadges = new CharmListView<>();
         lvBadges.setPlaceholder(new Placeholder(EMPTY_LIST_MESSAGE, DevoxxView.BADGES.getMenuIcon()));
-        lvBadges.setCellFactory(param -> new BadgeCell());
-        shareButton.disableProperty().bind(lvBadges.itemsProperty().emptyProperty());
-
+        lvBadges.setCellFactory(param -> new BadgeCell<>());
+        
         badgesView.setOnShowing(event -> {
             AppBar appBar = getApp().getAppBar();
             appBar.setNavIcon(getApp().getNavMenuButton());
             appBar.setTitleText(DevoxxView.BADGES.getTitle());
-            appBar.getActionItems().addAll(getApp().getSearchButton(), shareButton);
-            
-            if (service.isAuthenticated() || !DevoxxSettings.USE_REMOTE_NOTES) {
-                loadAuthenticatedView();
-            } else {
-                loadAnonymousView();
-            }
         });
     }
 
@@ -128,6 +89,10 @@ public class BadgesPresenter extends GluonPresenter<DevoxxApplication> {
         final ObservableList<Badge> badges = service.retrieveBadges();
         lvBadges.setItems(badges);
         badgesView.setCenter(lvBadges);
+
+        final Button shareButton = getApp().getShareButton();
+        shareButton.disableProperty().bind(lvBadges.itemsProperty().emptyProperty());
+        getApp().getAppBar().getActionItems().setAll(getApp().getSearchButton(), shareButton);
         
         FloatingActionButton scan = new FloatingActionButton(MaterialDesignIcon.SCANNER.text, e -> {
             Services.get(BarcodeScanService.class).ifPresent(s -> {
@@ -144,9 +109,9 @@ public class BadgesPresenter extends GluonPresenter<DevoxxApplication> {
                                 break;
                             }
                         }
-                        if (! exists) {
+                        if (!exists) {
                             lvBadges.itemsProperty().add(badge);
-                            DevoxxView.BADGE.switchView().ifPresent(presenter -> ((BadgePresenter) presenter).setBadgeId(badge.getBadgeId()));
+                            DevoxxView.BADGE.switchView().ifPresent(presenter -> ((BadgePresenter) presenter).setBadgeId(badge.getBadgeId(), null));
                         }
                     } else {
                         Toast toast = new Toast(DevoxxBundle.getString("OTN.BADGES.BAD.QR"));
@@ -158,4 +123,40 @@ public class BadgesPresenter extends GluonPresenter<DevoxxApplication> {
         badgesView.getLayers().add(scan.getLayer());
     }
 
+    @FXML
+    public void showSponsor() {
+        Services.get(SettingsService.class).ifPresent(service -> {
+            final String sponsorName = service.retrieve(Sponsor.NAME);
+            final String sponsorSlug = service.retrieve(Sponsor.SLUG);
+            if (sponsorSlug == null) {
+                DevoxxView.SPONSORS.switchView();
+            } else {
+                DevoxxView.SPONSOR.switchView().ifPresent(presenter -> ((SponsorPresenter)presenter).setSponsor(sponsorName, sponsorSlug));
+            }
+        });
+    }
+
+    @FXML
+    public void showAttendee() {
+        final AppBar appBar = getApp().getAppBar();
+        appBar.setNavIcon(getBackButton());
+        if (service.isAuthenticated() || !DevoxxSettings.USE_REMOTE_NOTES) {
+            loadAuthenticatedView();
+        } else {
+            loadAnonymousView();
+        }
+    }
+
+    private Button getBackButton() {
+        return MaterialDesignIcon.ARROW_BACK.button(e -> showContent());
+    }
+    
+    private void showContent() {
+        final AppBar appBar = getApp().getAppBar();
+        appBar.getActionItems().clear();
+        appBar.setNavIcon(getApp().getNavMenuButton());
+        appBar.setTitleText(DevoxxView.BADGES.getTitle());
+        badgesView.getLayers().clear();
+        badgesView.setCenter(content);
+    }
 }

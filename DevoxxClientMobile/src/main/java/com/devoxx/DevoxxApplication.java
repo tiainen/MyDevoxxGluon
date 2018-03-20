@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016, 2017 Gluon Software
+ * Copyright (c) 2016, 2018 Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -26,17 +26,22 @@
 package com.devoxx;
 
 import com.airhacks.afterburner.injection.Injector;
+import com.devoxx.model.Badge;
 import com.devoxx.service.DevoxxService;
 import com.devoxx.service.Service;
 import com.devoxx.util.*;
 import com.devoxx.views.DevoxxSplash;
+import com.devoxx.views.SessionsPresenter;
 import com.devoxx.views.helper.ConnectivityUtils;
 import com.devoxx.views.helper.SessionVisuals;
 import com.gluonhq.charm.down.Platform;
 import com.gluonhq.charm.down.Services;
 import com.gluonhq.charm.down.plugins.ConnectivityService;
+import com.gluonhq.charm.down.plugins.DeviceService;
 import com.gluonhq.charm.down.plugins.DisplayService;
 import com.gluonhq.charm.down.plugins.SettingsService;
+import com.gluonhq.charm.down.plugins.ShareService;
+import com.gluonhq.charm.down.plugins.StorageService;
 import com.gluonhq.charm.glisten.afterburner.AppView;
 import com.gluonhq.charm.glisten.afterburner.GluonInstanceProvider;
 import com.gluonhq.charm.glisten.application.MobileApplication;
@@ -51,14 +56,22 @@ import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static com.devoxx.DevoxxView.SEARCH;
-import com.devoxx.views.SessionsPresenter;
-import com.gluonhq.charm.down.plugins.DeviceService;
 
 public class DevoxxApplication extends MobileApplication {
 
+    private static final Logger LOG = Logger.getLogger(DevoxxApplication.class.getName());
     public static final String MENU_LAYER = "SideMenu";
     public static final String POPUP_FILTER_SESSIONS_MENU = "FilterSessionsMenu";
 
@@ -215,5 +228,33 @@ public class DevoxxApplication extends MobileApplication {
     public Button getSearchButton() {
         return navSearchButton;
     }
-
+    
+    public Button getShareButton() {
+        return MaterialDesignIcon.SHARE.button(e -> {
+            Services.get(ShareService.class).ifPresent(s -> {
+                File root = Services.get(StorageService.class).flatMap(storage -> storage.getPublicStorage("Documents")).orElse(null);
+                if (root != null) {
+                    File file = new File(root, "Devoxx" + DevoxxCountry.getConfShortName(service.getConference().getCountry()) + "-badges.csv");
+                    if (file.exists()) {
+                        file.delete();
+                    }
+                    try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+                        writer.write("First Name,Last Name,Company,Email,Details");
+                        writer.newLine();
+                        for (Badge badge : service.retrieveBadges()) {
+                            writer.write(badge.toCSV());
+                            writer.newLine();
+                        }
+                    } catch (IOException ex) {
+                        LOG.log(Level.WARNING, "Error writing csv file ", ex);
+                    }
+                    s.share(DevoxxBundle.getString("OTN.BADGES.SHARE.SUBJECT"),
+                            DevoxxBundle.getString("OTN.BADGES.SHARE.MESSAGE", DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT).format(LocalDate.now())),
+                            "text/plain", file);
+                } else {
+                    LOG.log(Level.WARNING, "Error accessing local storage");
+                }
+            });
+        }); 
+    }
 }

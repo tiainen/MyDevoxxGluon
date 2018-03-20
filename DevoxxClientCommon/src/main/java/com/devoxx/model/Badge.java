@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017, Gluon Software
+ * Copyright (c) 2017, 2018 Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -25,9 +25,11 @@
  */
 package com.devoxx.model;
 
-import java.util.Locale;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+
+import java.util.Locale;
+import java.util.Objects;
 
 public class Badge extends Searchable {
 
@@ -89,6 +91,19 @@ public class Badge extends Searchable {
                containsKeyword(getEmail(), lowerKeyword)     ||
                containsKeyword(getDetails(), lowerKeyword);
 
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Badge badge = (Badge) o;
+        return Objects.equals(badgeId, badge.badgeId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(badgeId);
     }
 
     private String safeStr( String s ) {

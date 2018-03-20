@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, 2018 Gluon Software
+ * Copyright (c) 2018, Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -23,37 +23,28 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.devoxx.util;
+package com.devoxx.model;
 
-public enum SponsorCategory {
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+
+public class SponsorBadge extends Badge {
     
-    PLATINUM    ("OTN.SPONSOR.PLATINUM", "plat",    0),
-    GOLD        ("OTN.SPONSOR.GOLD",     "gold",    1),
-    SILVER      ("OTN.SPONSOR.SILVER",   "silver",  2),
-    BRONZE      ("OTN.SPONSOR.BRONZE",   "bronze",  3),
-    MG          ("OTN.SPONSOR.MG",       "mg",      4),
-    STARTUP     ("OTN.SPONSOR.STARTUP",  "startup", 5);
+    // slug
+    private final StringProperty slug = new SimpleStringProperty(this, "slug");
 
-    private final String name;
-    private final String slug;
-    private final int categoryPrecedence;
-
-    SponsorCategory(String name, String slug, int i) {
-        this.name = DevoxxBundle.getString(name);
-        this.slug = slug;
-        categoryPrecedence = i;
+    public SponsorBadge(String qr) {
+        super(qr);
     }
 
-    public int getValue() {
-        return categoryPrecedence;
+    public final StringProperty slugProperty() {
+       return slug;
     }
-
-    public String getSlug() {
-        return slug;
+    public final String getSlug() {
+       return slug.get();
     }
-
-    @Override
-    public String toString() {
-        return name;
+    public final void setSlug(String value) {
+        slug.set(value);
     }
+    
 }

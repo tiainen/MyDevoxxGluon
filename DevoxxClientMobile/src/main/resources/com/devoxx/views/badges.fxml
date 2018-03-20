@@ -1,5 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import com.gluonhq.charm.glisten.mvc.View?>
-<View fx:id="badgesView" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.devoxx.views.BadgesPresenter">
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Button?>
+<?import com.gluonhq.charm.glisten.control.Icon?>
+<View fx:id="badgesView" styleClass="badges-view" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.devoxx.views.BadgesPresenter">
+    <center>
+        <VBox fx:id="content" styleClass="content">
+            <Button fx:id="sponsor" text="Sponsor" onAction="#showSponsor">
+                <graphic>
+                    <Icon content="FOLDER_SPECIAL"/>
+                </graphic>
+            </Button>
+            <Button fx:id="attendee" text="Attendee" onAction="#showAttendee">
+                <graphic>
+                    <Icon content="AIRLINE_SEAT_RECLINE_NORMAL"/>
+                </graphic>
+            </Button>
+        </VBox>
+    </center>
 </View>

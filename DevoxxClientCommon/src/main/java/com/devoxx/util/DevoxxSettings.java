@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016, 2017, Gluon Software
+/*
+ * Copyright (c) 2016, 2018 Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -119,7 +119,7 @@ public class DevoxxSettings {
     /**
      * List of conferences countries that support the Badges View
      */
-    private static final EnumSet<DevoxxCountry> CONFERENCE_COUNTRIES_WITH_BADGES = EnumSet.of(DevoxxCountry.BE);
+    private static final EnumSet<DevoxxCountry> CONFERENCE_COUNTRIES_WITH_BADGES = EnumSet.of(DevoxxCountry.BE, DevoxxCountry.FR);
 
     /**
      * List of conferences contries that don't support favorite count

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017, Gluon Software
+ * Copyright (c) 2017, 2018 Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -75,31 +75,15 @@ public class BadgePresenter extends GluonPresenter<DevoxxApplication> {
     private Badge badge;
     private Timeline timer;
     private boolean textChanged;
-    
+    private String sponsorSlug;
+
     public void initialize() {
         badgeView.setOnShowing(event -> {
             AppBar appBar = getApp().getAppBar();
             appBar.setNavIcon(getApp().getNavBackButton());
             appBar.setTitleText(DevoxxView.BADGE.getTitle());
             appBar.getActionItems().add(MaterialDesignIcon.DELETE.button(e -> {
-                Dialog<Button> dialog = new Dialog<>();
-                Placeholder deleteDialogContent = new Placeholder(DevoxxBundle.getString("OTN.BADGE.DIALOG.REMOVE.TITLE"), 
-                        DevoxxBundle.getString("OTN.BADGE.DIALOG.REMOVE.CONTENT"), MaterialDesignIcon.HELP);
-
-                deleteDialogContent.setPrefWidth(MobileApplication.getInstance().getView().getScene().getWidth() - 40);
-
-                dialog.setContent(deleteDialogContent);
-                Button yesButton = new Button(DevoxxBundle.getString("OTN.LOGOUT_DIALOG.YES"));
-                Button noButton = new Button(DevoxxBundle.getString("OTN.LOGOUT_DIALOG.NO"));
-                yesButton.setOnAction(ev -> {
-                    service.retrieveBadges().remove(badge);
-                    badge = null;
-                    dialog.hide();
-                    getApp().switchToPreviousView();
-                });
-                noButton.setOnAction(ev -> dialog.hide());
-                dialog.getButtons().addAll(noButton, yesButton);
-
+                final Dialog<Button> dialog = createDialog();
                 dialog.showAndWait();
             }));
         });
@@ -132,21 +116,60 @@ public class BadgePresenter extends GluonPresenter<DevoxxApplication> {
         badgeView.setOnShown(event -> badgeView.requestFocus());
     }
 
-    public void setBadgeId(String badgeId) {
-        if (service.isAuthenticated() || !DevoxxSettings.USE_REMOTE_NOTES) {
-            for (Badge b : service.retrieveBadges()) {
+    private Dialog<Button> createDialog() {
+        Dialog<Button> dialog = new Dialog<>();
+        Placeholder deleteDialogContent = new Placeholder(DevoxxBundle.getString("OTN.BADGE.DIALOG.REMOVE.TITLE"), 
+                DevoxxBundle.getString("OTN.BADGE.DIALOG.REMOVE.CONTENT"), MaterialDesignIcon.HELP);
+
+        deleteDialogContent.setPrefWidth(MobileApplication.getInstance().getView().getScene().getWidth() - 40);
+
+        dialog.setContent(deleteDialogContent);
+        Button yesButton = new Button(DevoxxBundle.getString("OTN.LOGOUT_DIALOG.YES"));
+        Button noButton = new Button(DevoxxBundle.getString("OTN.LOGOUT_DIALOG.NO"));
+        yesButton.setOnAction(ev -> {
+            removeBadge();
+            badge = null;
+            dialog.hide();
+            getApp().switchToPreviousView();
+        });
+        noButton.setOnAction(ev -> dialog.hide());
+        dialog.getButtons().addAll(noButton, yesButton);
+        return dialog;
+    }
+
+    private void removeBadge() {
+        if (sponsorSlug == null || sponsorSlug.isEmpty()) {
+            service.retrieveBadges().remove(badge);
+        } else {
+            service.retrieveBadgesFor(sponsorSlug).remove(badge);
+        }
+    }
+
+    public void setBadgeId(String badgeId, String sponsorSlug) {
+        if (sponsorSlug == null || sponsorSlug.isEmpty()) {
+            if (service.isAuthenticated() || !DevoxxSettings.USE_REMOTE_NOTES) {
+                for (Badge b : service.retrieveBadges()) {
+                    if (b.getBadgeId().equals(badgeId)) {
+                        this.badge = b;
+                        break;
+                    }
+                }
+            }
+        } else {
+            this.sponsorSlug = sponsorSlug;
+            for (Badge b : service.retrieveBadgesFor(sponsorSlug)) {
                 if (b.getBadgeId().equals(badgeId)) {
                     this.badge = b;
                     break;
                 }
-            };
-            if (badge != null) {
-                firstName.setText(badge.getFirstName());
-                lastName.setText(badge.getLastName());
-                company.setText(badge.getCompany());
-                email.setText(badge.getEmail());
-                details.setText(badge.getDetails());
             }
+        }
+        if (badge != null) {
+            firstName.setText(badge.getFirstName());
+            lastName.setText(badge.getLastName());
+            company.setText(badge.getCompany());
+            email.setText(badge.getEmail());
+            details.setText(badge.getDetails());
         }
     }
     

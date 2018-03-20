@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, 2018 Gluon Software
+ * Copyright (c) 2018, Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -23,37 +23,34 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.devoxx.util;
+package com.devoxx.model;
 
-public enum SponsorCategory {
+public class Tenant {
     
-    PLATINUM    ("OTN.SPONSOR.PLATINUM", "plat",    0),
-    GOLD        ("OTN.SPONSOR.GOLD",     "gold",    1),
-    SILVER      ("OTN.SPONSOR.SILVER",   "silver",  2),
-    BRONZE      ("OTN.SPONSOR.BRONZE",   "bronze",  3),
-    MG          ("OTN.SPONSOR.MG",       "mg",      4),
-    STARTUP     ("OTN.SPONSOR.STARTUP",  "startup", 5);
+    private String name;
+    private String slug;
 
-    private final String name;
-    private final String slug;
-    private final int categoryPrecedence;
-
-    SponsorCategory(String name, String slug, int i) {
-        this.name = DevoxxBundle.getString(name);
-        this.slug = slug;
-        categoryPrecedence = i;
+    public Tenant() {
     }
 
-    public int getValue() {
-        return categoryPrecedence;
+    public Tenant(String name, String slug) {
+        this.name = name;
+        this.slug = slug;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getSlug() {
         return slug;
     }
 
-    @Override
-    public String toString() {
-        return name;
+    public void setSlug(String slug) {
+        this.slug = slug;
     }
 }

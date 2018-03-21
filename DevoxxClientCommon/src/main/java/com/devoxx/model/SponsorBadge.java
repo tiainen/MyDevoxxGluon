@@ -77,7 +77,7 @@ public class SponsorBadge extends Badge {
 
     private final StringProperty details = new SimpleStringProperty();
     public final StringProperty detailsProperty() { return details; }
-    public final String getDetails() { return details.get(); }
+    public final String getDetails() { return safeStr(details.get()); }
     public final void setDetails(String details) { this.details.set(details); }
 
 

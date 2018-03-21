@@ -811,9 +811,44 @@ public class DevoxxService implements Service {
 
         if (sponsorBadges == null) {
             sponsorBadges = internalRetrieveSponsorBadges();
+            
+            // every scanned sponsor badge must be posted with the remote function
+            sponsorBadges.addListener((ListChangeListener<SponsorBadge>) c -> {
+                while (c.next()) {
+                    if (c.wasAdded()) {
+                        for (SponsorBadge sponsorBadge : c.getAddedSubList()) {
+                            saveSponsorBadge(sponsorBadge);
+                        }
+                    }
+                }
+            });
         }
 
         return sponsorBadges;
+    }
+
+    private void saveSponsorBadge(SponsorBadge sponsorBadge) {
+        RemoteFunctionObject fnSponsorBadge = RemoteFunctionBuilder.create("saveSponsorBadge")
+                .param("0", getConference().getCfpEndpoint())
+                .param("1", sponsorBadge.getBadgeId())
+                .param("2", sponsorBadge.getFirstName())
+                .param("3", sponsorBadge.getLastName())
+                .param("4", sponsorBadge.getEmail())
+                .param("5", sponsorBadge.getCompany())
+                .param("6", sponsorBadge.getDetails())
+                .param("7", sponsorBadge.getSlug())
+                .object();
+        GluonObservableObject<String> sponsorBadgeResult = fnSponsorBadge.call(String.class);
+        sponsorBadgeResult.initializedProperty().addListener((obs, ov, nv) -> {
+            if (nv) {
+                LOG.log(Level.INFO, "Response from save sponsor badge: " + sponsorBadgeResult.get());
+            }
+        });
+        sponsorBadgeResult.stateProperty().addListener((obs, ov, nv) -> {
+            if (nv == ConnectState.FAILED) {
+                LOG.log(Level.WARNING, "Failed to call save sponsor badge: ", sponsorBadgeResult.getException());
+            }
+        });
     }
 
     @Override

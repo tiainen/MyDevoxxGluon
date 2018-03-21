@@ -78,6 +78,12 @@ public class BadgesPresenter extends GluonPresenter<DevoxxApplication> {
             AppBar appBar = getApp().getAppBar();
             appBar.setNavIcon(getApp().getNavMenuButton());
             appBar.setTitleText(DevoxxView.BADGES.getTitle());
+
+            if (service.isAuthenticated() || !DevoxxSettings.USE_REMOTE_NOTES) {
+                loadAuthenticatedView();
+            } else {
+                loadAnonymousView();
+            }
         });
     }
 
@@ -86,6 +92,10 @@ public class BadgesPresenter extends GluonPresenter<DevoxxApplication> {
     }
 
     private void loadAuthenticatedView() {
+        badgesView.setCenter(content);
+    }
+
+    private void loadAttendeeView() {
         final ObservableList<Badge> badges = service.retrieveBadges();
         lvBadges.setItems(badges);
         badgesView.setCenter(lvBadges);
@@ -140,11 +150,7 @@ public class BadgesPresenter extends GluonPresenter<DevoxxApplication> {
     public void showAttendee() {
         final AppBar appBar = getApp().getAppBar();
         appBar.setNavIcon(getBackButton());
-        if (service.isAuthenticated() || !DevoxxSettings.USE_REMOTE_NOTES) {
-            loadAuthenticatedView();
-        } else {
-            loadAnonymousView();
-        }
+        loadAttendeeView();
     }
 
     private Button getBackButton() {

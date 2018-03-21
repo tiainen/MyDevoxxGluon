@@ -28,15 +28,61 @@ package com.devoxx.model;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
+import java.util.Locale;
+import java.util.Objects;
+
 public class SponsorBadge extends Badge {
     
-    // slug
-    private final StringProperty slug = new SimpleStringProperty(this, "slug");
-
-    public SponsorBadge(String qr) {
-        super(qr);
+    public SponsorBadge() {
+        
     }
 
+    // The following fields and methods has to be duplicated because 
+    // CloudlinkClient library doesn't support models with inheritance
+    public SponsorBadge(String qr) {
+        if (qr != null && ! qr.isEmpty() && qr.split("::").length == 5) {
+            String[] split = qr.split("::");
+            badgeId.set(split[0]);
+            lastName.set(split[1]);
+            firstName.set(split[2]);
+            company.set(split[3]);
+            email.set(split[4]);
+        }
+    }
+
+    private final StringProperty badgeId = new SimpleStringProperty();
+    public final StringProperty badgeIdProperty() { return badgeId; }
+    public final String getBadgeId() { return badgeId.get(); }
+    public final void setBadgeId(String badgeId) { this.badgeId.set(badgeId); }
+
+    private final StringProperty firstName = new SimpleStringProperty();
+    public final StringProperty firstNameProperty() { return firstName; }
+    public final String getFirstName() { return firstName.get(); }
+    public final void setFirstName(String firstName) { this.firstName.set(firstName); }
+
+    private final StringProperty lastName = new SimpleStringProperty();
+    public final StringProperty lastNameProperty() { return lastName; }
+    public final String getLastName() { return lastName.get(); }
+    public final void setLastName(String lastName) { this.lastName.set(lastName); }
+
+    private final StringProperty company = new SimpleStringProperty();
+    public final StringProperty companyProperty() { return company; }
+    public final String getCompany() { return company.get(); }
+    public final void setCompany(String company) { this.company.set(company); }
+
+    private final StringProperty email = new SimpleStringProperty();
+    public final StringProperty emailProperty() { return email; }
+    public final String getEmail() { return email.get(); }
+    public final void setEmail(String email) { this.email.set(email); }
+
+    private final StringProperty details = new SimpleStringProperty();
+    public final StringProperty detailsProperty() { return details; }
+    public final String getDetails() { return details.get(); }
+    public final void setDetails(String details) { this.details.set(details); }
+
+
+    // slug
+    private final StringProperty slug = new SimpleStringProperty(this, "slug");
     public final StringProperty slugProperty() {
        return slug;
     }
@@ -46,5 +92,40 @@ public class SponsorBadge extends Badge {
     public final void setSlug(String value) {
         slug.set(value);
     }
-    
+
+    @Override
+    public boolean contains(String keyword) {
+        if (keyword == null || keyword.isEmpty()) {
+            return false;
+        }
+        final String lowerKeyword = keyword.toLowerCase(Locale.ROOT);
+
+        return containsKeyword(getFirstName(), lowerKeyword) || 
+                containsKeyword(getLastName(), lowerKeyword) ||
+                containsKeyword(getCompany(), lowerKeyword)  ||
+                containsKeyword(getEmail(), lowerKeyword)    ||
+                containsKeyword(getDetails(), lowerKeyword)  ||
+                containsKeyword(getSlug(), lowerKeyword);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        SponsorBadge that = (SponsorBadge) o;
+        return Objects.equals(badgeId, that.badgeId) &&
+                Objects.equals(slug, that.slug);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), badgeId, slug);
+    }
+
+    public String toCSV() {
+        StringBuilder csv = new StringBuilder(super.toCSV());
+        csv.append(",").append(safeStr(getSlug()));
+        return csv.toString();
+    }
 }

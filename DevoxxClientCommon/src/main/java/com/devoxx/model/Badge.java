@@ -48,35 +48,35 @@ public class Badge extends Searchable {
         }
     }
 
-    private final StringProperty badgeId = new SimpleStringProperty();
-    public final StringProperty badgeIdProperty() { return badgeId; }
-    public final String getBadgeId() { return badgeId.get(); }
-    public final void setBadgeId(String badgeId) { this.badgeId.set(badgeId); }
+    private StringProperty badgeId = new SimpleStringProperty();
+    public StringProperty badgeIdProperty() { return badgeId; }
+    public String getBadgeId() { return badgeId.get(); }
+    public void setBadgeId(String badgeId) { this.badgeId.set(badgeId); }
 
-    private final StringProperty firstName = new SimpleStringProperty();
-    public final StringProperty firstNameProperty() { return firstName; }
-    public final String getFirstName() { return firstName.get(); }
-    public final void setFirstName(String firstName) { this.firstName.set(firstName); }
+    private StringProperty firstName = new SimpleStringProperty();
+    public StringProperty firstNameProperty() { return firstName; }
+    public String getFirstName() { return firstName.get(); }
+    public void setFirstName(String firstName) { this.firstName.set(firstName); }
 
-    private final StringProperty lastName = new SimpleStringProperty();
-    public final StringProperty lastNameProperty() { return lastName; }
-    public final String getLastName() { return lastName.get(); }
-    public final void setLastName(String lastName) { this.lastName.set(lastName); }
+    private StringProperty lastName = new SimpleStringProperty();
+    public StringProperty lastNameProperty() { return lastName; }
+    public String getLastName() { return lastName.get(); }
+    public void setLastName(String lastName) { this.lastName.set(lastName); }
 
-    private final StringProperty company = new SimpleStringProperty();
-    public final StringProperty companyProperty() { return company; }
-    public final String getCompany() { return company.get(); }
-    public final void setCompany(String company) { this.company.set(company); }
+    private StringProperty company = new SimpleStringProperty();
+    public StringProperty companyProperty() { return company; }
+    public String getCompany() { return company.get(); }
+    public void setCompany(String company) { this.company.set(company); }
 
-    private final StringProperty email = new SimpleStringProperty();
-    public final StringProperty emailProperty() { return email; }
-    public final String getEmail() { return email.get(); }
-    public final void setEmail(String email) { this.email.set(email); }
+    private StringProperty email = new SimpleStringProperty();
+    public StringProperty emailProperty() { return email; }
+    public String getEmail() { return email.get(); }
+    public void setEmail(String email) { this.email.set(email); }
 
-    private final StringProperty details = new SimpleStringProperty();
-    public final StringProperty detailsProperty() { return details; }
-    public final String getDetails() { return details.get(); }
-    public final void setDetails(String details) { this.details.set(details); }
+    private StringProperty details = new SimpleStringProperty();
+    public StringProperty detailsProperty() { return details; }
+    public String getDetails() { return details.get(); }
+    public void setDetails(String details) { this.details.set(details); }
 
     @Override
     public boolean contains(String keyword) {
@@ -106,7 +106,7 @@ public class Badge extends Searchable {
         return Objects.hash(badgeId);
     }
 
-    private String safeStr( String s ) {
+    protected String safeStr(String s) {
         return s == null? "": s.trim();
     }
 

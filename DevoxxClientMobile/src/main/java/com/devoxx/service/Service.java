@@ -219,7 +219,7 @@ public interface Service {
      * @return
      * @throws IllegalStateException when no user is currently authenticated
      */
-    ObservableList<SponsorBadge> retrieveBadgesFor(String sponsor);
+    ObservableList<SponsorBadge> retrieveSponsorBadges();
 
     /**
      * Returns a list of favored or scheduled sessions from the cloud.

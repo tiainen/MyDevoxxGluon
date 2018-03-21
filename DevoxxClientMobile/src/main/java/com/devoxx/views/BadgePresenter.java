@@ -47,6 +47,7 @@ import javafx.scene.control.TextField;
 import javafx.util.Duration;
 
 import javax.inject.Inject;
+import java.util.Objects;
 
 public class BadgePresenter extends GluonPresenter<DevoxxApplication> {
     private static final int WAIT_TIME = 3000; // In milliseconds
@@ -141,15 +142,16 @@ public class BadgePresenter extends GluonPresenter<DevoxxApplication> {
         if (sponsorSlug == null || sponsorSlug.isEmpty()) {
             service.retrieveBadges().remove(badge);
         } else {
-            service.retrieveBadgesFor(sponsorSlug).remove(badge);
+            service.retrieveSponsorBadges().remove(badge);
         }
     }
 
     public void setBadgeId(String badgeId, String sponsorSlug) {
+        Objects.requireNonNull(badgeId);
         if (sponsorSlug == null || sponsorSlug.isEmpty()) {
             if (service.isAuthenticated() || !DevoxxSettings.USE_REMOTE_NOTES) {
                 for (Badge b : service.retrieveBadges()) {
-                    if (b.getBadgeId().equals(badgeId)) {
+                    if (b != null && b.getBadgeId() != null && b.getBadgeId().equals(badgeId)) {
                         this.badge = b;
                         break;
                     }
@@ -157,8 +159,8 @@ public class BadgePresenter extends GluonPresenter<DevoxxApplication> {
             }
         } else {
             this.sponsorSlug = sponsorSlug;
-            for (Badge b : service.retrieveBadgesFor(sponsorSlug)) {
-                if (b.getBadgeId().equals(badgeId)) {
+            for (Badge b : service.retrieveSponsorBadges()) {
+                if (b != null && b.getBadgeId() != null && b.getBadgeId().equals(badgeId)) {
                     this.badge = b;
                     break;
                 }

@@ -67,7 +67,6 @@ import javafx.concurrent.Task;
 import javafx.scene.control.Button;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -616,16 +615,10 @@ public class DevoxxService implements Service {
     @Override
     public ObservableList<Sponsor> retrieveSponsors() {
         RemoteFunctionObject fnSponsors = RemoteFunctionBuilder.create("sponsors").object();
-        // TODO: The server returns Content-Type: text/plain
-        GluonObservableObject<String> badgeSponsorsObject = fnSponsors.call(String.class);
-        
+        GluonObservableObject<EventSponsor> badgeSponsorsObject = fnSponsors.call(EventSponsor.class);
         badgeSponsorsObject.initializedProperty().addListener((obs, ov, nv) -> {
             if (nv) {
-                InputStream stream = new ByteArrayInputStream(badgeSponsorsObject.get().getBytes(StandardCharsets.UTF_8));
-                JsonInputConverter<EventSponsor> jsonInputConverter = new JsonInputConverter<>(EventSponsor.class);
-                jsonInputConverter.setInputStream(stream);
-                final EventSponsor eventSponsor = jsonInputConverter.read();
-                for (Event event : eventSponsor.getEvents()) {
+                for (Event event : badgeSponsorsObject.get().getEvents()) {
                     //TODO: Uncomment this once everything is fixed
                     //if (event.getSlug().equalsIgnoreCase(getConference().getId())) {
                         sponsors.setAll(event.getSponsors());
@@ -813,23 +806,19 @@ public class DevoxxService implements Service {
         return badges;
     }
 
-    private String previousSponsor;
     @Override
-    public ObservableList<SponsorBadge> retrieveBadgesFor(String sponsor) {
+    public ObservableList<SponsorBadge> retrieveSponsorBadges() {
 
-        if (previousSponsor == null || !previousSponsor.equals(sponsor)) {
-            previousSponsor = sponsor;
-            sponsorBadges = internalRetrieveSponsorBadges(sponsor);
+        if (sponsorBadges == null) {
+            sponsorBadges = internalRetrieveSponsorBadges();
         }
 
         return sponsorBadges;
     }
 
-    // TODO: This is a dummy implementation, ideally we would want to send the password to the server
-    // instead of fetching the password
     @Override
     public GluonObservableObject<String> authenticateSponsor(String password) {
-        RemoteFunctionObject fnValidateSponsor = RemoteFunctionBuilder.create("validateSponsor").object();
+        RemoteFunctionObject fnValidateSponsor = RemoteFunctionBuilder.create("validateSponsor").cachingEnabled(false).object();
         return fnValidateSponsor.call(String.class);
     }
 
@@ -924,12 +913,9 @@ public class DevoxxService implements Service {
         }
     }
 
-    private ObservableList<SponsorBadge> internalRetrieveSponsorBadges(String sponsorSlug) {
-        // TODO: This data is to be passed to the Devoxx Service
-        // TODO: Need to replace localDataClient with either a RF call or a non-authenticating cloud client
-        // TODO: Old data for a sponsor is not retrieved. Why?
-        return DataProvider.retrieveList(localDataClient.createListDataReader(sponsorSlug + "_badges",
-                    SponsorBadge.class, SyncFlag.LIST_WRITE_THROUGH, SyncFlag.OBJECT_WRITE_THROUGH));
+    private ObservableList<SponsorBadge> internalRetrieveSponsorBadges() {
+        return DataProvider.retrieveList(cloudDataClient.createListDataReader(authenticationClient.getAuthenticatedUser().getKey() + "_sponsor_badges",
+                SponsorBadge.class, SyncFlag.LIST_WRITE_THROUGH, SyncFlag.OBJECT_WRITE_THROUGH));
     }
 
     private void loadCfpAccount(User user, Runnable successRunnable) {

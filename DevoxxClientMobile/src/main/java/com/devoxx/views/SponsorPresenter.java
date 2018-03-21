@@ -47,6 +47,7 @@ import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import com.gluonhq.connect.ConnectState;
 import com.gluonhq.connect.GluonObservableObject;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -130,11 +131,13 @@ public class SponsorPresenter extends GluonPresenter<DevoxxApplication> {
         appBar.getActionItems().setAll(shareButton, logoutButton);
         appBar.setTitleText("Badges for " + name);
 
-        final ObservableList<SponsorBadge> badges = service.retrieveBadgesFor(slug);
+        final ObservableList<SponsorBadge> badges = service.retrieveSponsorBadges();
+        final FilteredList<SponsorBadge> filteredBadges = new FilteredList<>(badges, badge -> 
+                badge != null && badge.getSlug() != null && badge.getSlug().equals(slug));
         lvBadges = new CharmListView<>();
         lvBadges.setPlaceholder(new Placeholder(EMPTY_LIST_MESSAGE, DevoxxView.SPONSOR.getMenuIcon()));
         lvBadges.setCellFactory(param -> new BadgeCell<>());
-        lvBadges.setItems(badges);
+        lvBadges.setItems(filteredBadges);
         sponsorView.setCenter(lvBadges);
         shareButton.disableProperty().bind(lvBadges.itemsProperty().emptyProperty());
 
@@ -146,7 +149,7 @@ public class SponsorPresenter extends GluonPresenter<DevoxxApplication> {
                     SponsorBadge badge = new SponsorBadge(qr);
                     if (badge.getBadgeId() != null) {
                         boolean exists = false;
-                        for (Badge b : badges) {
+                        for (Badge b : filteredBadges) {
                             if (b.getBadgeId().equals(badge.getBadgeId())) {
                                 Toast toast = new Toast(DevoxxBundle.getString("OTN.BADGES.QR.EXISTS"));
                                 toast.show();
@@ -156,7 +159,7 @@ public class SponsorPresenter extends GluonPresenter<DevoxxApplication> {
                         }
                         if (!exists) {
                             badge.setSlug(slug);
-                            lvBadges.itemsProperty().add(badge);
+                            badges.add(badge);
                             DevoxxView.BADGE.switchView().ifPresent(presenter -> ((BadgePresenter) presenter).setBadgeId(badge.getBadgeId(), slug));
                         }
                     } else {

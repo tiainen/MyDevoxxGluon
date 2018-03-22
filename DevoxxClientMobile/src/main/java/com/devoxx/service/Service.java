@@ -249,9 +249,8 @@ public interface Service {
     void refreshFavorites();
 
     /**
-     * Authenticates the password for the sponsor
-     * @param password The password for the sponsor
-     * @return The GluonObservableObject with response
+     * Fetches the password for the sponsor
+     * @return The GluonObservableObject with response containing password
      */
-    GluonObservableObject<String> authenticateSponsor(String password);
+    GluonObservableObject<String> authenticateSponsor();
 }

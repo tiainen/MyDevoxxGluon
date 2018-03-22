@@ -852,7 +852,7 @@ public class DevoxxService implements Service {
     }
 
     @Override
-    public GluonObservableObject<String> authenticateSponsor(String password) {
+    public GluonObservableObject<String> authenticateSponsor() {
         RemoteFunctionObject fnValidateSponsor = RemoteFunctionBuilder.create("validateSponsor").cachingEnabled(false).object();
         return fnValidateSponsor.call(String.class);
     }

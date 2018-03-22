@@ -102,18 +102,22 @@ public class SponsorPresenter extends GluonPresenter<DevoxxApplication> {
 
     @FXML
     private void signIn() {
-        final GluonObservableObject<String> passwordObject = service.authenticateSponsor(password.getText());
+        message.setText("");
+        final GluonObservableObject<String> passwordObject = service.authenticateSponsor();
         passwordObject.stateProperty().addListener((o, ov, nv) -> {
             if (nv == ConnectState.SUCCEEDED) {
-                Services.get(SettingsService.class).ifPresent(service -> {
-                    service.store(Sponsor.NAME, name);
-                    service.store(Sponsor.SLUG, slug);
-                });
-                loadAuthenticatedView(name, slug);
-                message.setText("");
-                password.clear();
+                if (password.getText().equals(passwordObject.get())) {
+                    Services.get(SettingsService.class).ifPresent(service -> {
+                        service.store(Sponsor.NAME, name);
+                        service.store(Sponsor.SLUG, slug);
+                    });
+                    loadAuthenticatedView(name, slug);
+                    password.clear();
+                } else {
+                    message.setText(DevoxxBundle.getString("OTN.SPONSOR.INCORRECT.PASSWORD"));
+                }
             } else if (nv == ConnectState.FAILED) {
-                message.setText("Verification failed");
+                message.setText(DevoxxBundle.getString("OTN.SPONSOR.VERIFICATION.FAILED"));
             }
         });
     }
@@ -129,7 +133,7 @@ public class SponsorPresenter extends GluonPresenter<DevoxxApplication> {
             DevoxxView.SPONSORS.switchView();
         });
         appBar.getActionItems().setAll(shareButton, logoutButton);
-        appBar.setTitleText("Badges for " + name);
+        appBar.setTitleText(DevoxxBundle.getString("OTN.SPONSOR.BADGES.FOR", name));
 
         final ObservableList<SponsorBadge> badges = service.retrieveSponsorBadges();
         final FilteredList<SponsorBadge> filteredBadges = new FilteredList<>(badges, badge -> 

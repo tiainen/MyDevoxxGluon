@@ -29,7 +29,6 @@ import com.devoxx.util.DevoxxBundle;
 import com.gluonhq.charm.down.Services;
 import com.gluonhq.charm.down.plugins.VideoService;
 import com.gluonhq.charm.glisten.mvc.SplashView;
-import java.util.Arrays;
 import javafx.animation.PauseTransition;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -46,22 +45,6 @@ public class DevoxxSplash extends SplashView {
         final BorderPane borderPane = new BorderPane();
         borderPane.getStyleClass().add("video-view");
 
-        setOnShown(e -> {
-            Services.get(VideoService.class).ifPresent(video -> {
-                video.setPosition(Pos.CENTER, 0, 10, 0, 10);
-                video.statusProperty().addListener((obs, ov, nv) -> {
-                    if (nv == MediaPlayer.Status.DISPOSED) {
-                        hideSplashView();
-                    }
-                });
-                video.setPlaylist(Arrays.asList("MyDevoxxIntro.mp4"));
-                // set enough time to have the view ready before playing:
-                PauseTransition delay = new PauseTransition(Duration.seconds(1.2));
-                delay.setOnFinished(d -> video.play());
-                delay.play();
-            });
-        });
-
         Pane pane = new Pane();
         HBox.setHgrow(pane, Priority.ALWAYS);
 
@@ -72,6 +55,22 @@ public class DevoxxSplash extends SplashView {
 
         borderPane.setBottom(hBox);
         setCenter(borderPane);
+
+        setOnShown(e -> {
+            Services.get(VideoService.class).ifPresent(video -> {
+                video.setPosition(Pos.CENTER, 0, 10, 0, 10);
+                video.statusProperty().addListener((obs, ov, nv) -> {
+                    if (nv == MediaPlayer.Status.DISPOSED) {
+                        hideSplashView();
+                    }
+                });
+                video.getPlaylist().add("MyDevoxxIntro.mp4");
+                // set enough time to have the view ready before playing:
+                PauseTransition delay = new PauseTransition(Duration.seconds(1.2));
+                delay.setOnFinished(d -> video.play());
+                delay.play();
+            });
+            skip.requestFocus();
+        });
     }
-    
 }

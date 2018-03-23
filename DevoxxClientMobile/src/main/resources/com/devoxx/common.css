@@ -776,7 +776,7 @@
 }
 
 .placeholder-graphic {
-    -fx-font-size: 10em;
+    -fx-font-size: 8em;
     -fx-text-fill: -otn-lighter1;
     /*-fx-effect: dropshadow(three-pass-box,-elevation-shadow-color, 2, 0, 0, 1);*/
 }

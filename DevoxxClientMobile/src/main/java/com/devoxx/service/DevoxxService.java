@@ -214,13 +214,9 @@ public class DevoxxService implements Service {
                 }
 
                 retrieveSessionsInternal();
-
                 retrieveSpeakersInternal();
-
                 retrieveTracksInternal();
-
                 retrieveProposalTypesInternal();
-
                 retrieveExhibitionMapsInternal();
 
                 favorites.clear();
@@ -614,6 +610,7 @@ public class DevoxxService implements Service {
 
     @Override
     public ObservableList<Sponsor> retrieveSponsors() {
+        // TODO: pass the CfpEndpoint
         RemoteFunctionObject fnSponsors = RemoteFunctionBuilder.create("sponsors").object();
         GluonObservableObject<EventSponsor> badgeSponsorsObject = fnSponsors.call(EventSponsor.class);
         badgeSponsorsObject.initializedProperty().addListener((obs, ov, nv) -> {
@@ -808,7 +805,10 @@ public class DevoxxService implements Service {
 
     @Override
     public ObservableList<SponsorBadge> retrieveSponsorBadges() {
-
+        if (!isAuthenticated() && DevoxxSettings.USE_REMOTE_NOTES) {
+            throw new IllegalStateException("An authenticated user must be available when calling this method.");
+        }
+        
         if (sponsorBadges == null) {
             sponsorBadges = internalRetrieveSponsorBadges();
             
@@ -987,8 +987,10 @@ public class DevoxxService implements Service {
             retrieveNotes();
             if (DevoxxSettings.conferenceHasBadgeView(getConference())) {
                 retrieveBadges();
+                retrieveSponsorBadges();
             }
 
+            retrieveSponsors();
             retrieveFavoredSessions();
             retrieveScheduledSessions();
         } else {
@@ -1000,14 +1002,19 @@ public class DevoxxService implements Service {
         cfpUserUuid.set("");
         notes = null;
         badges = null;
+        sponsorBadges = null;
         favoredSessions = null;
         scheduledSessions = null;
+        sponsors.clear();
         internalFavoredSessions.clear();
         internalScheduledSessions.clear();
         ready.set(false);
 
         Services.get(SettingsService.class).ifPresent(settingsService -> {
             settingsService.remove(DevoxxSettings.SAVED_ACCOUNT_ID);
+            settingsService.remove(DevoxxSettings.BADGE_TYPE);
+            settingsService.remove(DevoxxSettings.SPONSOR_NAME);
+            settingsService.remove(DevoxxSettings.SPONSOR_SLUG);
         });
     }
 

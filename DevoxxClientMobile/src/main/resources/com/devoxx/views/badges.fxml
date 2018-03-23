@@ -7,12 +7,12 @@
 <View fx:id="badgesView" styleClass="badges-view" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.devoxx.views.BadgesPresenter">
     <center>
         <VBox fx:id="content" styleClass="content">
-            <Button fx:id="sponsor" text="%OTN.BADGES.BUTTON.SPONSOR" onAction="#showSponsor">
+            <Button fx:id="sponsor" text="%OTN.BADGES.BUTTON.SPONSOR">
                 <graphic>
                     <Icon content="CARD_MEMBERSHIP"/>
                 </graphic>
             </Button>
-            <Button fx:id="attendee" text="%OTN.BADGES.BUTTON.ATTENDEE" onAction="#showAttendee">
+            <Button fx:id="attendee" text="%OTN.BADGES.BUTTON.ATTENDEE">
                 <graphic>
                     <Icon content="EVENT_SEAT"/>
                 </graphic>

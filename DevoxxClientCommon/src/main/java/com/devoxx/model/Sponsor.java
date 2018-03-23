@@ -32,9 +32,6 @@ import java.util.Objects;
 
 public class Sponsor extends Searchable implements Mergeable<Sponsor> {
     
-    public static final String NAME = "sponsor-name"; 
-    public static final String SLUG = "sponsor-slug"; 
-    
     private String name;
     private String slug;
     private SponsorCategory level;

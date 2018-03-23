@@ -28,20 +28,18 @@ package com.devoxx.views;
 import com.devoxx.DevoxxApplication;
 import com.devoxx.DevoxxView;
 import com.devoxx.model.Badge;
-import com.devoxx.model.Sponsor;
 import com.devoxx.model.SponsorBadge;
 import com.devoxx.service.Service;
 import com.devoxx.util.DevoxxBundle;
+import com.devoxx.util.DevoxxSettings;
 import com.devoxx.views.cell.BadgeCell;
 import com.devoxx.views.helper.Placeholder;
 import com.gluonhq.charm.down.Services;
 import com.gluonhq.charm.down.plugins.BarcodeScanService;
 import com.gluonhq.charm.down.plugins.SettingsService;
 import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
-import com.gluonhq.charm.glisten.application.MobileApplication;
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.control.CharmListView;
-import com.gluonhq.charm.glisten.control.Dialog;
 import com.gluonhq.charm.glisten.control.Toast;
 import com.gluonhq.charm.glisten.layout.layer.FloatingActionButton;
 import com.gluonhq.charm.glisten.mvc.View;
@@ -110,9 +108,11 @@ public class SponsorPresenter extends GluonPresenter<DevoxxApplication> {
             if (nv == ConnectState.SUCCEEDED) {
                 if (password.getText().equals(passwordObject.get())) {
                     Services.get(SettingsService.class).ifPresent(service -> {
-                        service.store(Sponsor.NAME, name);
-                        service.store(Sponsor.SLUG, slug);
+                        service.store(DevoxxSettings.SPONSOR_NAME, name);
+                        service.store(DevoxxSettings.SPONSOR_SLUG, slug);
                     });
+                    final Toast toast = new Toast(DevoxxBundle.getString("OTN.BADGES.LOGIN.SPONSOR", name), Toast.LENGTH_LONG);
+                    toast.show();
                     loadAuthenticatedView(name, slug);
                     password.clear();
                 } else {
@@ -127,11 +127,7 @@ public class SponsorPresenter extends GluonPresenter<DevoxxApplication> {
     private void loadAuthenticatedView(String name, String slug) {
         final AppBar appBar = getApp().getAppBar();
         final Button shareButton = getApp().getShareButton();
-        final Button logoutButton = MaterialDesignIcon.POWER_SETTINGS_NEW.button(e -> {
-            final Dialog<Button> logoutDialog = logoutDialog();
-            logoutDialog.showAndWait();
-        });
-        appBar.getActionItems().setAll(shareButton, logoutButton);
+        appBar.getActionItems().setAll(shareButton);
         appBar.setTitleText(DevoxxBundle.getString("OTN.SPONSOR.BADGES.FOR", name));
 
         final ObservableList<SponsorBadge> badges = service.retrieveSponsorBadges();
@@ -176,44 +172,17 @@ public class SponsorPresenter extends GluonPresenter<DevoxxApplication> {
 
     private void checkAndLoadView() {
         Services.get(SettingsService.class).ifPresent(service -> {
-            final String name = service.retrieve(Sponsor.NAME);
-            final String sponsor = service.retrieve(Sponsor.SLUG);
+            final String name = service.retrieve(DevoxxSettings.SPONSOR_NAME);
+            final String sponsor = service.retrieve(DevoxxSettings.SPONSOR_SLUG);
+            // if found, no need to prompt password
             if (name != null && sponsor != null) {
                 loadAuthenticatedView(name, sponsor);
             } else {
+                // prompt password
                 sponsorView.setCenter(content);
                 content.requestFocus();
             }
         });
     }
-
-    private Dialog<Button> logoutDialog() {
-        Dialog<Button> dialog = new Dialog<>();
-        Placeholder logoutDialogContent = new Placeholder(DevoxxBundle.getString("OTN.LOGOUT_DIALOG.TITLE"), DevoxxBundle.getString("OTN.SPONSOR.LOGOUT_DIALOG.CONTENT"), MaterialDesignIcon.HELP);
-
-        // FIXME: Too narrow Dialogs in Glisten
-        logoutDialogContent.setPrefWidth(MobileApplication.getInstance().getView().getScene().getWidth() - 40);
-
-        dialog.setContent(logoutDialogContent);
-        Button yesButton = new Button(DevoxxBundle.getString("OTN.LOGOUT_DIALOG.YES"));
-        Button noButton = new Button(DevoxxBundle.getString("OTN.LOGOUT_DIALOG.NO"));
-        yesButton.setOnAction(e -> {
-            logout();
-            dialog.hide();
-        });
-        noButton.setOnAction(e -> dialog.hide());
-        dialog.getButtons().addAll(noButton, yesButton);
-
-        return dialog;
-    }
-
-    private void logout() {
-        Services.get(SettingsService.class).ifPresent(service -> {
-            service.remove(Sponsor.NAME);
-            service.remove(Sponsor.SLUG);
-        });
-        DevoxxView.SPONSORS.switchView();
-        Toast toast = new Toast(DevoxxBundle.getString("OTN.LOGGED_OUT_MESSAGE"));
-        toast.show();
-    }
+    
 }

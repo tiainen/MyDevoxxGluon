@@ -413,7 +413,7 @@
 }
 
 .badges-view > .content > .button {
-    -fx-font-size: 2em;
+    -fx-font-size: 1.6em;
     -fx-content-display: TOP;
     -fx-background-color: transparent;
     -fx-effect: null;

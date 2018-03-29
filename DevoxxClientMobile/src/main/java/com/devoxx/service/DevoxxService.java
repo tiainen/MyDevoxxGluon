@@ -70,6 +70,7 @@ import java.io.*;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -810,16 +811,30 @@ public class DevoxxService implements Service {
         }
         
         if (sponsorBadges == null) {
-            sponsorBadges = internalRetrieveSponsorBadges();
+            final GluonObservableList<SponsorBadge> sponsorBadges = internalRetrieveSponsorBadges();
+            this.sponsorBadges = sponsorBadges;
             
             // every scanned sponsor badge must be posted with the remote function
-            sponsorBadges.addListener((ListChangeListener<SponsorBadge>) c -> {
-                while (c.next()) {
-                    if (c.wasAdded()) {
-                        for (SponsorBadge sponsorBadge : c.getAddedSubList()) {
-                            saveSponsorBadge(sponsorBadge);
-                        }
+            sponsorBadges.initializedProperty().addListener(new ChangeListener<Boolean>() {
+                @Override
+                public void changed(ObservableValue<? extends Boolean> o, Boolean ov, Boolean nv) {
+                    if (nv) {
+                        sponsorBadges.addListener((ListChangeListener<SponsorBadge>) c -> {
+                            while (c.next()) {
+                                if (c.wasAdded()) {
+                                    for (SponsorBadge sponsorBadge : c.getAddedSubList()) {
+                                        saveSponsorBadge(sponsorBadge);
+                                    }
+                                }
+                                if (c.wasUpdated()) {
+                                    for (int i = c.getFrom(); i < c.getTo(); i++) {
+                                        saveSponsorBadge(sponsorBadges.get(i));
+                                    }
+                                }
+                            }
+                        });
                     }
+                    sponsorBadges.initializedProperty().removeListener(this);
                 }
             });
         }
@@ -829,14 +844,14 @@ public class DevoxxService implements Service {
 
     private void saveSponsorBadge(SponsorBadge sponsorBadge) {
         RemoteFunctionObject fnSponsorBadge = RemoteFunctionBuilder.create("saveSponsorBadge")
-                .param("0", getConference().getCfpEndpoint())
+                .param("0", sponsorBadge.getSlug())
                 .param("1", sponsorBadge.getBadgeId())
                 .param("2", sponsorBadge.getFirstName())
                 .param("3", sponsorBadge.getLastName())
-                .param("4", sponsorBadge.getEmail())
-                .param("5", sponsorBadge.getCompany())
+                .param("4", sponsorBadge.getCompany())
+                .param("5", sponsorBadge.getEmail())
                 .param("6", sponsorBadge.getDetails())
-                .param("7", sponsorBadge.getSlug())
+                .param("7", ZonedDateTime.now().format(DateTimeFormatter.ISO_INSTANT))
                 .object();
         GluonObservableObject<String> sponsorBadgeResult = fnSponsorBadge.call(String.class);
         sponsorBadgeResult.initializedProperty().addListener((obs, ov, nv) -> {
@@ -948,7 +963,7 @@ public class DevoxxService implements Service {
         }
     }
 
-    private ObservableList<SponsorBadge> internalRetrieveSponsorBadges() {
+    private GluonObservableList<SponsorBadge> internalRetrieveSponsorBadges() {
         return DataProvider.retrieveList(cloudDataClient.createListDataReader(authenticationClient.getAuthenticatedUser().getKey() + "_sponsor_badges",
                 SponsorBadge.class, SyncFlag.LIST_WRITE_THROUGH, SyncFlag.OBJECT_WRITE_THROUGH));
     }
@@ -987,10 +1002,10 @@ public class DevoxxService implements Service {
             retrieveNotes();
             if (DevoxxSettings.conferenceHasBadgeView(getConference())) {
                 retrieveBadges();
+                retrieveSponsors();
                 retrieveSponsorBadges();
             }
-
-            retrieveSponsors();
+            
             retrieveFavoredSessions();
             retrieveScheduledSessions();
         } else {

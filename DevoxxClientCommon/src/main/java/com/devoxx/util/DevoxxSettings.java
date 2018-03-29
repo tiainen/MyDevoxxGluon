@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016, 2017, Gluon Software
+/*
+ * Copyright (c) 2016, 2018 Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -99,6 +99,9 @@ public class DevoxxSettings {
     public static final String SIGN_UP = "sign_up";
     public static final String SAVED_CONFERENCE_ID = "devoxx_cfp_id";
     public static final String SAVED_ACCOUNT_ID = "devoxx_cfp_account";
+    public static final String BADGE_TYPE = "badge-type";
+    public static final String SPONSOR_NAME = "sponsor-name";
+    public static final String SPONSOR_SLUG = "sponsor-slug";
 
     private static final String WEARABLE_DAY_PATTERN  = "MMMM dd, uuuu";
     private static final String TIME_PATTERN = "h:mma";
@@ -119,7 +122,7 @@ public class DevoxxSettings {
     /**
      * List of conferences countries that support the Badges View
      */
-    private static final EnumSet<DevoxxCountry> CONFERENCE_COUNTRIES_WITH_BADGES = EnumSet.of(DevoxxCountry.BE);
+    private static final EnumSet<DevoxxCountry> CONFERENCE_COUNTRIES_WITH_BADGES = EnumSet.of(DevoxxCountry.BE, DevoxxCountry.FR);
 
     /**
      * List of conferences contries that don't support favorite count

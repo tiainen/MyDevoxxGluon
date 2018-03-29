@@ -357,8 +357,6 @@
 .exhibitor-detail .scroll-pane:focused,
 .experiences-view .scroll-pane,
 .experiences-view .scroll-pane:focused,
-.sponsor-detail .scroll-pane,
-.sponsor-detail .scroll-pane:focused,
 .session-view .scroll-pane,
 .session-view .scroll-pane:focused,
 .speaker-view .sessions-list,
@@ -408,8 +406,38 @@
     -fx-font-size: 1.2em;
 }
 
+/** Badges View **/
+.badges-view > .content {
+    -fx-alignment: CENTER;
+    -fx-spacing: 3em;
+}
+
+.badges-view > .content > .button {
+    -fx-font-size: 1.6em;
+    -fx-content-display: TOP;
+    -fx-background-color: transparent;
+    -fx-effect: null;
+    -fx-text-fill: -primary-swatch-500;
+}
+
+.badges-view > .content > .button > .icon > .label {
+    -fx-font-size: 4em;
+    -fx-text-fill: -primary-swatch-500;
+}
+
 .badge-view {
     -fx-padding: 0.910488em;
+}
+
+/** Sponsor View **/
+.sponsor-view > .content {
+    -fx-alignment: CENTER;
+    -fx-spacing: 1em;
+    -fx-padding: 1em;
+}
+
+.sponsor-view > .content > .label {
+    -fx-text-fill: #ff133c;
 }
 
 /** Vote Pane **/
@@ -470,7 +498,6 @@
 /* Venue / Exhibitor / Sponsor View */
 
 .exhibitor-detail .name,
-.sponsor-detail .name,
 .venue-detail .name {
     -fx-text-fill: -primary-swatch-500;
     -fx-font-weight: bold;
@@ -489,8 +516,7 @@
     -fx-font-size: 1.1em;
 }
 
-.exhibitor-detail .details,
-.sponsor-detail .details {
+.exhibitor-detail .details {
     -fx-padding: 0em 0em 0em 1.2em;
     -fx-alignment: TOP_LEFT;
 }
@@ -750,7 +776,7 @@
 }
 
 .placeholder-graphic {
-    -fx-font-size: 10em;
+    -fx-font-size: 8em;
     -fx-text-fill: -otn-lighter1;
     /*-fx-effect: dropshadow(three-pass-box,-elevation-shadow-color, 2, 0, 0, 1);*/
 }

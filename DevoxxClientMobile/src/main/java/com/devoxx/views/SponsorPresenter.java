@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016, Gluon Software
+/*
+ * Copyright (c) 2016, 2018 Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -26,100 +26,163 @@
 package com.devoxx.views;
 
 import com.devoxx.DevoxxApplication;
-import com.devoxx.views.helper.Util;
+import com.devoxx.DevoxxView;
+import com.devoxx.model.Badge;
+import com.devoxx.model.SponsorBadge;
+import com.devoxx.service.Service;
+import com.devoxx.util.DevoxxBundle;
+import com.devoxx.util.DevoxxSettings;
+import com.devoxx.views.cell.BadgeCell;
+import com.devoxx.views.helper.Placeholder;
+import com.gluonhq.charm.down.Services;
+import com.gluonhq.charm.down.plugins.BarcodeScanService;
+import com.gluonhq.charm.down.plugins.SettingsService;
 import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
 import com.gluonhq.charm.glisten.control.AppBar;
+import com.gluonhq.charm.glisten.control.CharmListView;
+import com.gluonhq.charm.glisten.control.Toast;
 import com.gluonhq.charm.glisten.layout.layer.FloatingActionButton;
 import com.gluonhq.charm.glisten.mvc.View;
-import com.devoxx.DevoxxView;
-import com.devoxx.model.Sponsor;
-import com.devoxx.util.ImageCache;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
+import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
+import com.gluonhq.connect.ConnectState;
+import com.gluonhq.connect.GluonObservableObject;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.Region;
+import javafx.scene.control.PasswordField;
+import javafx.scene.layout.VBox;
+
+import javax.inject.Inject;
+import java.util.Optional;
 
 public class SponsorPresenter extends GluonPresenter<DevoxxApplication> {
 
-    @FXML
-    private View sponsor;
+    private static final String EMPTY_LIST_MESSAGE = DevoxxBundle.getString("OTN.BADGES.EMPTY_LIST_MESSAGE");
 
     @FXML
-    private Region imageSpacer;
-
-    @FXML
-    private Label name;
-
-    @FXML
-    private Label details;
-
-    @FXML
-    private ImageView imageView;
-
-    @FXML
-    private ImageView logo;
-
-    private FloatingActionButton webLaunchFAB;
+    private View sponsorView;
     
-    // sponsorProperty
-    private final ObjectProperty<Sponsor> sponsorProperty = new SimpleObjectProperty<Sponsor>(this, "sponsor") {
-        @Override protected void invalidated() {
-            Sponsor sponsor = get();
-            logo.setImage(ImageCache.get(sponsor.getPicture()));
-            name.setText(sponsor.getName());
-            
-            String url = sponsor.getSummary();
-            webLaunchFAB.setVisible(url != null && !url.isEmpty());
+    @FXML
+    private VBox content;
 
-            details.setText(sponsor.getSummary());
-            resizeImages();
-        }
-    };
-    public final ObjectProperty<Sponsor> sponsorProperty() {
-        return sponsorProperty;
-    }
-    public final Sponsor getSponsor() {
-        return sponsorProperty.get();
-    }
-    public final void setSponsor(Sponsor value) {
-        sponsorProperty.set(value);
-    }
+    @FXML
+    private PasswordField password;
 
+    @FXML
+    private Label message;
+    
+    @Inject
+    private Service service;
+
+    private CharmListView<SponsorBadge, String> lvBadges;
+    private String name;
+    private String slug;
 
     public void initialize() {
-        webLaunchFAB = Util.createWebLaunchFAB(() -> getSponsor().getSummary());
-        sponsor.getLayers().add(webLaunchFAB.getLayer());
 
-        sponsor.setOnShowing( event -> {
+        sponsorView.setOnShowing(event -> {
             AppBar appBar = getApp().getAppBar();
-            appBar.setNavIcon(getApp().getNavBackButton());
+            appBar.setNavIcon(getApp().getNavMenuButton());
             appBar.setTitleText(DevoxxView.SPONSOR.getTitle());
-
-            // give images full width of scene
-            sponsor.getScene().widthProperty().addListener((observable, oldValue, newValue) -> resizeImages());
-            sponsor.getScene().heightProperty().addListener((observable, oldValue, newValue) -> resizeImages());
-
-            // randomly change image on each showing
-            imageView.setImage(Util.getMediaBackgroundImage());
+            checkAndLoadView();
+        });
+        
+        sponsorView.setOnHiding(event -> {
+            sponsorView.getLayers().clear();
         });
     }
 
-    private void resizeImages() {
-        if (sponsor == null || sponsor.getScene() == null) {
-            return;
-        }
-        
-        double newWidth = sponsor.getScene().getWidth();
-        double newHeight = sponsor.getScene().getHeight() - getApp().getAppBar().getHeight(); // Exclude the AppBar
-
-        logo.setFitWidth(newWidth);
-        // Resize logo to a max value. Do not stretch anymore if the width threshold.
-        Util.resizeImageView(logo, newWidth, newHeight / 3.0);
-
-        // Resize and translate ImageView
-        // Resize imageSpacer and stop expanding when a maxHeight is reached.
-        Util.resizeImageViewAndImageSpacer(imageSpacer, imageView, newWidth, newHeight / 3.5);
+    public void setSponsor(String name, String slug) {
+        this.name = name;
+        this.slug = slug;
+        checkAndLoadView();
     }
+
+    @FXML
+    private void signIn() {
+        message.setText("");
+        final GluonObservableObject<String> passwordObject = service.authenticateSponsor();
+        passwordObject.stateProperty().addListener((o, ov, nv) -> {
+            if (nv == ConnectState.SUCCEEDED) {
+                if (password.getText().equals(passwordObject.get())) {
+                    Services.get(SettingsService.class).ifPresent(service -> {
+                        service.store(DevoxxSettings.SPONSOR_NAME, name);
+                        service.store(DevoxxSettings.SPONSOR_SLUG, slug);
+                    });
+                    final Toast toast = new Toast(DevoxxBundle.getString("OTN.BADGES.LOGIN.SPONSOR", name), Toast.LENGTH_LONG);
+                    toast.show();
+                    loadAuthenticatedView(name, slug);
+                    password.clear();
+                } else {
+                    message.setText(DevoxxBundle.getString("OTN.SPONSOR.INCORRECT.PASSWORD"));
+                }
+            } else if (nv == ConnectState.FAILED) {
+                message.setText(DevoxxBundle.getString("OTN.SPONSOR.VERIFICATION.FAILED"));
+            }
+        });
+    }
+
+    private void loadAuthenticatedView(String name, String slug) {
+        final AppBar appBar = getApp().getAppBar();
+        final Button shareButton = getApp().getShareButton();
+        appBar.getActionItems().setAll(shareButton);
+        appBar.setTitleText(DevoxxBundle.getString("OTN.SPONSOR.BADGES.FOR", name));
+
+        final ObservableList<SponsorBadge> badges = service.retrieveSponsorBadges();
+        final FilteredList<SponsorBadge> filteredBadges = new FilteredList<>(badges, badge -> 
+                badge != null && badge.getSlug() != null && badge.getSlug().equals(slug));
+        lvBadges = new CharmListView<>();
+        lvBadges.setPlaceholder(new Placeholder(EMPTY_LIST_MESSAGE, DevoxxView.SPONSOR.getMenuIcon()));
+        lvBadges.setCellFactory(param -> new BadgeCell<>());
+        lvBadges.setItems(filteredBadges);
+        sponsorView.setCenter(lvBadges);
+        shareButton.disableProperty().bind(lvBadges.itemsProperty().emptyProperty());
+
+        FloatingActionButton scan = new FloatingActionButton(MaterialDesignIcon.SCANNER.text, e -> {
+            Services.get(BarcodeScanService.class).ifPresent(s -> {
+                final Optional<String> scanQr = s.scan(DevoxxBundle.getString("OTN.BADGES.QR.TITLE", name), null, null);
+                scanQr.ifPresent(qr -> {
+                    SponsorBadge badge = new SponsorBadge(qr);
+                    if (badge.getBadgeId() != null) {
+                        boolean exists = false;
+                        for (Badge b : filteredBadges) {
+                            if (b.getBadgeId().equals(badge.getBadgeId())) {
+                                Toast toast = new Toast(DevoxxBundle.getString("OTN.BADGES.QR.EXISTS"));
+                                toast.show();
+                                exists = true;
+                                break;
+                            }
+                        }
+                        if (!exists) {
+                            badge.setSlug(slug);
+                            badges.add(badge);
+                            DevoxxView.BADGE.switchView().ifPresent(presenter -> ((BadgePresenter) presenter).setBadgeId(badge.getBadgeId(), slug));
+                        }
+                    } else {
+                        Toast toast = new Toast(DevoxxBundle.getString("OTN.BADGES.BAD.QR"));
+                        toast.show();
+                    }
+                });
+            });
+        });
+        sponsorView.getLayers().add(scan.getLayer());
+    }
+
+    private void checkAndLoadView() {
+        Services.get(SettingsService.class).ifPresent(service -> {
+            final String name = service.retrieve(DevoxxSettings.SPONSOR_NAME);
+            final String sponsor = service.retrieve(DevoxxSettings.SPONSOR_SLUG);
+            // if found, no need to prompt password
+            if (name != null && sponsor != null) {
+                loadAuthenticatedView(name, sponsor);
+            } else {
+                // prompt password
+                sponsorView.setCenter(content);
+                content.requestFocus();
+            }
+        });
+    }
+    
 }

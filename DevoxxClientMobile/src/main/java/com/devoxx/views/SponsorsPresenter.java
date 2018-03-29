@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016, Gluon Software
+/*
+ * Copyright (c) 2016, 2018 Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -27,28 +27,29 @@ package com.devoxx.views;
 
 import com.devoxx.DevoxxApplication;
 import com.devoxx.DevoxxView;
-import com.devoxx.service.Service;
 import com.devoxx.model.Sponsor;
+import com.devoxx.service.Service;
 import com.devoxx.util.DevoxxBundle;
+import com.devoxx.util.SponsorCategory;
 import com.devoxx.views.cell.SponsorCell;
 import com.devoxx.views.cell.SponsorHeaderCell;
 import com.devoxx.views.helper.Placeholder;
-import com.devoxx.util.SponsorCategory;
 import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.control.CharmListView;
 import com.gluonhq.charm.glisten.mvc.View;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 
 import javax.inject.Inject;
 
 public class SponsorsPresenter extends GluonPresenter<DevoxxApplication> {
+    
     private static final String PLACEHOLDER_MESSAGE = DevoxxBundle.getString("OTN.SPONSORS.PLACEHOLDER_MESSAGE");
 
     @FXML
     private View sponsors;
+    
     @FXML
     private CharmListView<Sponsor, SponsorCategory> sponsorListView;
 
@@ -60,7 +61,6 @@ public class SponsorsPresenter extends GluonPresenter<DevoxxApplication> {
             AppBar appBar = getApp().getAppBar();
             appBar.setNavIcon(getApp().getNavMenuButton());
             appBar.setTitleText(DevoxxView.SPONSORS.getTitle());
-            appBar.getActionItems().add(getApp().getSearchButton());
             sponsorListView.setSelectedItem(null);
         });
 
@@ -68,10 +68,10 @@ public class SponsorsPresenter extends GluonPresenter<DevoxxApplication> {
 
         sponsorListView.setPlaceholder(new Placeholder(PLACEHOLDER_MESSAGE, DevoxxView.SPONSORS.getMenuIcon()));
 
-        ObservableList<Sponsor> sponsorsList = FXCollections.observableArrayList(service.retrieveSponsors());
+        ObservableList<Sponsor> sponsorsList = service.retrieveSponsors();
         sponsorListView.setItems(sponsorsList);
 
-        sponsorListView.setHeadersFunction(Sponsor::getSection);
+        sponsorListView.setHeadersFunction(Sponsor::getLevel);
         sponsorListView.setHeaderComparator((category1, category2) -> Integer.compare(category1.getValue(), category2.getValue()));
 
         sponsorListView.setCellFactory(p -> new SponsorCell());
@@ -80,8 +80,7 @@ public class SponsorsPresenter extends GluonPresenter<DevoxxApplication> {
         sponsorListView.selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 DevoxxView.SPONSOR.switchView().ifPresent(presenter ->
-                        ((SponsorPresenter)presenter).setSponsor(newValue)
-                );
+                        ((SponsorPresenter)presenter).setSponsor(newValue.getName(), newValue.getSlug()));
             }
         });
     }

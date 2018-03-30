@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017, Gluon Software
+ * Copyright (c) 2017, 2018 Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -30,88 +30,79 @@ import com.devoxx.DevoxxView;
 import com.devoxx.model.Badge;
 import com.devoxx.service.Service;
 import com.devoxx.util.DevoxxBundle;
-import com.devoxx.util.DevoxxCountry;
 import com.devoxx.util.DevoxxSettings;
 import com.devoxx.views.cell.BadgeCell;
 import com.devoxx.views.helper.LoginPrompter;
-import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
-import com.gluonhq.charm.glisten.control.AppBar;
-import com.gluonhq.charm.glisten.control.CharmListView;
-import com.gluonhq.charm.glisten.mvc.View;
 import com.devoxx.views.helper.Placeholder;
 import com.gluonhq.charm.down.Services;
 import com.gluonhq.charm.down.plugins.BarcodeScanService;
-import com.gluonhq.charm.down.plugins.ShareService;
-import com.gluonhq.charm.down.plugins.StorageService;
+import com.gluonhq.charm.down.plugins.SettingsService;
+import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
+import com.gluonhq.charm.glisten.control.AppBar;
+import com.gluonhq.charm.glisten.control.CharmListView;
 import com.gluonhq.charm.glisten.control.Toast;
 import com.gluonhq.charm.glisten.layout.layer.FloatingActionButton;
+import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
-import java.util.Optional;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.layout.VBox;
+import javafx.util.Duration;
+
 import javax.inject.Inject;
+import java.util.Optional;
 
 public class BadgesPresenter extends GluonPresenter<DevoxxApplication> {
-    private static final Logger LOG = Logger.getLogger(BadgesPresenter.class.getName());
+    
     private static final String ANONYMOUS_MESSAGE = DevoxxBundle.getString("OTN.BADGES.ANONYMOUS_MESSAGE");
     private static final String EMPTY_LIST_MESSAGE = DevoxxBundle.getString("OTN.BADGES.EMPTY_LIST_MESSAGE");
-
-    @Inject
-    private Service service;
 
     @FXML
     private View badgesView;
 
+    @FXML
+    private VBox content;
+
+    @FXML
+    private Button sponsor;
+
+    @FXML
+    private Button attendee;
+    
+    @Inject
+    private Service service;
+    
     private CharmListView<Badge, String> lvBadges;
 
     public void initialize() {
-        Button shareButton = MaterialDesignIcon.SHARE.button(e -> {
-            Services.get(ShareService.class).ifPresent(s -> {
-                File root = Services.get(StorageService.class).flatMap(storage -> storage.getPublicStorage("Documents")).orElse(null);
-                if (root != null) {
-                    File file = new File(root, "Devoxx" + DevoxxCountry.getConfShortName(service.getConference().getCountry()) + "-badges.csv");
-                    if (file.exists()) {
-                        file.delete();
-                    }
-                    try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-                        writer.write("First Name,Last Name,Company,Email,Details");
-                        writer.newLine();
-                        for (Badge badge : service.retrieveBadges()) {
-                            writer.write(badge.toCSV());
-                            writer.newLine();
-                        }
-                    } catch (IOException ex) {
-                        LOG.log(Level.WARNING, "Error writing csv file ", ex);
-                    }
-                    s.share(DevoxxBundle.getString("OTN.BADGES.SHARE.SUBJECT"), 
-                            DevoxxBundle.getString("OTN.BADGES.SHARE.MESSAGE", DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT).format(LocalDate.now())), 
-                            "text/plain", file);
-                } else {
-                    LOG.log(Level.WARNING, "Error accessing local storage");
-                }
-            });
-        });
         lvBadges = new CharmListView<>();
         lvBadges.setPlaceholder(new Placeholder(EMPTY_LIST_MESSAGE, DevoxxView.BADGES.getMenuIcon()));
-        lvBadges.setCellFactory(param -> new BadgeCell());
-        shareButton.disableProperty().bind(lvBadges.itemsProperty().emptyProperty());
-
+        lvBadges.setCellFactory(param -> new BadgeCell<>());
+        
         badgesView.setOnShowing(event -> {
             AppBar appBar = getApp().getAppBar();
             appBar.setNavIcon(getApp().getNavMenuButton());
             appBar.setTitleText(DevoxxView.BADGES.getTitle());
-            appBar.getActionItems().addAll(getApp().getSearchButton(), shareButton);
+            badgesView.getLayers().clear();
             
+            sponsor.setOnAction(e -> {
+                Services.get(SettingsService.class).ifPresent(service -> {
+                    service.store(DevoxxSettings.BADGE_TYPE, "sponsor");
+                    showSponsor(service);
+                });
+            });
+            
+            attendee.setOnAction(e -> {
+                Services.get(SettingsService.class).ifPresent(service -> {
+                    service.store(DevoxxSettings.BADGE_TYPE, "attendee");
+                    final Toast toast = new Toast(DevoxxBundle.getString("OTN.BADGES.LOGIN.ATTENDEE"));
+                    toast.setDuration(Duration.seconds(5));
+                    toast.show();
+                    showAttendee();
+                });
+            });
+
             if (service.isAuthenticated() || !DevoxxSettings.USE_REMOTE_NOTES) {
                 loadAuthenticatedView();
             } else {
@@ -125,9 +116,32 @@ public class BadgesPresenter extends GluonPresenter<DevoxxApplication> {
     }
 
     private void loadAuthenticatedView() {
+        final Optional<SettingsService> settingsService = Services.get(SettingsService.class);
+        if (settingsService.isPresent()) {
+            final SettingsService service = settingsService.get();
+            final String badgeType = service.retrieve(DevoxxSettings.BADGE_TYPE);
+            if (badgeType != null) {
+                switch (badgeType) {
+                    case "sponsor":
+                        showSponsor(settingsService.get());
+                        return;
+                    case "attendee":
+                        showAttendee();
+                        return;
+                }
+            }
+        }
+        badgesView.setCenter(content);
+    }
+
+    private void showAttendee() {
         final ObservableList<Badge> badges = service.retrieveBadges();
         lvBadges.setItems(badges);
         badgesView.setCenter(lvBadges);
+
+        final Button shareButton = getApp().getShareButton();
+        shareButton.disableProperty().bind(lvBadges.itemsProperty().emptyProperty());
+        getApp().getAppBar().getActionItems().setAll(getApp().getSearchButton(), shareButton);
         
         FloatingActionButton scan = new FloatingActionButton(MaterialDesignIcon.SCANNER.text, e -> {
             Services.get(BarcodeScanService.class).ifPresent(s -> {
@@ -144,9 +158,9 @@ public class BadgesPresenter extends GluonPresenter<DevoxxApplication> {
                                 break;
                             }
                         }
-                        if (! exists) {
+                        if (!exists) {
                             lvBadges.itemsProperty().add(badge);
-                            DevoxxView.BADGE.switchView().ifPresent(presenter -> ((BadgePresenter) presenter).setBadgeId(badge.getBadgeId()));
+                            DevoxxView.BADGE.switchView().ifPresent(presenter -> ((BadgePresenter) presenter).setBadgeId(badge.getBadgeId(), null));
                         }
                     } else {
                         Toast toast = new Toast(DevoxxBundle.getString("OTN.BADGES.BAD.QR"));
@@ -158,4 +172,13 @@ public class BadgesPresenter extends GluonPresenter<DevoxxApplication> {
         badgesView.getLayers().add(scan.getLayer());
     }
 
+    private void showSponsor(SettingsService service) {
+        final String sponsorName = service.retrieve(DevoxxSettings.SPONSOR_NAME);
+        final String sponsorSlug = service.retrieve(DevoxxSettings.SPONSOR_SLUG);
+        if (sponsorSlug == null) {
+            DevoxxView.SPONSORS.switchView();
+        } else {
+            DevoxxView.SPONSOR.switchView().ifPresent(presenter -> ((SponsorPresenter)presenter).setSponsor(sponsorName, sponsorSlug));
+        }
+    }
 }

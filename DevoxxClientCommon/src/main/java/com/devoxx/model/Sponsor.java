@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016, Gluon Software
+/*
+ * Copyright (c) 2016, 2018 Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -31,105 +31,76 @@ import java.util.Locale;
 import java.util.Objects;
 
 public class Sponsor extends Searchable implements Mergeable<Sponsor> {
-    private String uuid;
-    private SponsorCategory section;
+    
     private String name;
-    private String summary;
-    private String description;
-    private String picture;
-    private boolean splash;
-    private boolean banner;
+    private String slug;
+    private SponsorCategory level;
 
-    public Sponsor() { }
+    public Sponsor() {
 
-    public Sponsor(String uuid, SponsorCategory section, String name, String summary, String description, String picture,
-                   boolean splash, boolean banner) {
-        this.uuid = uuid;
-        this.section = section;
+    }
+
+    public Sponsor(String name, String slug, String level) {
         this.name = name;
-        this.summary = summary;
-        this.description = description;
-        this.picture = picture;
-        this.splash = splash;
-        this.banner = banner;
-    }
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public SponsorCategory getSection() {
-        return section;
+        this.slug = slug;
+        setLevel(level);
     }
 
     public String getName() {
         return name;
     }
 
-    public String getSummary() {
-        return summary;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public String getDescription() {
-        return description;
+    public String getSlug() {
+        return slug;
     }
 
-    public String getPicture() {
-        return picture;
+    public void setSlug(String slug) {
+        this.slug = slug;
     }
 
-    public boolean isSplash() {
-        return splash;
+    public SponsorCategory getLevel() {
+        return level;
     }
 
-    public boolean isBanner() {
-        return banner;
+    public void setLevel(String level) {
+        for (SponsorCategory category : SponsorCategory.values()) {
+            if (category.getSlug().equals(level)) {
+                this.level = category;
+                break;
+            }
+        }
+    }
+
+    @Override
+    public boolean merge(Sponsor other) {
+        boolean changed = false;
+        if (!Objects.equals(other.name, this.name)) {
+            changed = true;
+            this.name = other.name;
+        }
+        if (!Objects.equals(other.slug, this.slug)) {
+            changed = true;
+            this.slug = other.slug;
+        }
+        if (!Objects.equals(other.level, this.level)) {
+            changed = true;
+            this.level = other.level;
+        }
+        return changed;
     }
 
     @Override
     public boolean contains(String keyword) {
         if (keyword == null || keyword.isEmpty()) {
             return false;
-        } 
+        }
         String lowerKeyword = keyword.toLowerCase(Locale.ROOT);
         return containsKeyword(getName(), lowerKeyword)        ||
-               containsKeyword(getDescription(), lowerKeyword) ||
-               containsKeyword(getSection(), lowerKeyword)     ||
-               containsKeyword(getSummary(), lowerKeyword);
-
-    }
-
-    @Override
-    public boolean merge(Sponsor other) {
-        boolean changed = false;
-        if (!Objects.equals(other.section, this.section)) {
-            changed = true;
-            this.section = other.section;
-        }
-        if (!Objects.equals(other.name, this.name)) {
-            changed = true;
-            this.name = other.name;
-        }
-        if (!Objects.equals(other.summary, this.summary)) {
-            changed = true;
-            this.summary = other.summary;
-        }
-        if (!Objects.equals(other.description, this.description)) {
-            changed = true;
-            this.description = other.description;
-        }
-        if (!Objects.equals(other.picture, this.picture)) {
-            changed = true;
-            this.picture = other.picture;
-        }
-        if (other.splash != this.splash) {
-            changed = true;
-            this.splash = other.splash;
-        }
-        if (other.banner != this.banner) {
-            changed = true;
-            this.banner = other.banner;
-        }
-        return changed;
+                containsKeyword(getSlug(), lowerKeyword) ||
+                containsKeyword(getLevel(), lowerKeyword);
     }
 }

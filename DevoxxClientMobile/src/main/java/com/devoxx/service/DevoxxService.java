@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, 2017, Gluon Software
+ * Copyright (c) 2016, 2018 Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -26,24 +26,7 @@
 package com.devoxx.service;
 
 import com.airhacks.afterburner.injection.Injector;
-import com.devoxx.model.Badge;
-import com.devoxx.model.Conference;
-import com.devoxx.model.Exhibitor;
-import com.devoxx.model.Favored;
-import com.devoxx.model.Favorite;
-import com.devoxx.model.Favorites;
-import com.devoxx.model.Floor;
-import com.devoxx.model.Note;
-import com.devoxx.model.ProposalType;
-import com.devoxx.model.ProposalTypes;
-import com.devoxx.model.Scheduled;
-import com.devoxx.model.Session;
-import com.devoxx.model.SessionId;
-import com.devoxx.model.Speaker;
-import com.devoxx.model.Sponsor;
-import com.devoxx.model.Track;
-import com.devoxx.model.Tracks;
-import com.devoxx.model.Vote;
+import com.devoxx.model.*;
 import com.devoxx.util.DevoxxBundle;
 import com.devoxx.util.DevoxxNotifications;
 import com.devoxx.util.DevoxxSettings;
@@ -57,13 +40,7 @@ import com.gluonhq.charm.down.plugins.StorageService;
 import com.gluonhq.charm.glisten.application.MobileApplication;
 import com.gluonhq.charm.glisten.control.Dialog;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
-import com.gluonhq.cloudlink.client.data.DataClient;
-import com.gluonhq.cloudlink.client.data.DataClientBuilder;
-import com.gluonhq.cloudlink.client.data.OperationMode;
-import com.gluonhq.cloudlink.client.data.RemoteFunctionBuilder;
-import com.gluonhq.cloudlink.client.data.RemoteFunctionList;
-import com.gluonhq.cloudlink.client.data.RemoteFunctionObject;
-import com.gluonhq.cloudlink.client.data.SyncFlag;
+import com.gluonhq.cloudlink.client.data.*;
 import com.gluonhq.cloudlink.client.push.PushClient;
 import com.gluonhq.cloudlink.client.user.LoginMethod;
 import com.gluonhq.cloudlink.client.user.User;
@@ -81,14 +58,7 @@ import com.gluonhq.connect.provider.RestClient;
 import com.gluonhq.connect.source.BasicInputDataSource;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ReadOnlyListProperty;
-import javafx.beans.property.ReadOnlyListWrapper;
-import javafx.beans.property.ReadOnlyObjectProperty;
-import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.property.*;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -97,15 +67,11 @@ import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.scene.control.Button;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -177,6 +143,7 @@ public class DevoxxService implements Service {
     private ObservableList<Session> scheduledSessions;
     private ObservableList<Note> notes;
     private ObservableList<Badge> badges;
+    private ObservableList<SponsorBadge> sponsorBadges;
 
     private GluonObservableObject<Favorites> allFavorites;
     private ListChangeListener<Session> internalFavoredSessionsListener = null;
@@ -184,6 +151,7 @@ public class DevoxxService implements Service {
     private ObservableList<Session> internalFavoredSessions = FXCollections.observableArrayList();
     private ObservableList<Session> internalScheduledSessions = FXCollections.observableArrayList();
     private ObservableList<Favorite> favorites = FXCollections.observableArrayList();
+    private ObservableList<Sponsor> sponsors = FXCollections.observableArrayList();
 
     public DevoxxService() {
         ready.set(false);
@@ -248,13 +216,9 @@ public class DevoxxService implements Service {
                 }
 
                 retrieveSessionsInternal();
-
                 retrieveSpeakersInternal();
-
                 retrieveTracksInternal();
-
                 retrieveProposalTypesInternal();
-
                 retrieveExhibitionMapsInternal();
 
                 favorites.clear();
@@ -647,8 +611,26 @@ public class DevoxxService implements Service {
     }
 
     @Override
-    public ReadOnlyListProperty<Sponsor> retrieveSponsors() {
-        return new ReadOnlyListWrapper<>(FXCollections.observableArrayList());
+    public ObservableList<Sponsor> retrieveSponsors() {
+        // TODO: pass the CfpEndpoint
+        RemoteFunctionObject fnSponsors = RemoteFunctionBuilder.create("sponsors").object();
+        GluonObservableObject<EventSponsor> badgeSponsorsObject = fnSponsors.call(EventSponsor.class);
+        badgeSponsorsObject.initializedProperty().addListener((obs, ov, nv) -> {
+            if (nv) {
+                for (Event event : badgeSponsorsObject.get().getEvents()) {
+                    //TODO: Uncomment this once everything is fixed
+                    //if (event.getSlug().equalsIgnoreCase(getConference().getId())) {
+                        sponsors.setAll(event.getSponsors());
+                    //}
+                }
+            } 
+        });
+        badgeSponsorsObject.stateProperty().addListener((obs, ov, nv) -> {
+            if (nv == ConnectState.FAILED) {
+                badgeSponsorsObject.getException().printStackTrace();
+            }
+        });
+        return sponsors;
     }
 
     @Override
@@ -824,6 +806,74 @@ public class DevoxxService implements Service {
     }
 
     @Override
+    public ObservableList<SponsorBadge> retrieveSponsorBadges() {
+        if (!isAuthenticated() && DevoxxSettings.USE_REMOTE_NOTES) {
+            throw new IllegalStateException("An authenticated user must be available when calling this method.");
+        }
+        
+        if (sponsorBadges == null) {
+            final GluonObservableList<SponsorBadge> sponsorBadges = internalRetrieveSponsorBadges();
+            this.sponsorBadges = sponsorBadges;
+            
+            // every scanned sponsor badge must be posted with the remote function
+            sponsorBadges.initializedProperty().addListener(new ChangeListener<Boolean>() {
+                @Override
+                public void changed(ObservableValue<? extends Boolean> o, Boolean ov, Boolean nv) {
+                    if (nv) {
+                        sponsorBadges.addListener((ListChangeListener<SponsorBadge>) c -> {
+                            while (c.next()) {
+                                if (c.wasAdded()) {
+                                    for (SponsorBadge sponsorBadge : c.getAddedSubList()) {
+                                        saveSponsorBadge(sponsorBadge);
+                                    }
+                                }
+                                if (c.wasUpdated()) {
+                                    for (int i = c.getFrom(); i < c.getTo(); i++) {
+                                        saveSponsorBadge(sponsorBadges.get(i));
+                                    }
+                                }
+                            }
+                        });
+                    }
+                    sponsorBadges.initializedProperty().removeListener(this);
+                }
+            });
+        }
+
+        return sponsorBadges;
+    }
+
+    private void saveSponsorBadge(SponsorBadge sponsorBadge) {
+        RemoteFunctionObject fnSponsorBadge = RemoteFunctionBuilder.create("saveSponsorBadge")
+                .param("0", sponsorBadge.getSlug())
+                .param("1", sponsorBadge.getBadgeId())
+                .param("2", sponsorBadge.getFirstName())
+                .param("3", sponsorBadge.getLastName())
+                .param("4", sponsorBadge.getCompany())
+                .param("5", sponsorBadge.getEmail())
+                .param("6", sponsorBadge.getDetails())
+                .param("7", ZonedDateTime.now().format(DateTimeFormatter.ISO_INSTANT))
+                .object();
+        GluonObservableObject<String> sponsorBadgeResult = fnSponsorBadge.call(String.class);
+        sponsorBadgeResult.initializedProperty().addListener((obs, ov, nv) -> {
+            if (nv) {
+                LOG.log(Level.INFO, "Response from save sponsor badge: " + sponsorBadgeResult.get());
+            }
+        });
+        sponsorBadgeResult.stateProperty().addListener((obs, ov, nv) -> {
+            if (nv == ConnectState.FAILED) {
+                LOG.log(Level.WARNING, "Failed to call save sponsor badge: ", sponsorBadgeResult.getException());
+            }
+        });
+    }
+
+    @Override
+    public GluonObservableObject<String> authenticateSponsor() {
+        RemoteFunctionObject fnValidateSponsor = RemoteFunctionBuilder.create("validateSponsor").cachingEnabled(false).object();
+        return fnValidateSponsor.call(String.class);
+    }
+
+    @Override
     public void voteTalk(Vote vote) {
         if (!isAuthenticated()) {
             throw new IllegalStateException("An authenticated user must be available when calling this method.");
@@ -914,6 +964,11 @@ public class DevoxxService implements Service {
         }
     }
 
+    private GluonObservableList<SponsorBadge> internalRetrieveSponsorBadges() {
+        return DataProvider.retrieveList(cloudDataClient.createListDataReader(authenticationClient.getAuthenticatedUser().getKey() + "_sponsor_badges",
+                SponsorBadge.class, SyncFlag.LIST_WRITE_THROUGH, SyncFlag.OBJECT_WRITE_THROUGH));
+    }
+
     private void loadCfpAccount(User user, Runnable successRunnable) {
         if (cfpUserUuid.isEmpty().get()) {
             Services.get(SettingsService.class).ifPresent(settingsService -> {
@@ -958,8 +1013,10 @@ public class DevoxxService implements Service {
             retrieveNotes();
             if (DevoxxSettings.conferenceHasBadgeView(getConference())) {
                 retrieveBadges();
+                retrieveSponsors();
+                retrieveSponsorBadges();
             }
-
+            
             retrieveFavoredSessions();
             retrieveScheduledSessions();
         } else {
@@ -971,14 +1028,19 @@ public class DevoxxService implements Service {
         cfpUserUuid.set("");
         notes = null;
         badges = null;
+        sponsorBadges = null;
         favoredSessions = null;
         scheduledSessions = null;
+        sponsors.clear();
         internalFavoredSessions.clear();
         internalScheduledSessions.clear();
         ready.set(false);
 
         Services.get(SettingsService.class).ifPresent(settingsService -> {
             settingsService.remove(DevoxxSettings.SAVED_ACCOUNT_ID);
+            settingsService.remove(DevoxxSettings.BADGE_TYPE);
+            settingsService.remove(DevoxxSettings.SPONSOR_NAME);
+            settingsService.remove(DevoxxSettings.SPONSOR_SLUG);
         });
     }
 

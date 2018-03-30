@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016, Gluon Software
+/*
+ * Copyright (c) 2016, 2018 Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -45,7 +45,7 @@ public class SponsorHeaderCell extends CharmListCell<Sponsor> {
     public void updateItem(Sponsor item, boolean empty) {
         super.updateItem(item, empty);
         if (item != null && !empty) {
-            tile.textProperty().setAll(DevoxxBundle.getString("OTN.SPONSORS.SPONSOR", item.getSection()));
+            tile.textProperty().setAll(DevoxxBundle.getString("OTN.SPONSORS.SPONSOR", item.getLevel().toString()));
             setGraphic(tile);
         } else {
             setGraphic(null);

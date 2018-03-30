@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016, Gluon Software
+ * Copyright (c) 2016, 2018 Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -26,13 +26,14 @@
 package com.devoxx.views.cell;
 
 import com.devoxx.DevoxxView;
+import com.devoxx.model.SponsorBadge;
 import com.gluonhq.charm.glisten.control.CharmListCell;
 import com.gluonhq.charm.glisten.control.ListTile;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import com.devoxx.model.Badge;
 import com.devoxx.views.BadgePresenter;
 
-public class BadgeCell extends CharmListCell<Badge> {
+public class BadgeCell<T extends Badge> extends CharmListCell<T> {
     private static final int MAX_TEXT_SIZE = 100;
 
     private final ListTile tile;
@@ -45,7 +46,7 @@ public class BadgeCell extends CharmListCell<Badge> {
         getStyleClass().add("badge-cell");
     }
 
-    @Override public void updateItem(Badge badge, boolean empty) {
+    @Override public void updateItem(T badge, boolean empty) {
         super.updateItem(badge, empty);
 
         if (badge != null && !empty) {
@@ -56,8 +57,13 @@ public class BadgeCell extends CharmListCell<Badge> {
 
             // FIX for OTN-568
             tile.setOnMouseReleased(event -> {
-                DevoxxView.BADGE.switchView().ifPresent(presenter -> 
-                    ((BadgePresenter) presenter).setBadgeId(badge.getBadgeId()));
+                DevoxxView.BADGE.switchView().ifPresent(presenter -> {
+                    if (badge instanceof SponsorBadge) {
+                        ((BadgePresenter) presenter).setBadgeId(badge.getBadgeId(), ((SponsorBadge)badge).getSlug());
+                    } else {
+                        ((BadgePresenter) presenter).setBadgeId(badge.getBadgeId(), null);
+                    }
+                });
             });
         } else {
             setGraphic(null);

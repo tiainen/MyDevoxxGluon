@@ -145,7 +145,7 @@ public class BadgesPresenter extends GluonPresenter<DevoxxApplication> {
         
         FloatingActionButton scan = new FloatingActionButton(MaterialDesignIcon.SCANNER.text, e -> {
             Services.get(BarcodeScanService.class).ifPresent(s -> {
-                final Optional<String> scanQr = s.scan(); 
+                final Optional<String> scanQr = s.scan(DevoxxBundle.getString("OTN.BADGES.ATTENDEE.QR.TITLE"), null, null); 
                 scanQr.ifPresent(qr -> {
                     Badge badge = new Badge(qr);
                     if (badge.getBadgeId() != null) {

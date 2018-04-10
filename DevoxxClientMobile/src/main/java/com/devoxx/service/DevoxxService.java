@@ -827,11 +827,6 @@ public class DevoxxService implements Service {
                                         saveSponsorBadge(sponsorBadge);
                                     }
                                 }
-                                if (c.wasUpdated()) {
-                                    for (int i = c.getFrom(); i < c.getTo(); i++) {
-                                        saveSponsorBadge(sponsorBadges.get(i));
-                                    }
-                                }
                             }
                         });
                     }
@@ -843,7 +838,8 @@ public class DevoxxService implements Service {
         return sponsorBadges;
     }
 
-    private void saveSponsorBadge(SponsorBadge sponsorBadge) {
+    @Override
+    public void saveSponsorBadge(SponsorBadge sponsorBadge) {
         RemoteFunctionObject fnSponsorBadge = RemoteFunctionBuilder.create("saveSponsorBadge")
                 .param("0", sponsorBadge.getSlug())
                 .param("1", sponsorBadge.getBadgeId())

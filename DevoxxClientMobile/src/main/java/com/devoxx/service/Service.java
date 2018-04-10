@@ -253,4 +253,10 @@ public interface Service {
      * @return The GluonObservableObject with response containing password
      */
     GluonObservableObject<String> authenticateSponsor();
+
+    /**
+     * Sends the sponsor badge to a GCL remote function
+     * @param sponsorBadge The sponsor badge to be send to the GCL remote function.
+     */
+    void saveSponsorBadge(SponsorBadge sponsorBadge);
 }

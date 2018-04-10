@@ -28,6 +28,7 @@ package com.devoxx.views;
 import com.devoxx.DevoxxApplication;
 import com.devoxx.DevoxxView;
 import com.devoxx.model.Badge;
+import com.devoxx.model.SponsorBadge;
 import com.devoxx.service.Service;
 import com.devoxx.util.DevoxxBundle;
 import com.devoxx.util.DevoxxSettings;
@@ -185,6 +186,10 @@ public class BadgePresenter extends GluonPresenter<DevoxxApplication> {
         badge.setCompany(company.getText());
         badge.setEmail(email.getText());
         badge.setDetails(details.getText());
+        
+        if (badge instanceof SponsorBadge) {
+            service.saveSponsorBadge((SponsorBadge) badge);
+        }
 
         textChanged = false;
     }

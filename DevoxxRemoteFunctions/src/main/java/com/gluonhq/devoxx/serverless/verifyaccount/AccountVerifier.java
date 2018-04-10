@@ -26,9 +26,13 @@
 package com.gluonhq.devoxx.serverless.verifyaccount;
 
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
+import org.glassfish.jersey.logging.LoggingFeature;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -36,6 +40,7 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -43,22 +48,69 @@ public class AccountVerifier {
 
     private static final Logger LOGGER = Logger.getLogger(AccountVerifier.class.getName());
 
-    private static final Client client = ClientBuilder.newClient()
-            .register(MultiPartFeature.class);
-    static {
-        client.register(HttpAuthenticationFeature.basic(System.getenv("DEVOXX_CFP_USERNAME"),
-                        System.getenv("DEVOXX_CFP_PASSWORD")));
+    public String verify(String cfpEndpoint, String email, String password) throws IOException {
+        if (cfpEndpoint.contains("cfp.devoxx.fr")) {
+            return verifyDevoxxFr(email, password);
+        } else {
+            return verifyRegularCfp(cfpEndpoint, email, password);
+        }
     }
 
-    public String verify(String cfpEndpoint, String email, String password) throws IOException {
+    private String verifyDevoxxFr(String email, String password) throws IOException {
+        String entity = Json.createObjectBuilder()
+                .add("email", email)
+                .add("password", password)
+                .add("rememberMe", false)
+                .build().toString();
+
+        Response accountVerification = buildClient().target("https://my.devoxx.fr").path("pwa").path("login")
+                .request()
+                .post(Entity.json(entity));
+        String response = accountVerification.readEntity(String.class);
+        LOGGER.log(Level.INFO, "Account Verification Response: {0}", response);
+        if (accountVerification.getStatus() == Response.Status.OK.getStatusCode()) {
+            try (JsonReader reader = Json.createReader(new StringReader(response))) {
+                JsonObject token = reader.readObject();
+                return fetchUserProfileDevoxxFr(token.getString("token"));
+            }
+        } else if (accountVerification.getStatus() == Response.Status.BAD_REQUEST.getStatusCode() ||
+                accountVerification.getStatus() == Response.Status.UNAUTHORIZED.getStatusCode()) {
+            throw new IOException("Invalid credentials");
+        } else {
+            throw new IOException(new WebApplicationException(accountVerification));
+        }
+    }
+
+    private String fetchUserProfileDevoxxFr(String token) throws IOException {
+        Response fetchUserProfile = buildClient().target("https://my.devoxx.fr").path("pwa").path("user")
+                .request()
+                .header("X-Auth-Token", token)
+                .get();
+        String response = fetchUserProfile.readEntity(String.class);
+        LOGGER.log(Level.INFO, "FetchUserProfile Response: {0}", response);
+        if (fetchUserProfile.getStatus() == Response.Status.OK.getStatusCode()) {
+            try (JsonReader reader = Json.createReader(new StringReader(response))) {
+                JsonObject user = reader.readObject();
+                return Json.createObjectBuilder()
+                        .add("identifier", user.getString("userID"))
+                        .add("name", user.getString("firstName", "") + " " + user.getString("lastName", ""))
+                        .add("picture", user.getString("avatarURL", ""))
+                        .build().toString();
+            }
+        } else {
+            throw new IOException("Invalid credentials");
+        }
+    }
+
+    private String verifyRegularCfp(String cfpEndpoint, String email, String password) throws IOException {
         FormDataMultiPart formDataMultiPart = new FormDataMultiPart();
         formDataMultiPart.field("email", email);
         formDataMultiPart.field("password", password);
 
-        Response accountVerification = client.target(cfpEndpoint).path("account").path("credentials")
+        Response accountVerification = buildClientRegularCfp().target(cfpEndpoint).path("account").path("credentials")
                 .request().post(Entity.entity(formDataMultiPart, MediaType.MULTIPART_FORM_DATA_TYPE));
         String response = accountVerification.readEntity(String.class);
-        LOGGER.log(Level.INFO, "Response: {0}", response);
+        LOGGER.log(Level.INFO, "Account Verification Response: {0}", response);
         if (accountVerification.getStatus() == Response.Status.OK.getStatusCode()) {
             return "{\"identifier\":\"" + response + "\"}";
         } else if (accountVerification.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()) {
@@ -66,5 +118,17 @@ public class AccountVerifier {
         } else {
             throw new IOException(new WebApplicationException(accountVerification));
         }
+    }
+
+    private Client buildClient() {
+        return ClientBuilder.newClient()
+                .register(new LoggingFeature(LOGGER, Level.INFO, LoggingFeature.Verbosity.PAYLOAD_ANY, 4096));
+    }
+
+    private Client buildClientRegularCfp() {
+        return buildClient()
+                .register(MultiPartFeature.class)
+                .register(HttpAuthenticationFeature.basic(System.getenv("DEVOXX_CFP_USERNAME"),
+                        System.getenv("DEVOXX_CFP_PASSWORD")));
     }
 }

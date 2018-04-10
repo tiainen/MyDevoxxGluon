@@ -987,12 +987,14 @@ public class DevoxxService implements Service {
                                 .object();
                         GluonObservableObject<String> accountUuid = fnVerifyAccount.call(String.class);
                         accountUuid.initializedProperty().addListener((obs, ov, nv) -> {
-                            LOG.log(Level.INFO, "Verified user " + user + " as account with uuid " + accountUuid);
-                            cfpUserUuid.set(accountUuid.get());
-                            settingsService.store(DevoxxSettings.SAVED_ACCOUNT_ID, accountUuid.get());
+                            if (nv) {
+                                LOG.log(Level.INFO, "Verified user " + user + " as account with uuid " + accountUuid);
+                                cfpUserUuid.set(accountUuid.get());
+                                settingsService.store(DevoxxSettings.SAVED_ACCOUNT_ID, accountUuid.get());
 
-                            if (successRunnable != null) {
-                                successRunnable.run();
+                                if (successRunnable != null) {
+                                    successRunnable.run();
+                                }
                             }
                         });
                     }

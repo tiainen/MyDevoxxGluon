@@ -1,6 +1,6 @@
 [
  {
-    "id": "DevoxxFR2017",
+    "id": "DevoxxFR2018",
     "confType": "Devoxx",
     "confDescription": "Devoxx France 2018",
     "confIcon": "https://s3-eu-west-1.amazonaws.com/cfpdevoxx/france/splash_btn_paris.png",
@@ -36,7 +36,7 @@
     "timezone": "Europe/Paris"
  },
  {
-    "id": "DV17",
+    "id": "DV18",
     "confType": "Devoxx",    				
     "confDescription": "Devoxx UK 2018",
     "confIcon": "https://s3-eu-west-1.amazonaws.com/cfpdevoxx/uk/splash_btn_uk.png",    
@@ -72,7 +72,7 @@
     "timezone": "Europe/London"
  }, 
  {
-    "id": "DevoxxPL2017",
+    "id": "DevoxxPL2018",
     "confType": "Devoxx",    				
     "confDescription": "Devoxx Poland 2018",
     "confIcon": "https://s3-eu-west-1.amazonaws.com/cfpdevoxx/poland/splash_btn_krakow.png",    

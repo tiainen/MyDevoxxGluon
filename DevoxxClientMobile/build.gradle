@@ -28,10 +28,9 @@ applicationDefaultJvmArgs = [
 
 dependencies {
     compile project(':DevoxxClientCommon')
-    compile 'com.gluonhq:glisten-afterburner:1.2.0'
+    compile 'com.gluonhq:glisten-afterburner:1.2.2'
 
-    compile 'com.gluonhq:charm-cloudlink-client:4.4.4'
-    compile 'com.gluonhq:charm-glisten-connect-view:4.3.7'
+    compile 'com.gluonhq:charm-glisten-connect-view:4.4.4'
     compile 'com.gluonhq:maps:1.0.1'
 
     androidCompile 'com.google.android.gms:play-services-wearable:9.4.0'

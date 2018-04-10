@@ -6,6 +6,7 @@ repositories {
 
 dependencies {
     compile 'org.glassfish.jersey.core:jersey-client:2.26'
+    compile 'org.glassfish.jersey.media:jersey-media-multipart:2.26'
     compile 'org.glassfish.jersey.inject:jersey-hk2:2.26'
     compile "org.glassfish:javax.json:1.0.4"
     compile 'com.amazonaws:aws-lambda-java-core:1.1.0'

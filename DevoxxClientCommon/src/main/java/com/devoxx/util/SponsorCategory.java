@@ -27,20 +27,25 @@ package com.devoxx.util;
 
 public enum SponsorCategory {
     
-    PLATINUM    ("OTN.SPONSOR.PLATINUM", "plat",    0),
-    GOLD        ("OTN.SPONSOR.GOLD",     "gold",    1),
-    SILVER      ("OTN.SPONSOR.SILVER",   "silver",  2),
-    BRONZE      ("OTN.SPONSOR.BRONZE",   "bronze",  3),
-    MG          ("OTN.SPONSOR.MG",       "mg",      4),
-    STARTUP     ("OTN.SPONSOR.STARTUP",  "startup", 5);
-
+    PLATINUM     ("OTN.SPONSOR.PLATINUM",     "plat",         0),
+    GOLD         ("OTN.SPONSOR.GOLD",         "gold",         1),
+    SILVER       ("OTN.SPONSOR.SILVER",       "silver",       2),
+    BRONZE       ("OTN.SPONSOR.BRONZE",       "bronze",       3),
+    MG           ("OTN.SPONSOR.MG",           "mg",           4),
+    STARTUP      ("OTN.SPONSOR.STARTUP",      "startup",      5),
+    ARCADE       ("OTN.SPONSOR.ARCADE",       "arcade",       6),
+    SPEAKERDINER ("OTN.SPONSOR.SPEAKERDINER", "speakerdiner", 7),
+    UNIVERSITY   ("OTN.SPONSOR.UNIVERSITY",   "university",   8),
+    LAB          ("OTN.SPONSOR.LAB",          "lab",          9),
+    NA           ("OTN.SPONSOR.NA",           "na",           10);
+ 
     private final String name;
-    private final String slug;
+    private final String category;
     private final int categoryPrecedence;
 
-    SponsorCategory(String name, String slug, int i) {
+    SponsorCategory(String name, String category, int i) {
         this.name = DevoxxBundle.getString(name);
-        this.slug = slug;
+        this.category = category;
         categoryPrecedence = i;
     }
 
@@ -48,8 +53,8 @@ public enum SponsorCategory {
         return categoryPrecedence;
     }
 
-    public String getSlug() {
-        return slug;
+    public String getShortName() {
+        return category;
     }
 
     @Override

@@ -68,7 +68,7 @@ public class Sponsor extends Searchable implements Mergeable<Sponsor> {
 
     public void setLevel(String level) {
         for (SponsorCategory category : SponsorCategory.values()) {
-            if (category.getSlug().equals(level)) {
+            if (category.getShortName().equals(level)) {
                 this.level = category;
                 break;
             }

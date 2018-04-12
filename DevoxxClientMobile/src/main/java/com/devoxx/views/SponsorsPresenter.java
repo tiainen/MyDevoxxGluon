@@ -76,6 +76,7 @@ public class SponsorsPresenter extends GluonPresenter<DevoxxApplication> {
 
         sponsorListView.setCellFactory(p -> new SponsorCell());
         sponsorListView.setHeaderCellFactory(p -> new SponsorHeaderCell());
+        sponsorListView.setComparator((s1, s2) -> s1.getName().compareTo(s2.getName()));
 
         sponsorListView.selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {

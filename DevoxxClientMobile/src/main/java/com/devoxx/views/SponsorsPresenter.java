@@ -37,7 +37,9 @@ import com.devoxx.views.helper.Placeholder;
 import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.control.CharmListView;
+import com.gluonhq.charm.glisten.control.Toast;
 import com.gluonhq.charm.glisten.mvc.View;
+import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 
@@ -61,6 +63,11 @@ public class SponsorsPresenter extends GluonPresenter<DevoxxApplication> {
             AppBar appBar = getApp().getAppBar();
             appBar.setNavIcon(getApp().getNavMenuButton());
             appBar.setTitleText(DevoxxView.SPONSORS.getTitle());
+            appBar.getActionItems().add(MaterialDesignIcon.REFRESH.button(e -> {
+                sponsorListView.setItems(service.retrieveSponsors());
+                Toast toast = new Toast(DevoxxBundle.getString("OTN.SPONSORS.REFRESH_MESSAGE"));
+                toast.show();
+            }));
             sponsorListView.setSelectedItem(null);
         });
 
@@ -78,12 +85,12 @@ public class SponsorsPresenter extends GluonPresenter<DevoxxApplication> {
         sponsorListView.setHeaderCellFactory(p -> new SponsorHeaderCell());
         sponsorListView.setComparator((s1, s2) -> s1.getName().compareTo(s2.getName()));
 
-        sponsorListView.selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue != null) {
-                DevoxxView.SPONSOR.switchView().ifPresent(presenter ->
-                        ((SponsorPresenter)presenter).setSponsor(newValue.getName(), newValue.getSlug()));
-            }
-        });
+//        sponsorListView.selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+//            if (newValue != null) {
+//                DevoxxView.SPONSOR.switchView().ifPresent(presenter ->
+//                        ((SponsorPresenter)presenter).setSponsor(newValue.getName(), newValue.getSlug()));
+//            }
+//        });
     }
 
 }

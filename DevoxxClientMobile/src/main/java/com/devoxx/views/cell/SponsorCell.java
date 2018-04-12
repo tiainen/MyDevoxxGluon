@@ -25,7 +25,9 @@
  */
 package com.devoxx.views.cell;
 
+import com.devoxx.DevoxxView;
 import com.devoxx.model.Sponsor;
+import com.devoxx.views.SponsorPresenter;
 import com.gluonhq.charm.glisten.control.CharmListCell;
 import com.gluonhq.charm.glisten.control.ListTile;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
@@ -39,7 +41,6 @@ public class SponsorCell extends CharmListCell<Sponsor> {
         tile.setSecondaryGraphic(MaterialDesignIcon.CHEVRON_RIGHT.graphic());
 
         setText(null);
-
         getStyleClass().add("sponsor-cell");
     }
 
@@ -49,6 +50,12 @@ public class SponsorCell extends CharmListCell<Sponsor> {
         if (sponsor != null && !empty) {
             tile.textProperty().setAll(sponsor.getName());
             setGraphic(tile);
+
+            // FIX for OTN-568
+            tile.setOnMouseReleased(event -> {
+                DevoxxView.SPONSOR.switchView().ifPresent(presenter ->
+                        ((SponsorPresenter)presenter).setSponsor(sponsor.getName(), sponsor.getSlug()));
+            });
         } else {
             setGraphic(null);
         }

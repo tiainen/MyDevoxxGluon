@@ -239,7 +239,7 @@ public class DevoxxApplication extends MobileApplication {
                         file.delete();
                     }
                     try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-                        writer.write("First Name,Last Name,Company,Email,Details");
+                        writer.write("ID,First Name,Last Name,Company,Email,Details");
                         writer.newLine();
                         for (Badge badge : service.retrieveBadges()) {
                             writer.write(badge.toCSV());

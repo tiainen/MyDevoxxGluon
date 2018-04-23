@@ -113,7 +113,7 @@ public class Badge extends Searchable {
     public String toCSV() {
         StringBuilder csv = new StringBuilder();
         csv.append(safeStr(getBadgeId()));
-        csv.append(safeStr(getFirstName()));
+        csv.append(",").append(safeStr(getFirstName()));
         csv.append(",").append(safeStr(getLastName()));
         csv.append(",").append(safeStr(getCompany()));
         csv.append(",").append(safeStr(getEmail()));

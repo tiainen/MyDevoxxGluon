@@ -27,7 +27,7 @@ package com.devoxx.util;
 
 public enum SponsorCategory {
     
-    PLATINUM     ("OTN.SPONSOR.PLATINUM",     "plat",         0),
+    PLATINUM     ("OTN.SPONSOR.PLATINUM",     "platinum",     0),
     GOLD         ("OTN.SPONSOR.GOLD",         "gold",         1),
     SILVER       ("OTN.SPONSOR.SILVER",       "silver",       2),
     BRONZE       ("OTN.SPONSOR.BRONZE",       "bronze",       3),

@@ -126,7 +126,7 @@ public class SponsorPresenter extends GluonPresenter<DevoxxApplication> {
 
     private void loadAuthenticatedView(String name, String slug) {
         final AppBar appBar = getApp().getAppBar();
-        final Button shareButton = getApp().getShareButton();
+        final Button shareButton = getApp().getShareButton(DevoxxSettings.BADGE_TYPE_SPONSOR);
         appBar.getActionItems().setAll(shareButton);
         appBar.setTitleText(DevoxxBundle.getString("OTN.SPONSOR.BADGES.FOR", name));
 

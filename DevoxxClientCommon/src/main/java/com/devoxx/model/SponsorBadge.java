@@ -123,6 +123,7 @@ public class SponsorBadge extends Badge {
         return Objects.hash(super.hashCode(), badgeId, slug);
     }
 
+    @Override
     public String toCSV() {
         StringBuilder csv = new StringBuilder(super.toCSV());
         csv.append(",").append(safeStr(getSlug()));

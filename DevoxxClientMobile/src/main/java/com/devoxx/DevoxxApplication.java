@@ -68,6 +68,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.devoxx.DevoxxView.SEARCH;
+import com.devoxx.model.SponsorBadge;
 
 public class DevoxxApplication extends MobileApplication {
 
@@ -229,7 +230,7 @@ public class DevoxxApplication extends MobileApplication {
         return navSearchButton;
     }
     
-    public Button getShareButton() {
+    public Button getShareButton(String badgeType) {
         return MaterialDesignIcon.SHARE.button(e -> {
             Services.get(ShareService.class).ifPresent(s -> {
                 File root = Services.get(StorageService.class).flatMap(storage -> storage.getPublicStorage("Documents")).orElse(null);
@@ -239,11 +240,22 @@ public class DevoxxApplication extends MobileApplication {
                         file.delete();
                     }
                     try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-                        writer.write("ID,First Name,Last Name,Company,Email,Details");
-                        writer.newLine();
-                        for (Badge badge : service.retrieveBadges()) {
-                            writer.write(badge.toCSV());
+                        if (DevoxxSettings.BADGE_TYPE_ATTENDEE.equals(badgeType)) {
+                            writer.write("ID,First Name,Last Name,Company,Email,Details");
                             writer.newLine();
+                            for (Badge badge : service.retrieveBadges()) {
+                                writer.write(badge.toCSV());
+                                writer.newLine();
+                            }
+                        } else if (DevoxxSettings.BADGE_TYPE_SPONSOR.equals(badgeType)) {
+                            writer.write("ID,First Name,Last Name,Company,Email,Details,Slug");
+                            writer.newLine();
+                            for (SponsorBadge badge : service.retrieveSponsorBadges()) {
+                                writer.write(badge.toCSV());
+                                writer.newLine();
+                            }
+                        } else {
+                            LOG.log(Level.WARNING, "Error invalid badgeType: " + badgeType);
                         }
                     } catch (IOException ex) {
                         LOG.log(Level.WARNING, "Error writing csv file ", ex);

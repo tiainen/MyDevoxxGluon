@@ -88,14 +88,14 @@ public class BadgesPresenter extends GluonPresenter<DevoxxApplication> {
             
             sponsor.setOnAction(e -> {
                 Services.get(SettingsService.class).ifPresent(service -> {
-                    service.store(DevoxxSettings.BADGE_TYPE, "sponsor");
+                    service.store(DevoxxSettings.BADGE_TYPE, DevoxxSettings.BADGE_TYPE_SPONSOR);
                     showSponsor(service);
                 });
             });
             
             attendee.setOnAction(e -> {
                 Services.get(SettingsService.class).ifPresent(service -> {
-                    service.store(DevoxxSettings.BADGE_TYPE, "attendee");
+                    service.store(DevoxxSettings.BADGE_TYPE, DevoxxSettings.BADGE_TYPE_ATTENDEE);
                     final Toast toast = new Toast(DevoxxBundle.getString("OTN.BADGES.LOGIN.ATTENDEE"));
                     toast.setDuration(Duration.seconds(5));
                     toast.show();
@@ -122,10 +122,10 @@ public class BadgesPresenter extends GluonPresenter<DevoxxApplication> {
             final String badgeType = service.retrieve(DevoxxSettings.BADGE_TYPE);
             if (badgeType != null) {
                 switch (badgeType) {
-                    case "sponsor":
+                    case DevoxxSettings.BADGE_TYPE_SPONSOR:
                         showSponsor(settingsService.get());
                         return;
-                    case "attendee":
+                    case DevoxxSettings.BADGE_TYPE_ATTENDEE:
                         showAttendee();
                         return;
                 }
@@ -139,7 +139,7 @@ public class BadgesPresenter extends GluonPresenter<DevoxxApplication> {
         lvBadges.setItems(badges);
         badgesView.setCenter(lvBadges);
 
-        final Button shareButton = getApp().getShareButton();
+        final Button shareButton = getApp().getShareButton(DevoxxSettings.BADGE_TYPE_ATTENDEE);
         shareButton.disableProperty().bind(lvBadges.itemsProperty().emptyProperty());
         getApp().getAppBar().getActionItems().setAll(getApp().getSearchButton(), shareButton);
         

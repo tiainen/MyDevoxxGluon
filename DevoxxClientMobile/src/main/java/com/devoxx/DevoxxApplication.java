@@ -241,14 +241,14 @@ public class DevoxxApplication extends MobileApplication {
                     }
                     try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
                         if (DevoxxSettings.BADGE_TYPE_ATTENDEE.equals(badgeType)) {
-                            writer.write("First Name,Last Name,Company,Email,Details");
+                            writer.write("ID,First Name,Last Name,Company,Email,Details");
                             writer.newLine();
                             for (Badge badge : service.retrieveBadges()) {
                                 writer.write(badge.toCSV());
                                 writer.newLine();
                             }
                         } else if (DevoxxSettings.BADGE_TYPE_SPONSOR.equals(badgeType)) {
-                            writer.write("First Name,Last Name,Company,Email,Details,Slug");
+                            writer.write("ID,First Name,Last Name,Company,Email,Details,Slug");
                             writer.newLine();
                             for (SponsorBadge badge : service.retrieveSponsorBadges()) {
                                 writer.write(badge.toCSV());

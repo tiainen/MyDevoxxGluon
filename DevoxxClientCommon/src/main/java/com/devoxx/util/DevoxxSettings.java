@@ -124,7 +124,7 @@ public class DevoxxSettings {
     /**
      * List of conferences countries that support the Badges View
      */
-    private static final EnumSet<DevoxxCountry> CONFERENCE_COUNTRIES_WITH_BADGES = EnumSet.of(DevoxxCountry.BE, DevoxxCountry.FR);
+    private static final EnumSet<DevoxxCountry> CONFERENCE_COUNTRIES_WITH_BADGES = EnumSet.of(DevoxxCountry.BE, DevoxxCountry.FR, DevoxxCountry.UK);
 
     /**
      * List of conferences contries that don't support favorite count

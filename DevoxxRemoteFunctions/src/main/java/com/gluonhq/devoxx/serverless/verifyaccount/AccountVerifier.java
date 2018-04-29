@@ -108,7 +108,9 @@ public class AccountVerifier {
         formDataMultiPart.field("password", password);
 
         Response accountVerification = buildClientRegularCfp().target(cfpEndpoint).path("account").path("credentials")
-                .request().post(Entity.entity(formDataMultiPart, MediaType.MULTIPART_FORM_DATA_TYPE));
+                .request()
+                .header("X-Gluon", System.getenv("DEVOXX_CFP_X_GLUON_HEADER"))
+                .post(Entity.entity(formDataMultiPart, MediaType.MULTIPART_FORM_DATA_TYPE));
         String response = accountVerification.readEntity(String.class);
         LOGGER.log(Level.INFO, "Account Verification Response: {0}", response);
         if (accountVerification.getStatus() == Response.Status.OK.getStatusCode()) {

@@ -113,7 +113,8 @@ public class ScheduleCell extends CharmListCell<Session> {
 
         listTile.setTextLine(2, DevoxxBundle.getString("OTN.SCHEDULE.IN_AT",
                 session.getRoomName(),
-                DevoxxSettings.TIME_FORMATTER.format(session.getStartDate())) +
+                DevoxxSettings.TIME_FORMATTER.format(session.getStartDate()),
+                DevoxxSettings.TIME_FORMATTER.format(session.getEndDate())) +
                 (showDate ? "\n" + DevoxxSettings.DATE_FORMATTER.format(session.getStartDate()) : ""));
 
         Optional<Favorite> favorite = Optional.empty();

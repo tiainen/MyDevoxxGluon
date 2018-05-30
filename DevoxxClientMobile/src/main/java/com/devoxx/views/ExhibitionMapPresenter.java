@@ -133,6 +133,7 @@ public class ExhibitionMapPresenter extends GluonPresenter<DevoxxApplication> {
 
         this.imageView = new ImageView();
         this.imageView.setPreserveRatio(true);
+        this.imageView.setPickOnBounds(true);
         container = new StackPane(imageView);
         exhibitionMap.setCenter(container);
         

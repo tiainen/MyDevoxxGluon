@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, 2017, Gluon Software
+ * Copyright (c) 2016, 2018, Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -42,6 +42,7 @@ import javafx.beans.Observable;
 import javafx.css.PseudoClass;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
+import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
@@ -51,18 +52,30 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class ScheduleCell extends CharmListCell<Session> {
 
     private static final PseudoClass PSEUDO_CLASS_COLORED = PseudoClass.getPseudoClass("color");
-
+    private static Map<String, PseudoClass> trackPseudoClassMap = new HashMap<>();
+    private static List<String> pseudoClasses = Arrays.asList("track-color0",
+            "track-color1", "track-color2", "track-color3",
+            "track-color4", "track-color5", "track-color6",
+            "track-color7", "track-color8", "track-color9"
+    );
+    private static int index = 0;
+    
     private final Service service;
     private final ListTile listTile;
     private final SecondaryGraphic secondaryGraphic;
+    private final Label trackLabel;
     private Session session;
     private boolean showDate;
+    private PseudoClass oldPseudoClass;
 
     public ScheduleCell(Service service) {
         this(service, false);
@@ -71,11 +84,13 @@ public class ScheduleCell extends CharmListCell<Session> {
     public ScheduleCell(Service service, boolean showDate) {
         this.service = service;
         this.showDate = showDate;
-
+        
+        trackLabel = new Label();
         secondaryGraphic = new SecondaryGraphic();
 
         listTile = new ListTile();
         listTile.setWrapText(true);
+        listTile.setPrimaryGraphic(new Group(trackLabel));
         listTile.setSecondaryGraphic(secondaryGraphic);
 
         setText(null);
@@ -87,7 +102,7 @@ public class ScheduleCell extends CharmListCell<Session> {
         super.updateItem(item, empty);
         session = item;
         if (item != null && !empty) {
-            updateVBox();
+            updateListTile();
             secondaryGraphic.updateGraphic(session);
             setGraphic(listTile);
 
@@ -101,8 +116,14 @@ public class ScheduleCell extends CharmListCell<Session> {
         }
     }
 
-    private void updateVBox() {
+    private void updateListTile() {
         if (session.getTalk() != null) {
+            if (session.getTalk().getTrack() != null) {
+                final String trackId = session.getTalk().getTrackId().toUpperCase();
+                trackLabel.setText(trackId);
+                changePseudoClass(fetchPseudoClassForTrack(trackId));
+            }
+            
             if (session.getTalk().getTitle() != null) {
                 listTile.setTextLine(0, session.getTalk().getTitle());
             }
@@ -160,6 +181,24 @@ public class ScheduleCell extends CharmListCell<Session> {
             return speakerTitle.toString();
         }
         return "";
+    }
+    
+     private PseudoClass fetchPseudoClassForTrack(String trackId) {
+        PseudoClass pseudoClass = trackPseudoClassMap.get(trackId);
+        if (pseudoClass == null) {
+            if (index > pseudoClasses.size() - 1) {
+                index = 0; // exhausted all colors, re-use
+            }
+            pseudoClass = PseudoClass.getPseudoClass(pseudoClasses.get(index++));
+            trackPseudoClassMap.put(trackId, pseudoClass);
+        }
+        return pseudoClass;
+    }
+
+    private void changePseudoClass(PseudoClass pseudoClass) {
+        pseudoClassStateChanged(oldPseudoClass, false);
+        pseudoClassStateChanged(pseudoClass, true);
+        oldPseudoClass = pseudoClass;
     }
 
     private class SecondaryGraphic extends Pane {

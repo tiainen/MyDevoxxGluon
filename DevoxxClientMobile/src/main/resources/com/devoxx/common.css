@@ -31,13 +31,16 @@
 
 .root {
     -fx-font-family: "FakeFontFamily";  /*forces default OS font family selection*/
-    -track-core-platform: #9c27B0;
-    -track-emerging-languages: #8bc24a;
-    -track-cloud-server: #03a9F4;
-    -track-devices: #ff9800;
-    -track-client: #cddc39;
-    -track-devtools: #ff5722;
-    -track-devops-methodologies: #673ab7;
+    -track-color0: #b0233d;
+    -track-color1: #9c27B0;
+    -track-color2: #8bc24a;
+    -track-color3: #03a9F4;
+    -track-color4: #ff9800;
+    -track-color5: #cddc39;
+    -track-color6: #ff5722;
+    -track-color7: #673ab7;
+    -track-color8: #1b67b3;
+    -track-color9: #461eb3;
     -track-unknown: #1b67b3;
     -lighter-black: #212121;
     -carve-badge-border: -alternate-color;
@@ -147,37 +150,95 @@
 
 .list-cell.schedule-cell {
     -fx-padding: 0em;
-    -fx-background-insets: 0em;
+    -fx-background-insets: 0em, 0em 0em 0em 1em;
     -fx-background-color: -track-unknown, white;
 }
 
 .list-cell.schedule-cell:color {
     -fx-background-color: -track-unknown, derive(-fx-control-inner-background,-7%);
 }
-/*.list-cell.schedule-cell:track-core-platform {*/
-    /*-fx-background-color: -track-core-platform, white;*/
-/*}*/
-/*.list-cell.schedule-cell:track-emerging-languages {*/
-    /*-fx-background-color: -track-emerging-languages, white;*/
-/*}*/
-/*.list-cell.schedule-cell:track-cloud-server {*/
-    /*-fx-background-color: -track-cloud-server, white;*/
-/*}*/
-/*.list-cell.schedule-cell:track-devices {*/
-    /*-fx-background-color: -track-devices, white;*/
-/*}*/
-/*.list-cell.schedule-cell:track-client {*/
-    /*-fx-background-color: -track-client, white;*/
-/*}*/
-/*.list-cell.schedule-cell:track-devtools {*/
-    /*-fx-background-color: -track-devtools, white;*/
-/*}*/
-/*.list-cell.schedule-cell:track-devops-methodologies {*/
-    /*-fx-background-color: -track-devops-methodologies, white;*/
-/*}*/
-/*.list-cell.schedule-cell:track-unknown {*/
-    /*-fx-background-color: -track-unknown, white;*/
-/*}*/
+
+.list-cell.schedule-cell:track-color0 {
+    -fx-background-color: -track-color0, white;
+}
+.list-cell.schedule-cell:track-color0:color {
+    -fx-background-color: -track-color0, derive(-fx-control-inner-background,-7%);
+}
+
+.list-cell.schedule-cell:track-color1 {
+    -fx-background-color: -track-color1, white;
+}
+.list-cell.schedule-cell:track-color1:color {
+    -fx-background-color: -track-color1, derive(-fx-control-inner-background,-7%);
+}
+
+.list-cell.schedule-cell:track-color2 {
+     -fx-background-color: -track-color2, white;
+}
+.list-cell.schedule-cell:track-color2:color {
+    -fx-background-color: -track-color2, derive(-fx-control-inner-background,-7%);
+}
+
+.list-cell.schedule-cell:track-color3 {
+     -fx-background-color: -track-color3, white;
+}
+.list-cell.schedule-cell:track-color3:color {
+    -fx-background-color: -track-color3, derive(-fx-control-inner-background,-7%);
+}
+
+.list-cell.schedule-cell:track-color4 {
+     -fx-background-color: -track-color4, white;
+}
+.list-cell.schedule-cell:track-color4:color {
+    -fx-background-color: -track-color4, derive(-fx-control-inner-background,-7%);
+}
+
+.list-cell.schedule-cell:track-color5 {
+     -fx-background-color: -track-color5, white;
+}
+.list-cell.schedule-cell:track-color5:color {
+    -fx-background-color: -track-color5, derive(-fx-control-inner-background,-7%);
+}
+
+.list-cell.schedule-cell:track-color6 {
+     -fx-background-color: -track-color6, white;
+}
+.list-cell.schedule-cell:track-color6:color {
+    -fx-background-color: -track-color6, derive(-fx-control-inner-background,-7%);
+}
+
+.list-cell.schedule-cell:track-color7 {
+     -fx-background-color: -track-color7, white;
+}
+.list-cell.schedule-cell:track-color7:color {
+    -fx-background-color: -track-color7, derive(-fx-control-inner-background,-7%);
+}
+
+.list-cell.schedule-cell:track-color8 {
+     -fx-background-color: -track-color8, white;
+}
+.list-cell.schedule-cell:track-color8:color {
+    -fx-background-color: -track-color8, derive(-fx-control-inner-background,-7%);
+}
+
+.list-cell.schedule-cell:track-color9 {
+    -fx-background-color: -track-color9, white;
+}
+.list-cell.schedule-cell:track-color9:color {
+    -fx-background-color: -track-color9, derive(-fx-control-inner-background,-7%);
+}
+
+/* Center the primary-graphic in the background color */
+.list-cell.schedule-cell > .list-tile > .primary-graphic {
+    -fx-translate-x: 1px;
+}
+
+.list-cell.schedule-cell > .list-tile > .primary-graphic  > .label {
+    -fx-rotate: -90;
+    -fx-font-size: 0.35em;
+    -fx-text-fill: white;
+    -fx-font-weight: 600;
+}
 
 .schedule-cell > .list-tile > .text-box {
     -fx-padding: 0.833333em 0em 0.833333em 0.833333em;

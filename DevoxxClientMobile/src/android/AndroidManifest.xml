@@ -72,6 +72,12 @@
             </intent-filter>
         </activity>
 
+        <activity android:name="com.gluonhq.impl.charm.down.plugins.android.NotificationActivity"
+                  android:parentActivityName="javafxports.android.FXActivity">
+            <meta-data android:name="android.support.PARENT_ACTIVITY"
+                       android:value="javafxports.android.FXActivity"/>
+        </activity>
+        
         <activity android:name="com.gluonhq.impl.charm.down.plugins.android.PushNotificationActivity"
                   android:parentActivityName="javafxports.android.FXActivity">
             <meta-data android:name="android.support.PARENT_ACTIVITY"

@@ -61,8 +61,8 @@ import java.util.Optional;
 public class ScheduleCell extends CharmListCell<Session> {
 
     private static final PseudoClass PSEUDO_CLASS_COLORED = PseudoClass.getPseudoClass("color");
-    private static Map<String, String> trackStyleClassMap = new HashMap<>();
-    private static List<String> styleClasses = Arrays.asList("track-color0",
+    private static Map<String, PseudoClass> trackPseudoClassMap = new HashMap<>();
+    private static List<String> pseudoClasses = Arrays.asList("track-color0",
             "track-color1", "track-color2", "track-color3",
             "track-color4", "track-color5", "track-color6",
             "track-color7", "track-color8", "track-color9"
@@ -72,8 +72,10 @@ public class ScheduleCell extends CharmListCell<Session> {
     private final Service service;
     private final ListTile listTile;
     private final SecondaryGraphic secondaryGraphic;
+    private final Label trackLabel;
     private Session session;
     private boolean showDate;
+    private PseudoClass oldPseudoClass;
 
     public ScheduleCell(Service service) {
         this(service, false);
@@ -82,11 +84,13 @@ public class ScheduleCell extends CharmListCell<Session> {
     public ScheduleCell(Service service, boolean showDate) {
         this.service = service;
         this.showDate = showDate;
-
+        
+        trackLabel = new Label();
         secondaryGraphic = new SecondaryGraphic();
 
         listTile = new ListTile();
         listTile.setWrapText(true);
+        listTile.setPrimaryGraphic(new Group(trackLabel));
         listTile.setSecondaryGraphic(secondaryGraphic);
 
         setText(null);
@@ -116,14 +120,8 @@ public class ScheduleCell extends CharmListCell<Session> {
         if (session.getTalk() != null) {
             if (session.getTalk().getTrack() != null) {
                 final String trackId = session.getTalk().getTrackId().toUpperCase();
-                
-                getStyleClass().removeAll(styleClasses);
-                getStyleClass().add(fetchStyleClassForTrack(trackId));
-                
-                final Label track = new Label(trackId);
-                final Group group = new Group(track);
-                final StackPane graphic = new StackPane(group);
-                listTile.setPrimaryGraphic(graphic);
+                trackLabel.setText(trackId);
+                changePseudoClass(fetchPseudoClassForTrack(trackId));
             }
             
             if (session.getTalk().getTitle() != null) {
@@ -185,16 +183,22 @@ public class ScheduleCell extends CharmListCell<Session> {
         return "";
     }
     
-     private String fetchStyleClassForTrack(String trackId) {
-        String styleClass = trackStyleClassMap.get(trackId);
-        if (styleClass == null) {
-            if (index > styleClasses.size() - 1) {
+     private PseudoClass fetchPseudoClassForTrack(String trackId) {
+        PseudoClass pseudoClass = trackPseudoClassMap.get(trackId);
+        if (pseudoClass == null) {
+            if (index > pseudoClasses.size() - 1) {
                 index = 0; // exhausted all colors, re-use
             }
-            styleClass = styleClasses.get(index++);
-            trackStyleClassMap.put(trackId, styleClass);
+            pseudoClass = PseudoClass.getPseudoClass(pseudoClasses.get(index++));
+            trackPseudoClassMap.put(trackId, pseudoClass);
         }
-        return styleClass;
+        return pseudoClass;
+    }
+
+    private void changePseudoClass(PseudoClass pseudoClass) {
+        pseudoClassStateChanged(oldPseudoClass, false);
+        pseudoClassStateChanged(pseudoClass, true);
+        oldPseudoClass = pseudoClass;
     }
 
     private class SecondaryGraphic extends Pane {

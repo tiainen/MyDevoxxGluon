@@ -150,7 +150,7 @@
 
 .list-cell.schedule-cell {
     -fx-padding: 0em;
-    -fx-background-insets: 0em;
+    -fx-background-insets: 0em, 0em 0em 0em 1em;
     -fx-background-color: -track-unknown, white;
 }
 
@@ -158,47 +158,86 @@
     -fx-background-color: -track-unknown, derive(-fx-control-inner-background,-7%);
 }
 
-.list-cell.schedule-cell > .list-tile > StackPane {
-    -fx-min-width: 15px;
-    -fx-pref-width: 15px;
-    -fx-max-width: 15px;
+.list-cell.schedule-cell:track-color0 {
+    -fx-background-color: -track-color0, white;
+}
+.list-cell.schedule-cell:track-color0:color {
+    -fx-background-color: -track-color0, derive(-fx-control-inner-background,-7%);
 }
 
-.list-cell.schedule-cell > .list-tile > StackPane > Group > .label {
+.list-cell.schedule-cell:track-color1 {
+    -fx-background-color: -track-color1, white;
+}
+.list-cell.schedule-cell:track-color1:color {
+    -fx-background-color: -track-color1, derive(-fx-control-inner-background,-7%);
+}
+
+.list-cell.schedule-cell:track-color2 {
+     -fx-background-color: -track-color2, white;
+}
+.list-cell.schedule-cell:track-color2:color {
+    -fx-background-color: -track-color2, derive(-fx-control-inner-background,-7%);
+}
+
+.list-cell.schedule-cell:track-color3 {
+     -fx-background-color: -track-color3, white;
+}
+.list-cell.schedule-cell:track-color3:color {
+    -fx-background-color: -track-color3, derive(-fx-control-inner-background,-7%);
+}
+
+.list-cell.schedule-cell:track-color4 {
+     -fx-background-color: -track-color4, white;
+}
+.list-cell.schedule-cell:track-color4:color {
+    -fx-background-color: -track-color4, derive(-fx-control-inner-background,-7%);
+}
+
+.list-cell.schedule-cell:track-color5 {
+     -fx-background-color: -track-color5, white;
+}
+.list-cell.schedule-cell:track-color5:color {
+    -fx-background-color: -track-color5, derive(-fx-control-inner-background,-7%);
+}
+
+.list-cell.schedule-cell:track-color6 {
+     -fx-background-color: -track-color6, white;
+}
+.list-cell.schedule-cell:track-color6:color {
+    -fx-background-color: -track-color6, derive(-fx-control-inner-background,-7%);
+}
+
+.list-cell.schedule-cell:track-color7 {
+     -fx-background-color: -track-color7, white;
+}
+.list-cell.schedule-cell:track-color7:color {
+    -fx-background-color: -track-color7, derive(-fx-control-inner-background,-7%);
+}
+
+.list-cell.schedule-cell:track-color8 {
+     -fx-background-color: -track-color8, white;
+}
+.list-cell.schedule-cell:track-color8:color {
+    -fx-background-color: -track-color8, derive(-fx-control-inner-background,-7%);
+}
+
+.list-cell.schedule-cell:track-color9 {
+    -fx-background-color: -track-color9, white;
+}
+.list-cell.schedule-cell:track-color9:color {
+    -fx-background-color: -track-color9, derive(-fx-control-inner-background,-7%);
+}
+
+/* Center the primary-graphic in the background color */
+.list-cell.schedule-cell > .list-tile > .primary-graphic {
+    -fx-translate-x: 1px;
+}
+
+.list-cell.schedule-cell > .list-tile > .primary-graphic  > .label {
     -fx-rotate: -90;
     -fx-font-size: 0.35em;
     -fx-text-fill: white;
-}
-
-.list-cell.schedule-cell.track-color0 > .list-tile > StackPane {
-    -fx-background-color: -track-color0;
-}
-.list-cell.schedule-cell.track-color1 > .list-tile > StackPane {
-    -fx-background-color: -track-color1;
-}
-.list-cell.schedule-cell.track-color2 > .list-tile > StackPane {
-    -fx-background-color: -track-color2;
-}
-.list-cell.schedule-cell.track-color3 > .list-tile > StackPane {
-    -fx-background-color: -track-color3;
-}
-.list-cell.schedule-cell.track-color4 > .list-tile > StackPane {
-    -fx-background-color: -track-color4;
-}
-.list-cell.schedule-cell.track-color5 > .list-tile > StackPane {
-    -fx-background-color: -track-color5;
-}
-.list-cell.schedule-cell.track-color6 > .list-tile > StackPane {
-    -fx-background-color: -track-color6;
-}
-.list-cell.schedule-cell.track-color7 > .list-tile > StackPane {
-    -fx-background-color: -track-color7;
-}
-.list-cell.schedule-cell.track-color8 > .list-tile > StackPane {
-    -fx-background-color: -track-color8;
-}
-.list-cell.schedule-cell.track-color9 > .list-tile > StackPane {
-    -fx-background-color: -track-color9;
+    -fx-font-weight: 600;
 }
 
 .schedule-cell > .list-tile > .text-box {

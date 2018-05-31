@@ -49,6 +49,10 @@ public class AccountVerifier {
     private static final Logger LOGGER = Logger.getLogger(AccountVerifier.class.getName());
 
     public String verify(String cfpEndpoint, String email, String password) throws IOException {
+        if (cfpEndpoint.startsWith("http://")) {
+            cfpEndpoint = "https://" + cfpEndpoint.substring("http://".length());
+        }
+
         if (cfpEndpoint.contains("cfp.devoxx.fr")) {
             return verifyDevoxxFr(email, password);
         } else {

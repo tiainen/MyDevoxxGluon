@@ -320,6 +320,10 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
         favoriteButton.fire();
     }
 
+    /**
+     * Adds either white or gray background to session cells
+     * grouping them according to their time-slot.
+     */
     private void updateSessionsDecoration(List<Session> sessions) {
         TimeSlot previousTimeSlot = null;
         boolean colorFlag = true;

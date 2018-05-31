@@ -1,4 +1,14 @@
+# Gradle
 .gradle/
 build/
+
+# Netbeans
+.nb-gradle/
+
+# IntelliJ IDEA
+out/
 .idea/
+*.iml
+
+# Custom
 DevoxxClientMobile/src/main/resources/gluoncloudlink_config.json

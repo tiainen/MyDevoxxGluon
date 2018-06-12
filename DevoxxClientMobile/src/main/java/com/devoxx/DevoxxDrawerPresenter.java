@@ -27,31 +27,29 @@ package com.devoxx;
 
 import com.devoxx.model.Conference;
 import com.devoxx.service.Service;
+import com.devoxx.util.DevoxxBundle;
+import com.devoxx.util.DevoxxCountry;
+import com.devoxx.util.DevoxxSettings;
 import com.devoxx.views.helper.Util;
 import com.gluonhq.charm.glisten.afterburner.AppView;
 import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
 import com.gluonhq.charm.glisten.control.NavigationDrawer;
+import com.gluonhq.charm.glisten.control.Toast;
 import com.gluonhq.charm.glisten.layout.layer.SidePopupView;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
-
-import java.util.Optional;
-
-import static com.gluonhq.charm.glisten.application.MobileApplication.HOME_VIEW;
-
-import com.devoxx.util.DevoxxBundle;
-import com.devoxx.util.DevoxxCountry;
-import com.devoxx.util.DevoxxSettings;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Region;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import com.gluonhq.charm.glisten.control.Toast;
-import javafx.scene.Node;
-import javafx.scene.image.Image;
+import java.util.Optional;
+
+import static com.gluonhq.charm.glisten.application.MobileApplication.HOME_VIEW;
 
 @Singleton
 public class DevoxxDrawerPresenter extends GluonPresenter<DevoxxApplication> {
@@ -119,7 +117,7 @@ public class DevoxxDrawerPresenter extends GluonPresenter<DevoxxApplication> {
 
     private String getConferenceShortName(Conference conference) {
         if (conference != null) {
-            String conferenceShortName = DevoxxCountry.getConfShortName(conference.getCountry());
+            String conferenceShortName = DevoxxCountry.getConfShortName(conference.getName().split(" ")[1]);
             if (conferenceShortName != null) {
                 if (DevoxxSettings.conferenceHasBadgeView(conference)) {
                     for (Node item : drawer.getItems()) {

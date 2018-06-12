@@ -27,10 +27,7 @@ package com.devoxx.views.helper;
 
 import com.devoxx.DevoxxApplication;
 import com.devoxx.filter.TimePeriod;
-import com.devoxx.model.Conference;
-import com.devoxx.model.ProposalType;
-import com.devoxx.model.Session;
-import com.devoxx.model.Track;
+import com.devoxx.model.*;
 import com.devoxx.service.Service;
 import com.devoxx.util.DevoxxBundle;
 import com.devoxx.util.DevoxxSettings;
@@ -47,12 +44,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.Tab;
-import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
@@ -225,7 +217,7 @@ public class FilterSessionsPresenter extends GluonPresenter<DevoxxApplication> {
     private void updateTimePeriodSelection() {
         Conference conference = service.getConference();
         ZonedDateTime now = ZonedDateTime.now(conference.getConferenceZoneId());
-        if (conference.getStartDate().isAfter(now) || conference.getEndDate().isBefore(now)) {
+        if (conference.getFromDateTime().isAfter(now) || conference.getEndDateTime().isBefore(now)) {
             selectedTimePeriod = TimePeriod.ALL;
         } else {
             selectedTimePeriod = DEFAULT_TIME_PERIOD;
@@ -273,7 +265,7 @@ public class FilterSessionsPresenter extends GluonPresenter<DevoxxApplication> {
     }
 
     private void addTrackCheckBox(Track track) {
-        CheckBox cbTrack = new CheckBox(track.getTitle());
+        CheckBox cbTrack = new CheckBox(track.getName());
         cbTrack.setUserData(track);
         cbTrack.setOnAction(this::addToFilter);
         trackFilter.getChildren().add(cbTrack);

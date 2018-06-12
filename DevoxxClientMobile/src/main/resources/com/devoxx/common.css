@@ -54,7 +54,7 @@
     -fx-background-color: -primary-swatch-700;
 }
 
-.status-bar:conf {
+.status-bar:voxxed {
     -fx-background-color: #446a83;
 }
 
@@ -67,8 +67,68 @@
 }
 
 .conf-selector-view {
-    -fx-background-color: #363C5A;
+    -fx-background-color: #202122;
 }
+
+.conf-selector-view .headers {
+    -fx-padding: 0.25em 0.583em 0.25em 0.583em;
+}
+
+.conf-selector-view .headers > .header {
+    -fx-font-size: 2em;
+    -fx-text-fill: #27B1DB;
+}
+
+.conf-selector-view .headers > .description {
+    -fx-text-fill: white;
+}
+
+.conference-list-view > .list-view {
+    -fx-background-color: #202122;
+}
+
+.conference-cell,
+.conference-cell:odd,
+.conference-cell:even,
+.conference-cell:focused,
+.conference-cell:filled:selected,
+.conference-cell:filled:selected:focused {
+    -fx-background-color: #202122;
+    -fx-border-width: 0;
+}
+
+.conference-cell .content {
+    -fx-padding: 1em;
+    -fx-pref-height: 200;
+}
+
+.conference-cell .content > .top {
+    -fx-spacing: 0.2em
+}
+
+.conference-cell .label {
+    -fx-text-fill: white;
+}
+
+.conference-cell .label.type {
+    -fx-text-fill: black;
+    -fx-padding: 0.1em;
+    -fx-font-size: 0.8em;
+    -fx-background-color: -primary-swatch-300;
+}
+
+.conference-cell:voxxed .label.type {
+    -fx-background-color: #27B1DB;
+}
+
+.conference-cell .label.name {
+    -fx-font-size: 1.5em;
+}
+
+.conference-cell .label.date {
+    -fx-font-size: 1.25em;
+}
+
 
 /* use alternate color for bottom border on text input controls */
 .text-input:focused {

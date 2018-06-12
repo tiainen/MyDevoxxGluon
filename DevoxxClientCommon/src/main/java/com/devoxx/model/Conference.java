@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016, Gluon Software
+ * Copyright (c) 2016, 2018 Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -25,10 +25,8 @@
  */
 package com.devoxx.model;
 
-import javax.xml.bind.annotation.XmlElement;
 import java.time.DateTimeException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -46,151 +44,115 @@ public class Conference {
 
     private static final ZoneId DEFAULT_CONFERENCE_ZONE_ID = ZoneId.of("Europe/Brussels");
 
-    private String id;
-    private String confType;
-    private String confDescription;
-    private String confIcon;
-    private String venue;
-    private String address;
-    private String country;
-    private String latitude;
-    private String longitude;
-    private List<Floor> floors;
-    private String capacity;
-    private String sessions;
-    private String hashtag;
-    private String splashImgURL;
-    private String fromDate;
-    private ZonedDateTime startDate;
-    private String toDate;
-    private ZonedDateTime endDate;
-    private ZonedDateTime[] days;
-    private String wwwURL;
-    private String regURL;
-    private String cfpURL;
-    private String talkURL;
-    private String votingURL;
-    private String votingEnabled;
-    private String votingImageName;
-    private String cfpEndpoint;
-    private String cfpVersion;
+    private long id;
+    private String name;
+    private String website;
+    private String description;
+    private String imageURL;
+    private String scheduleURL;
+    private String eventImagesURL;
     private String youTubeURL;
-    private String integrationId;
-    private String pushEnabled;
+    private String fromDate;
+    private String endDate;
+    private ZonedDateTime fromDateTime;
+    private ZonedDateTime endDateTime;
+    private ZonedDateTime[] days;
+    private String cfpFromDate;
+    private String cfpEndDate;
+    private Type eventType;
+    private String cfpURL;
+    private String cfpVersion;
+    private boolean archived;
+    private boolean cfpActive;
+    private String importDate;
+    private String scheduleDate;
+    private long locationId;
+    private String locationName;
     private String timezone;
-    private ZoneId timezoneId;
+    private String cfpAdminEmail;
+    private String fromEmail;
+    private String committeeEmail;
+    private String bccEmail;
+    private String bugReportEmail;
+    private String githubClientId;
+    private String githubSecret;
+    private String googleClientId;
+    private String googleSecret;
+    private String linkedInClientId;
+    private String linkedInSecret;
+    private String maxProposals;
+    List<Owner> owners;
+    List<Track> tracks;
+    List<SessionType> sessionTypes;
+    List<String> languages;
+    
+    // TODO: Needed for WearService
     private boolean selected;
 
-    public String getId() {
+    private ZoneId timezoneId;
+
+    public long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(long id) {
         this.id = id;
     }
 
-    public String getConfType() {
-        return confType;
+    public String getName() {
+        return name;
     }
 
-    public void setConfType(String confType) {
-        this.confType = confType;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public String getConfDescription() {
-        return confDescription;
+    public String getWebsite() {
+        return website;
     }
 
-    public void setConfDescription(String confDescription) {
-        this.confDescription = confDescription;
+    public void setWebsite(String website) {
+        this.website = website;
     }
 
-    public String getConfIcon() {
-        return confIcon;
+    public String getDescription() {
+        return description;
     }
 
-    public void setConfIcon(String confIcon) {
-        this.confIcon = confIcon;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
-    public String getVenue() {
-        return venue;
+    public String getImageURL() {
+        return imageURL;
     }
 
-    public void setVenue(String venue) {
-        this.venue = venue;
+    public void setImageURL(String imageURL) {
+        this.imageURL = imageURL;
     }
 
-    public String getAddress() {
-        return address;
+    public String getScheduleURL() {
+        return scheduleURL;
     }
 
-    public void setAddress(String address) {
-        this.address = address;
+    public void setScheduleURL(String scheduleURL) {
+        this.scheduleURL = scheduleURL;
     }
 
-    public String getCountry() {
-        return country;
+    public String getEventImagesURL() {
+        return eventImagesURL;
     }
 
-    public void setCountry(String country) {
-        this.country = country;
+    public void setEventImagesURL(String eventImagesURL) {
+        this.eventImagesURL = eventImagesURL;
     }
 
-    public String getLatitude() {
-        return latitude;
+    public String getYouTubeURL() {
+        return youTubeURL;
     }
 
-    public void setLatitude(String latitude) {
-        this.latitude = latitude;
-    }
-
-    public String getLongitude() {
-        return longitude;
-    }
-
-    public void setLongitude(String longitude) {
-        this.longitude = longitude;
-    }
-
-    public List<Floor> getFloors() {
-        return floors;
-    }
-
-    public void setFloors(List<Floor> floors) {
-        this.floors = floors;
-    }
-
-    public String getCapacity() {
-        return capacity;
-    }
-
-    public void setCapacity(String capacity) {
-        this.capacity = capacity;
-    }
-
-    public String getSessions() {
-        return sessions;
-    }
-
-    public void setSessions(String sessions) {
-        this.sessions = sessions;
-    }
-
-    public String getHashtag() {
-        return hashtag;
-    }
-
-    public void setHashtag(String hashtag) {
-        this.hashtag = hashtag;
-    }
-
-    public String getSplashImgURL() {
-        return splashImgURL;
-    }
-
-    public void setSplashImgURL(String splashImgURL) {
-        this.splashImgURL = splashImgURL;
+    public void setYouTubeURL(String youTubeURL) {
+        this.youTubeURL = youTubeURL;
     }
 
     public String getFromDate() {
@@ -200,50 +162,280 @@ public class Conference {
     public void setFromDate(String fromDate) {
         this.fromDate = fromDate;
 
-        if (this.fromDate != null && this.toDate != null && this.timezoneId != null) {
+        if (this.fromDate != null && this.endDate != null && this.timezoneId != null) {
             calculateConferenceDays();
         }
     }
 
-    public ZonedDateTime getStartDate() {
-        return startDate;
-    }
-
-    public long getDaysUntilStart() {
-        LocalDate today = LocalDate.now(getConferenceZoneId());
-        return today.until(getStartDate(), ChronoUnit.DAYS);
-    }
-
-    public String getToDate() {
-        return toDate;
-    }
-
-    public void setToDate(String toDate) {
-        this.toDate = toDate;
-
-        if (this.fromDate != null && this.toDate != null && this.timezoneId != null) {
-            calculateConferenceDays();
-        }
-    }
-
-    public ZonedDateTime getEndDate() {
+    public String getEndDate() {
         return endDate;
     }
 
-    public long getDaysUntilEnd() {
-        LocalDate today = LocalDate.now(getConferenceZoneId());
-        return today.until(getEndDate(), ChronoUnit.DAYS);
+    public void setEndDate(String endDate) {
+        this.endDate = endDate;
+
+        if (this.fromDate != null && this.endDate != null && this.timezoneId != null) {
+            calculateConferenceDays();
+        }
     }
 
+    public String getCfpFromDate() {
+        return cfpFromDate;
+    }
 
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-M-d'T'HH:mm:ss.SSSX");
+    public void setCfpFromDate(String cfpFromDate) {
+        this.cfpFromDate = cfpFromDate;
+    }
+
+    public String getCfpEndDate() {
+        return cfpEndDate;
+    }
+
+    public void setCfpEndDate(String cfpEndDate) {
+        this.cfpEndDate = cfpEndDate;
+    }
+
+    public Type getEventType() {
+        return eventType;
+    }
+
+    public void setEventType(String eventType) {
+        this.eventType = Type.valueOf(eventType);
+    }
+
+    public String getCfpURL() {
+        return cfpURL;
+    }
+
+    public void setCfpURL(String cfpURL) {
+        this.cfpURL = cfpURL;
+    }
+
+    public String getCfpVersion() {
+        return cfpVersion;
+    }
+
+    public void setCfpVersion(String cfpVersion) {
+        this.cfpVersion = cfpVersion;
+    }
+
+    public boolean isArchived() {
+        return archived;
+    }
+
+    public void setArchived(boolean archived) {
+        this.archived = archived;
+    }
+
+    public boolean isCfpActive() {
+        return cfpActive;
+    }
+
+    public void setCfpActive(String cfpActive) {
+        if (cfpActive == null) {
+            this.cfpActive = false;
+        }
+        this.cfpActive = Boolean.parseBoolean(cfpActive);
+    }
+
+    public String getImportDate() {
+        return importDate;
+    }
+
+    public void setImportDate(String importDate) {
+        this.importDate = importDate;
+    }
+
+    public String getScheduleDate() {
+        return scheduleDate;
+    }
+
+    public void setScheduleDate(String scheduleDate) {
+        this.scheduleDate = scheduleDate;
+    }
+
+    public long getLocationId() {
+        return locationId;
+    }
+
+    public void setLocationId(long locationId) {
+        this.locationId = locationId;
+    }
+
+    public String getLocationName() {
+        return locationName;
+    }
+
+    public void setLocationName(String locationName) {
+        this.locationName = locationName;
+    }
+
+    public String getTimezone() {
+        return timezone;
+    }
+
+    public void setTimezone(String timezone) {
+        this.timezone = timezone;
+        try {
+            this.timezoneId = ZoneId.of(timezone);
+        } catch (DateTimeException e) {
+            LOG.log(Level.WARNING, "Failed to convert timezone: " + timezone + ", using default timezone (Europe/Brussels) instead.");
+            this.timezoneId = DEFAULT_CONFERENCE_ZONE_ID;
+        }
+
+        if (this.fromDate != null && this.endDate != null && this.timezoneId != null) {
+            calculateConferenceDays();
+        }
+    }
+
+    public String getCfpAdminEmail() {
+        return cfpAdminEmail;
+    }
+
+    public void setCfpAdminEmail(String cfpAdminEmail) {
+        this.cfpAdminEmail = cfpAdminEmail;
+    }
+
+    public String getFromEmail() {
+        return fromEmail;
+    }
+
+    public void setFromEmail(String fromEmail) {
+        this.fromEmail = fromEmail;
+    }
+
+    public String getCommitteeEmail() {
+        return committeeEmail;
+    }
+
+    public void setCommitteeEmail(String committeeEmail) {
+        this.committeeEmail = committeeEmail;
+    }
+
+    public String getBccEmail() {
+        return bccEmail;
+    }
+
+    public void setBccEmail(String bccEmail) {
+        this.bccEmail = bccEmail;
+    }
+
+    public String getBugReportEmail() {
+        return bugReportEmail;
+    }
+
+    public void setBugReportEmail(String bugReportEmail) {
+        this.bugReportEmail = bugReportEmail;
+    }
+
+    public String getGithubClientId() {
+        return githubClientId;
+    }
+
+    public void setGithubClientId(String githubClientId) {
+        this.githubClientId = githubClientId;
+    }
+
+    public String getGithubSecret() {
+        return githubSecret;
+    }
+
+    public void setGithubSecret(String githubSecret) {
+        this.githubSecret = githubSecret;
+    }
+
+    public String getGoogleClientId() {
+        return googleClientId;
+    }
+
+    public void setGoogleClientId(String googleClientId) {
+        this.googleClientId = googleClientId;
+    }
+
+    public String getGoogleSecret() {
+        return googleSecret;
+    }
+
+    public void setGoogleSecret(String googleSecret) {
+        this.googleSecret = googleSecret;
+    }
+
+    public String getLinkedInClientId() {
+        return linkedInClientId;
+    }
+
+    public void setLinkedInClientId(String linkedInClientId) {
+        this.linkedInClientId = linkedInClientId;
+    }
+
+    public String getLinkedInSecret() {
+        return linkedInSecret;
+    }
+
+    public void setLinkedInSecret(String linkedInSecret) {
+        this.linkedInSecret = linkedInSecret;
+    }
+
+    public String getMaxProposals() {
+        return maxProposals;
+    }
+
+    public void setMaxProposals(String maxProposals) {
+        this.maxProposals = maxProposals;
+    }
+
+    public List<Owner> getOwners() {
+        return owners;
+    }
+
+    public void setOwners(List<Owner> owners) {
+        this.owners = owners;
+    }
+
+    public List<Track> getTracks() {
+        return tracks;
+    }
+
+    public void setTracks(List<Track> tracks) {
+        this.tracks = tracks;
+    }
+
+    public List<SessionType> getSessionTypes() {
+        return sessionTypes;
+    }
+
+    public void setSessionTypes(List<SessionType> sessionTypes) {
+        this.sessionTypes = sessionTypes;
+    }
+
+    public List<String> getLanguages() {
+        return languages;
+    }
+
+    public void setLanguages(List<String> languages) {
+        this.languages = languages;
+    }
+
+    public ZonedDateTime getFromDateTime() {
+        return fromDateTime;
+    }
+
+    public ZonedDateTime getEndDateTime() {
+        return endDateTime;
+    }
+
+    public ZoneId getConferenceZoneId() {
+        return timezoneId;
+    }
+
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     private void calculateConferenceDays() {
-        this.startDate = LocalDateTime.parse(fromDate, DATE_FORMATTER).atZone(getConferenceZoneId());
-        this.endDate = LocalDateTime.parse(toDate, DATE_FORMATTER).atZone(getConferenceZoneId());
-        long numberOfDays = DAYS.between(startDate, endDate) + 1;
+        this.fromDateTime = LocalDate.parse(fromDate, DATE_FORMATTER).atStartOfDay(timezoneId);
+        this.endDateTime = LocalDate.parse(endDate, DATE_FORMATTER).atStartOfDay(timezoneId);
+        long numberOfDays = DAYS.between(fromDateTime, endDateTime) + 1;
         days = new ZonedDateTime[(int) numberOfDays];
-        days[0] = dayOnly(startDate, getConferenceZoneId());
+        days[0] = dayOnly(fromDateTime, timezoneId);
         for (int day = 1; day < numberOfDays; day++) {
             days[day] = days[0].plusDays(day);
         }
@@ -261,127 +453,18 @@ public class Conference {
         return Arrays.binarySearch(days, dayOnly(date, getConferenceZoneId())) + 1;
     }
 
-    public long getNumberOfDays() {
-        return days.length;
+    public long getDaysUntilStart() {
+        LocalDate today = LocalDate.now(getConferenceZoneId());
+        return today.until(getFromDateTime(), ChronoUnit.DAYS);
     }
 
-    public ZoneId getConferenceZoneId() {
-        return timezoneId;
+    public long getDaysUntilEnd() {
+        LocalDate today = LocalDate.now(getConferenceZoneId());
+        return today.until(getEndDateTime(), ChronoUnit.DAYS);
     }
 
-    public String getWwwURL() {
-        return wwwURL;
-    }
-
-    public void setWwwURL(String wwwURL) {
-        this.wwwURL = wwwURL;
-    }
-
-    public String getRegURL() {
-        return regURL;
-    }
-
-    public void setRegURL(String regURL) {
-        this.regURL = regURL;
-    }
-
-    public String getCfpURL() {
-        return cfpURL;
-    }
-
-    public void setCfpURL(String cfpURL) {
-        this.cfpURL = cfpURL;
-    }
-
-    public String getTalkURL() {
-        return talkURL;
-    }
-
-    public void setTalkURL(String talkURL) {
-        this.talkURL = talkURL;
-    }
-
-    public String getVotingURL() {
-        return votingURL;
-    }
-
-    public void setVotingURL(String votingURL) {
-        this.votingURL = votingURL;
-    }
-
-    public String getVotingEnabled() {
-        return votingEnabled;
-    }
-
-    public void setVotingEnabled(String votingEnabled) {
-        this.votingEnabled = votingEnabled;
-    }
-
-    public String getVotingImageName() {
-        return votingImageName;
-    }
-
-    public void setVotingImageName(String votingImageName) {
-        this.votingImageName = votingImageName;
-    }
-
-    public String getCfpEndpoint() {
-        return cfpEndpoint;
-    }
-
-    public void setCfpEndpoint(String cfpEndpoint) {
-        this.cfpEndpoint = cfpEndpoint;
-    }
-
-    public String getCfpVersion() {
-        return cfpVersion;
-    }
-
-    public void setCfpVersion(String cfpVersion) {
-        this.cfpVersion = cfpVersion;
-    }
-
-    public String getYouTubeURL() {
-        return youTubeURL;
-    }
-
-    public void setYouTubeURL(String youTubeURL) {
-        this.youTubeURL = youTubeURL;
-    }
-
-    @XmlElement(name = "integration_id")
-    public String getIntegrationId() {
-        return integrationId;
-    }
-
-    public void setIntegrationId(String integrationId) {
-        this.integrationId = integrationId;
-    }
-
-    public String getPushEnabled() {
-        return pushEnabled;
-    }
-
-    public void setPushEnabled(String pushEnabled) {
-        this.pushEnabled = pushEnabled;
-    }
-
-    public String getTimezone() {
-        return timezone;
-    }
-
-    public void setTimezone(String timezone) {
-        this.timezone = timezone;
-        try {
-            this.timezoneId = ZoneId.of(timezone);
-        } catch (DateTimeException e) {
-            LOG.log(Level.WARNING, "Failed to convert timezone: " + timezone + ", using default timezone (Europe/Brussels) instead.");
-            this.timezoneId = DEFAULT_CONFERENCE_ZONE_ID;
-        }
-
-        if (this.fromDate != null && this.toDate != null && this.timezoneId != null) {
-            calculateConferenceDays();
-        }
+    public String getCountry() {
+        return name.split(" ")[1];
     }
 
     public boolean isSelected() {
@@ -395,25 +478,13 @@ public class Conference {
     @Override
     public String toString() {
         return "Conference{" +
-                "id='" + id + '\'' +
-                ", confDescription='" + confDescription + '\'' +
-                ", country='" + country + '\'' +
-                ", cfpEndpoint='" + cfpEndpoint + '\'' +
+                "id=" + id +
+                ", name='" + name + '\'' +
                 '}';
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Conference that = (Conference) o;
-
-        return id.equals(that.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return id.hashCode();
+    
+    public enum Type {
+        DEVOXX,
+        VOXXED;
     }
 }

@@ -31,10 +31,10 @@ public class WearableModel {
     
     private static WearableModel instance;
     
-    private List<Conference> conferences;
+    private List<Conference1> conferences;
     private List<Session> sessions;
     
-    private Conference selectedConference;
+    private Conference1 selectedConference;
     
     private Session selectedSession;
     
@@ -49,19 +49,19 @@ public class WearableModel {
     private WearableModel() {
     }
 
-    public List<Conference> getConferences() {
+    public List<Conference1> getConferences() {
         return conferences;
     }
 
-    public void setConferences(List<Conference> conferences) {
+    public void setConferences(List<Conference1> conferences) {
         this.conferences = conferences;
     }
 
-    public Conference getSelectedConference() {
+    public Conference1 getSelectedConference() {
         return selectedConference;
     }
 
-    public void setSelectedConference(Conference selectedConference) {
+    public void setSelectedConference(Conference1 selectedConference) {
         this.selectedConference = selectedConference;
     }
 

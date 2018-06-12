@@ -25,19 +25,7 @@
  */
 package com.devoxx.service;
 
-import com.devoxx.model.Badge;
-import com.devoxx.model.Conference;
-import com.devoxx.model.Exhibitor;
-import com.devoxx.model.Favorite;
-import com.devoxx.model.Floor;
-import com.devoxx.model.Note;
-import com.devoxx.model.ProposalType;
-import com.devoxx.model.Session;
-import com.devoxx.model.Speaker;
-import com.devoxx.model.Sponsor;
-import com.devoxx.model.SponsorBadge;
-import com.devoxx.model.Track;
-import com.devoxx.model.Vote;
+import com.devoxx.model.*;
 import com.devoxx.views.helper.SessionVisuals.SessionListType;
 import com.gluonhq.connect.GluonObservableList;
 import com.gluonhq.connect.GluonObservableObject;
@@ -58,10 +46,18 @@ public interface Service {
 
     /**
      * Returns a list of conferences.
-     *
-     * @return
+     * 
+     * @param type whether Devoxx or Voxxed
+     * @return List of Devoxx or Voxxed conferences
      */
-    GluonObservableList<Conference> retrieveConferences();
+    GluonObservableList<Conference> retrieveConferences(Conference.Type type);
+
+    /**
+     * Returns details about a conference.
+     *
+     * @return A conference object
+     */
+    GluonObservableObject<Conference> retrieveConference(long conferenceId);
 
     /**
      * Sets the selected conference.
@@ -259,4 +255,10 @@ public interface Service {
      * @param sponsorBadge The sponsor badge to be send to the GCL remote function.
      */
     void saveSponsorBadge(SponsorBadge sponsorBadge);
+
+    /**
+     * Fetches the details about the venue of the conference
+     * @return Location of the selected conference
+     */
+    GluonObservableObject<Location> retrieveLocation();
 }

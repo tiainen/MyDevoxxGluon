@@ -28,6 +28,7 @@ package com.devoxx.views;
 import com.devoxx.DevoxxApplication;
 import com.devoxx.DevoxxView;
 import com.devoxx.model.Conference;
+import com.devoxx.model.Location;
 import com.devoxx.service.Service;
 import com.devoxx.views.helper.Util;
 import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
@@ -36,6 +37,7 @@ import com.gluonhq.charm.glisten.layout.Layer;
 import com.gluonhq.charm.glisten.layout.layer.FloatingActionButton;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
+import com.gluonhq.connect.GluonObservableObject;
 import com.gluonhq.maps.MapLayer;
 import com.gluonhq.maps.MapPoint;
 import com.gluonhq.maps.MapView;
@@ -83,16 +85,15 @@ public class VenuePresenter extends GluonPresenter<DevoxxApplication> {
     private FloatingActionButton webActionButton;
 
     public void initialize() {
-        venue.getLayers().add(createFloatingActionButtons());
 
-        ReadOnlyObjectProperty<Conference> venueProperty = service.conferenceProperty();
-        venueProperty.addListener((observableValue, oldVenue, venue) -> {
-            if (venue != null) {
-                updateVenueInformation(venue);
+        ReadOnlyObjectProperty<Conference> conferenceProperty = service.conferenceProperty();
+        conferenceProperty.addListener((observableValue, oldVenue, conference) -> {
+            if (conference != null) {
+                fetchLocationAndUpdateVenue(conference);
             }
         });
-        if (venueProperty.get() != null) {
-            updateVenueInformation(venueProperty.get());
+        if (conferenceProperty.get() != null) {
+            fetchLocationAndUpdateVenue(conferenceProperty.get());
         }
 
         venue.setOnShowing(event -> {
@@ -118,11 +119,24 @@ public class VenuePresenter extends GluonPresenter<DevoxxApplication> {
         });
     }
 
-    private void updateVenueInformation(Conference conference) {
-        name.setText(conference.getVenue());
-        address.setText(conference.getAddress());
+    private void fetchLocationAndUpdateVenue(Conference conference) {
+        final GluonObservableObject<Location> location = service.retrieveLocation();
+        if (location.isInitialized()) {
+            updateVenueInformation(conference, location.get());
+        }
+        location.initializedProperty().addListener((o, ov, nv) -> {
+            if (nv) {
+                updateVenueInformation(conference, location.get());
+            }
+        });
+    }
 
-        MapPoint venuePoint = new MapPoint(Double.valueOf(conference.getLatitude()), Double.valueOf(conference.getLongitude()));
+    private void updateVenueInformation(Conference conference, Location location) {
+        venue.getLayers().add(createFloatingActionButtons(conference));
+        name.setText(location.getName());
+        address.setText(getLocationAddress(location));
+
+        MapPoint venuePoint = new MapPoint(location.getLatitude(), location.getLongitude());
         mapView.setCenter(venuePoint);
         mapView.setZoom(DEFAULT_ZOOM);
 
@@ -132,18 +146,48 @@ public class VenuePresenter extends GluonPresenter<DevoxxApplication> {
         venueMarker = createVenueMarker(venuePoint);
         mapView.addLayer(venueMarker);
 
-        String url = conference.getWwwURL();
+        String url = conference.getWebsite();
         webActionButton.setVisible(url != null && !url.isEmpty());
 
         resizeImages();
+    }
+
+    private String getLocationAddress(Location location) {
+        StringBuilder address = new StringBuilder();
+        if (location.getAddress1() != null && !location.getAddress2().equals("")) {
+            address.append(location.getAddress1());
+        }
+        if (location.getAddress2() != null && !location.getAddress2().equals("")) {
+            if (!address.toString().equals("")) {
+                address.append("\n");
+            }
+            address.append(location.getAddress2());
+        }
+        if (location.getCity() != null && !location.getCity().equals("")) {
+            if (!address.toString().equals("")) {
+                address.append("\n");
+            }
+            address.append(location.getCity());
+            if (location.getCountry() != null && !location.getCountry().equals("")) {
+                address.append(", ");
+                address.append(location.getCountry());
+            }
+        } else if (location.getCountry() != null && !location.getCountry().equals("")) {
+            if (!address.toString().equals("")) {
+                address.append("\n");
+            }
+            address.append(location.getCountry());
+        }
+        
+        return address.toString();
     }
 
     private Conference getVenue() {
         return service.getConference();
     }
 
-    private Layer createFloatingActionButtons() {
-        webActionButton = Util.createWebLaunchFAB(() -> getVenue().getWwwURL());
+    private Layer createFloatingActionButtons(Conference conference) {
+        webActionButton = Util.createWebLaunchFAB(() -> conference.getWebsite());
         webActionButton.getStyleClass().add("secondary");
         return webActionButton.getLayer();
     }

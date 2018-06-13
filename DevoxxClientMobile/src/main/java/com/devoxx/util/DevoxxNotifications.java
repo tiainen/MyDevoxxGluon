@@ -138,7 +138,7 @@ public class DevoxxNotifications {
                     }
                 }
             };
-            service.retrieveScheduledSessions().addListener(scheduledSessionslistener);
+            service.retrieveFavoredSessions().addListener(scheduledSessionslistener);
         }
     }
     
@@ -150,21 +150,14 @@ public class DevoxxNotifications {
      */
     public void preloadingScheduledSessionsDone() {
         if (scheduledSessionslistener != null) {
-            service.retrieveScheduledSessions().removeListener(scheduledSessionslistener);
+            service.retrieveFavoredSessions().removeListener(scheduledSessionslistener);
             scheduledSessionslistener = null;
         
             // process notifications at once
             List<Notification> notificationList = new ArrayList<>();
-            for (Notification n : scheduledSessionNotificationMap.values()) {
-                if (n.getDateTime() == null) {
-                    notificationList.add(n);
-                }
-            }
-            for (Notification n : voteSessionNotificationMap.values()) {
-                if (n.getDateTime() == null) {
-                    notificationList.add(n);
-                }
-            }
+            notificationList.addAll(scheduledSessionNotificationMap.values());
+            notificationList.addAll(voteSessionNotificationMap.values());
+            
             if (notificationList.size() > 0) {
                 LOG.log(Level.INFO, String.format("Adding %d notifications already scheduled", notificationList.size()));
                 notificationsService.ifPresent(n -> n.getNotifications().addAll(notificationList));
@@ -228,15 +221,30 @@ public class DevoxxNotifications {
      */
     private void addAlreadyScheduledSessionNotifications(Session session) {
         final String sessionId = session.getTalk().getId();
-        
+
         if (!scheduledSessionNotificationMap.containsKey(sessionId)) {
-            // the use of null will prevent notification from being scheduled again on the device
-            scheduledSessionNotificationMap.put(sessionId, getStartNotification(session, null));
+            final Notification dummyStartNotification = getStartNotification(session, null);
+            // Remove notification to avoid duplicate notification
+            notificationsService.ifPresent(ns -> {
+                // we need to add the notification first so because no direct method
+                // exists on LocalNotificationsService to un-schedule a notification.
+                // and un-scheduling is done via the listener attached to notifications observable list
+                ns.getNotifications().add(dummyStartNotification);
+                ns.getNotifications().remove(dummyStartNotification);
+            });
+
+            // Add notification
+            createStartNotification(session).ifPresent(n -> scheduledSessionNotificationMap.put(sessionId, n));
         }
         
         if (!voteSessionNotificationMap.containsKey(sessionId)) {
-            // the use of null will prevent notification from being scheduled again on the device
-            voteSessionNotificationMap.put(sessionId, getVoteNotification(session, null));
+            final Notification dummyVoteNotification = getVoteNotification(session, null);
+            notificationsService.ifPresent(ns -> {
+                ns.getNotifications().add(dummyVoteNotification);
+                ns.getNotifications().remove(dummyVoteNotification);
+            });
+            
+            createVoteNotification(session).ifPresent(n -> voteSessionNotificationMap.put(sessionId, n));
         }
     }
     

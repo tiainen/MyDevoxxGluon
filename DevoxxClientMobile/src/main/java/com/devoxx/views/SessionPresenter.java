@@ -80,7 +80,6 @@ public class SessionPresenter extends GluonPresenter<DevoxxApplication> {
     private AvatarPane<Speaker> speakerAvatarPane;
     private SessionNotesEditor sessionNotesEditor;
 
-    private Node scheduleBtn;
     private Node favoriteBtn;
     private Toggle lastSelectedButton;
 
@@ -95,9 +94,6 @@ public class SessionPresenter extends GluonPresenter<DevoxxApplication> {
             // Fix for DEVOXX-54
             // This will not hamper the flow since both the buttons are
             // updated whenever a new session is chosen
-            if(scheduleBtn != null) {
-                appBar.getActionItems().add(scheduleBtn);
-            }
             if(favoriteBtn != null) {
                 appBar.getActionItems().add(favoriteBtn);
             }
@@ -134,11 +130,10 @@ public class SessionPresenter extends GluonPresenter<DevoxxApplication> {
 
         // update app bar
         final AppBar appBar = sessionView.getApplication().getAppBar();
-        appBar.getActionItems().removeAll(scheduleBtn, favoriteBtn);
-        if (DevoxxSettings.FAV_AND_SCHEDULE_ENABLED && DevoxxSettings.conferenceHasSchFav(service.getConference())) {
-            scheduleBtn = sessionVisuals.getSelectedButton(activeSession);
+        appBar.getActionItems().remove(favoriteBtn);
+        if (DevoxxSettings.conferenceHasFavorite(service.getConference())) {
             favoriteBtn = sessionVisuals.getFavoriteButton(activeSession);
-            appBar.getActionItems().addAll(scheduleBtn, favoriteBtn);
+            appBar.getActionItems().add(favoriteBtn);
         }
     }
 

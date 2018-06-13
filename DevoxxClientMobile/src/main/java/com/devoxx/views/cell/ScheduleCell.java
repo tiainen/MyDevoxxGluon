@@ -209,7 +209,7 @@ public class ScheduleCell extends CharmListCell<Session> {
 
         public SecondaryGraphic() {
             chevron = MaterialDesignIcon.CHEVRON_RIGHT.graphic();
-            indicator = createIndicator(SessionVisuals.SessionListType.SCHEDULED, true);
+            indicator = createIndicator(SessionVisuals.SessionListType.FAVORITES, true);
             getChildren().addAll(chevron, indicator);
             InvalidationListener il = (Observable observable) -> {
                 if (currentSession != null) {
@@ -217,7 +217,6 @@ public class ScheduleCell extends CharmListCell<Session> {
                 }
             };
             if (service.isAuthenticated()) {
-                service.retrieveScheduledSessions().addListener(il);
                 service.retrieveFavoredSessions().addListener(il);
             }
         }
@@ -241,10 +240,7 @@ public class ScheduleCell extends CharmListCell<Session> {
             currentSession = session;
             final boolean authenticated = service.isAuthenticated();
 
-            if ( authenticated && service.retrieveScheduledSessions().contains(session)) {
-                resetIndicator( indicator, SessionVisuals.SessionListType.SCHEDULED);
-                indicator.setVisible(true);
-            } else if ( authenticated && service.retrieveFavoredSessions().contains(session)) {
+            if ( authenticated && service.retrieveFavoredSessions().contains(session)) {
                 resetIndicator( indicator, SessionVisuals.SessionListType.FAVORITES);
                 indicator.setVisible(true);
             } else {
@@ -257,9 +253,6 @@ public class ScheduleCell extends CharmListCell<Session> {
                 final Node graphic = style.getOnGraphic();
                 StackPane.setAlignment(graphic, Pos.TOP_RIGHT);
                 indicator.getChildren().set(0, graphic);
-
-                indicator.getStyleClass().remove( style.other().getStyleClass());
-                indicator.getStyleClass().add( style.getStyleClass());
             }
         }
 

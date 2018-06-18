@@ -54,7 +54,6 @@ import com.gluonhq.connect.converter.JsonIterableInputConverter;
 import com.gluonhq.connect.provider.DataProvider;
 import com.gluonhq.connect.provider.InputStreamListDataReader;
 import com.gluonhq.connect.provider.ListDataReader;
-import com.gluonhq.connect.provider.RestClient;
 import com.gluonhq.connect.source.BasicInputDataSource;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
@@ -501,13 +500,13 @@ public class DevoxxService implements Service {
             if (speakerWithUuid.isDetailsRetrieved()) {
                 return new ReadOnlyObjectWrapper<>(speakerWithUuid).getReadOnlyProperty();
             } else {
-                RestClient restClient = RestClient.create()
-                        .method("GET")
-                        .host(getConference().getCfpEndpoint())
-                        .path("/conferences/" + getConference().getId() + "/speakers/" + uuid)
-                        .connectTimeout(15000);
+                RemoteFunctionObject fnSpeaker = RemoteFunctionBuilder.create("speaker")
+                        .param("cfpEndpoint", getConference().getCfpEndpoint())
+                        .param("conferenceId", getConference().getId())
+                        .param("uuid", uuid)
+                        .object();
 
-                GluonObservableObject<Speaker> gluonSpeaker = DataProvider.retrieveObject(restClient.createObjectDataReader(Speaker.class));
+                GluonObservableObject<Speaker> gluonSpeaker = fnSpeaker.call(Speaker.class);
                 gluonSpeaker.initializedProperty().addListener(new ChangeListener<Boolean>() {
                     @Override
                     public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
@@ -919,16 +918,18 @@ public class DevoxxService implements Service {
                 @Override
                 public void changed(ObservableValue<? extends ConnectState> observable, ConnectState oldValue, ConnectState newValue) {
                     if (newValue == ConnectState.SUCCEEDED) {
-                        for (Favorite favorite : allFavorites.get().getFavorites()) {
-                            int index = 0;
-                            for (; index < favorites.size(); index++) {
-                                if (favorites.get(index).getId().equals(favorite.getId())) {
-                                    favorites.get(index).setFavs(favorite.getFavs());
-                                    break;
+                        if (allFavorites.get() != null) {
+                            for (Favorite favorite : allFavorites.get().getFavorites()) {
+                                int index = 0;
+                                for (; index < favorites.size(); index++) {
+                                    if (favorites.get(index).getId().equals(favorite.getId())) {
+                                        favorites.get(index).setFavs(favorite.getFavs());
+                                        break;
+                                    }
                                 }
-                            }
-                            if (index == favorites.size()) {
-                                favorites.add(favorite);
+                                if (index == favorites.size()) {
+                                    favorites.add(favorite);
+                                }
                             }
                         }
                         allFavorites.stateProperty().removeListener(this);

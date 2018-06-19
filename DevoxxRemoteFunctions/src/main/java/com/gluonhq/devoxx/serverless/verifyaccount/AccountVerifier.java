@@ -49,6 +49,10 @@ public class AccountVerifier {
     private static final Logger LOGGER = Logger.getLogger(AccountVerifier.class.getName());
 
     public String verify(String cfpEndpoint, String email, String password) throws IOException {
+        if (cfpEndpoint.startsWith("http://")) {
+            cfpEndpoint = "https://" + cfpEndpoint.substring("http://".length());
+        }
+
         if (cfpEndpoint.contains("cfp.devoxx.fr")) {
             return verifyDevoxxFr(email, password);
         } else {
@@ -108,7 +112,9 @@ public class AccountVerifier {
         formDataMultiPart.field("password", password);
 
         Response accountVerification = buildClientRegularCfp().target(cfpEndpoint).path("account").path("credentials")
-                .request().post(Entity.entity(formDataMultiPart, MediaType.MULTIPART_FORM_DATA_TYPE));
+                .request()
+                .header("X-Gluon", System.getenv("DEVOXX_CFP_X_GLUON_HEADER"))
+                .post(Entity.entity(formDataMultiPart, MediaType.MULTIPART_FORM_DATA_TYPE));
         String response = accountVerification.readEntity(String.class);
         LOGGER.log(Level.INFO, "Account Verification Response: {0}", response);
         if (accountVerification.getStatus() == Response.Status.OK.getStatusCode()) {

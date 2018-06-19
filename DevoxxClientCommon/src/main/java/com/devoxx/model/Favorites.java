@@ -25,11 +25,12 @@
  */
 package com.devoxx.model;
 
+import java.util.LinkedList;
 import java.util.List;
 
 public class Favorites {
 
-    private List<Favorite> favorites;
+    private List<Favorite> favorites = new LinkedList<>();
 
     public Favorites() {
     }

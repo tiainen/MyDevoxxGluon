@@ -54,10 +54,7 @@ import com.gluonhq.connect.converter.JsonIterableInputConverter;
 import com.gluonhq.connect.provider.DataProvider;
 import com.gluonhq.connect.provider.InputStreamListDataReader;
 import com.gluonhq.connect.provider.ListDataReader;
-import com.gluonhq.connect.provider.RestClient;
 import com.gluonhq.connect.source.BasicInputDataSource;
-import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
 import javafx.beans.property.*;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -83,6 +80,7 @@ import java.util.logging.Logger;
 public class DevoxxService implements Service {
 
     private static final Logger LOG = Logger.getLogger(DevoxxService.class.getName());
+    private static final String REMOTE_FUNCTION_FAILED_MSG = "Remote function '%s' failed.";
 
 //    private static final String DEVOXX_CFP_DATA_URL = "https://s3-eu-west-1.amazonaws.com/cfpdevoxx/cfp.json";
 
@@ -441,17 +439,15 @@ public class DevoxxService implements Service {
             }
         };
         sessionsList.addListener(sessionsListChangeListener);
-        sessionsList.stateProperty().addListener((obs, ov, nv) -> {
-            if (nv == ConnectState.SUCCEEDED || nv == ConnectState.FAILED) {
-                retrievingSessions.set(false);
-                sessionsList.removeListener(sessionsListChangeListener);
-            }
-            if (nv == ConnectState.SUCCEEDED) {
-                retrieveAuthenticatedUserSessionInformation();
-            }
-            if (nv == ConnectState.FAILED) {
-                sessionsList.getException().printStackTrace();
-            }
+        sessionsList.setOnFailed(e -> {
+            retrievingSessions.set(false);
+            sessionsList.removeListener(sessionsListChangeListener);
+            LOG.log(Level.WARNING, String.format(REMOTE_FUNCTION_FAILED_MSG, "sessions"), e.getSource().getException());
+        });
+        sessionsList.setOnSucceeded(e -> {
+            retrievingSessions.set(false);
+            sessionsList.removeListener(sessionsListChangeListener);
+            retrieveAuthenticatedUserSessionInformation();
         });
 
         sessions.set(sessionsList);
@@ -477,13 +473,13 @@ public class DevoxxService implements Service {
                 .list();
 
         GluonObservableList<Speaker> speakersList = fnSpeakers.call(Speaker.class);
-        speakersList.stateProperty().addListener((obs, ov, nv) -> {
-            if (nv == ConnectState.FAILED) {
-                retrievingSpeakers.set(false);
-            } else if (nv == ConnectState.SUCCEEDED) {
-                speakers.setAll(speakersList);
-                retrievingSpeakers.set(false);
-            }
+        speakersList.setOnFailed(e -> {
+            retrievingSpeakers.set(false);
+            LOG.log(Level.WARNING, String.format(REMOTE_FUNCTION_FAILED_MSG, "speakers"), e.getSource().getException());
+        });
+        speakersList.setOnSucceeded(e -> { 
+            speakers.setAll(speakersList);
+            retrievingSpeakers.set(false);
         });
     }
 
@@ -501,22 +497,17 @@ public class DevoxxService implements Service {
             if (speakerWithUuid.isDetailsRetrieved()) {
                 return new ReadOnlyObjectWrapper<>(speakerWithUuid).getReadOnlyProperty();
             } else {
-                RestClient restClient = RestClient.create()
-                        .method("GET")
-                        .host(getConference().getCfpEndpoint())
-                        .path("/conferences/" + getConference().getId() + "/speakers/" + uuid)
-                        .connectTimeout(15000);
+                RemoteFunctionObject fnSpeaker = RemoteFunctionBuilder.create("speaker")
+                        .param("cfpEndpoint", getConference().getCfpEndpoint())
+                        .param("conferenceId", getConference().getId())
+                        .param("uuid", uuid)
+                        .object();
 
-                GluonObservableObject<Speaker> gluonSpeaker = DataProvider.retrieveObject(restClient.createObjectDataReader(Speaker.class));
-                gluonSpeaker.initializedProperty().addListener(new ChangeListener<Boolean>() {
-                    @Override
-                    public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-                        if (newValue != null && newValue) {
-                            updateSpeakerDetails(gluonSpeaker.get());
-                            gluonSpeaker.initializedProperty().removeListener(this);
-                        }
-                    }
+                GluonObservableObject<Speaker> gluonSpeaker = fnSpeaker.call(Speaker.class);
+                gluonSpeaker.setOnSucceeded(e -> {
+                    updateSpeakerDetails(gluonSpeaker.get());
                 });
+                gluonSpeaker.setOnFailed(e -> LOG.log(Level.WARNING, String.format(REMOTE_FUNCTION_FAILED_MSG, "speaker"), e.getSource().getException()));
                 return gluonSpeaker;
             }
         }
@@ -625,11 +616,7 @@ public class DevoxxService implements Service {
                 }
             } 
         });
-        badgeSponsorsObject.stateProperty().addListener((obs, ov, nv) -> {
-            if (nv == ConnectState.FAILED) {
-                badgeSponsorsObject.getException().printStackTrace();
-            }
-        });
+        badgeSponsorsObject.setOnFailed(e -> LOG.log(Level.WARNING, String.format(REMOTE_FUNCTION_FAILED_MSG, "sponsors"), e.getSource().getException()));
         return sponsors;
     }
 
@@ -678,21 +665,15 @@ public class DevoxxService implements Service {
                 .object();
 
         GluonObservableObject<Favored> functionSessions = fnFavored.call(Favored.class);
-        functionSessions.initializedProperty().addListener((obs, ov, nv) -> {
-            if (nv) {
-                for (SessionId sessionId : functionSessions.get().getFavored()) {
-                    findSession(sessionId.getId()).ifPresent(internalFavoredSessions::add);
-                }
+        functionSessions.setOnSucceeded(e -> {
+            for (SessionId sessionId : functionSessions.get().getFavored()) {
+                findSession(sessionId.getId()).ifPresent(internalFavoredSessions::add);
+            }
 
-                internalFavoredSessionsListener = initializeSessionsListener(internalFavoredSessions, "favored");
-                ready.set(true);
-            }
+            internalFavoredSessionsListener = initializeSessionsListener(internalFavoredSessions, "favored");
+            ready.set(true);
         });
-        functionSessions.stateProperty().addListener((obs, ov, nv) -> {
-            if (nv == ConnectState.FAILED) {
-                functionSessions.getException().printStackTrace();
-            }
-        });
+        functionSessions.setOnFailed(e -> LOG.log(Level.WARNING, String.format(REMOTE_FUNCTION_FAILED_MSG, "favored"), e.getSource().getException()));
 
         return internalFavoredSessions;
     }
@@ -708,32 +689,17 @@ public class DevoxxService implements Service {
                 .object();
 
         GluonObservableObject<Scheduled> functionSessions = fnScheduled.call(Scheduled.class);
-        functionSessions.initializedProperty().addListener((obs, ov, nv) -> {
-            if (nv) {
-                for (SessionId sessionId : functionSessions.get().getScheduled()) {
-                    findSession(sessionId.getId()).ifPresent(internalScheduledSessions::add);
-                }
+        functionSessions.setOnSucceeded(e -> {
+            for (SessionId sessionId : functionSessions.get().getScheduled()) {
+                findSession(sessionId.getId()).ifPresent(internalScheduledSessions::add);
+            }
 
-                internalScheduledSessionsListener = initializeSessionsListener(internalScheduledSessions, "scheduled");
+            internalScheduledSessionsListener = initializeSessionsListener(internalScheduledSessions, "scheduled");
+            if (onStateSucceeded != null) {
+                onStateSucceeded.run();
             }
         });
-        functionSessions.stateProperty().addListener((obs, ov, nv) -> {
-            if (nv == ConnectState.FAILED) {
-                functionSessions.getException().printStackTrace();
-            }
-        });
-
-        if (onStateSucceeded != null) {
-            functionSessions.stateProperty().addListener(new InvalidationListener() {
-                @Override
-                public void invalidated(Observable observable) {
-                    if (functionSessions.getState().equals(ConnectState.SUCCEEDED)) {
-                        functionSessions.stateProperty().removeListener(this);
-                        onStateSucceeded.run();
-                    }
-                }
-            });
-        }
+        functionSessions.setOnFailed(e -> LOG.log(Level.WARNING, String.format(REMOTE_FUNCTION_FAILED_MSG, "scheduled"), e.getSource().getException()));
 
         return internalScheduledSessions;
     }
@@ -750,11 +716,7 @@ public class DevoxxService implements Service {
                                 .param("2", session.getTalk().getId())
                                 .object();
                         GluonObservableObject<String> response = fnRemove.call(String.class);
-                        response.stateProperty().addListener((obs, ov, nv) -> {
-                            if (nv == ConnectState.FAILED) {
-                                LOG.log(Level.WARNING, "Failed to remove session " + session.getTalk().getId() + " from " + functionPrefix + ": " + response.getException().getMessage());
-                            }
-                        });
+                        response.setOnFailed(e -> LOG.log(Level.WARNING, "Failed to remove session " + session.getTalk().getId() + " from " + functionPrefix + ": " + response.getException().getMessage()));
                     }
                 }
                 if (c.wasAdded()) {
@@ -766,11 +728,7 @@ public class DevoxxService implements Service {
                                 .param("2", session.getTalk().getId())
                                 .object();
                         GluonObservableObject<String> response = fnAdd.call(String.class);
-                        response.stateProperty().addListener((obs, ov, nv) -> {
-                            if (nv == ConnectState.FAILED) {
-                                LOG.log(Level.WARNING, "Failed to add session " + session.getTalk().getId() + " to " + functionPrefix + ": " + response.getException().getMessage());
-                            }
-                        });
+                        response.setOnFailed(e -> LOG.log(Level.WARNING, "Failed to add session " + session.getTalk().getId() + " to " + functionPrefix + ": " + response.getException().getMessage()));
                     }
                 }
             }
@@ -856,11 +814,7 @@ public class DevoxxService implements Service {
                 LOG.log(Level.INFO, "Response from save sponsor badge: " + sponsorBadgeResult.get());
             }
         });
-        sponsorBadgeResult.stateProperty().addListener((obs, ov, nv) -> {
-            if (nv == ConnectState.FAILED) {
-                LOG.log(Level.WARNING, "Failed to call save sponsor badge: ", sponsorBadgeResult.getException());
-            }
-        });
+        sponsorBadgeResult.setOnFailed(e -> LOG.log(Level.WARNING, "Failed to call save sponsor badge: ", e.getSource().getException()));
     }
 
     @Override
@@ -894,11 +848,7 @@ public class DevoxxService implements Service {
                     LOG.log(Level.INFO, "Response from vote: " + voteResult.get());
                 }
             });
-            voteResult.stateProperty().addListener((obs, ov, nv) -> {
-                if (nv == ConnectState.FAILED) {
-                    LOG.log(Level.WARNING, "Failed to call vote.", voteResult.getException());
-                }
-            });
+            voteResult.setOnFailed(e -> LOG.log(Level.WARNING, String.format(REMOTE_FUNCTION_FAILED_MSG, "voteTalk"), e.getSource().getException()));
         }
     }
 
@@ -915,27 +865,20 @@ public class DevoxxService implements Service {
                     .param("0", getConference().getCfpEndpoint())
                     .object();
             allFavorites = fnAllFavorites.call(new JsonInputConverter<>(Favorites.class));
-            allFavorites.stateProperty().addListener(new ChangeListener<ConnectState>() {
-                @Override
-                public void changed(ObservableValue<? extends ConnectState> observable, ConnectState oldValue, ConnectState newValue) {
-                    if (newValue == ConnectState.SUCCEEDED) {
-                        for (Favorite favorite : allFavorites.get().getFavorites()) {
-                            int index = 0;
-                            for (; index < favorites.size(); index++) {
-                                if (favorites.get(index).getId().equals(favorite.getId())) {
-                                    favorites.get(index).setFavs(favorite.getFavs());
-                                    break;
-                                }
-                            }
-                            if (index == favorites.size()) {
-                                favorites.add(favorite);
-                            }
+            allFavorites.setOnSucceeded(e -> {
+                for (Favorite favorite : allFavorites.get().getFavorites()) {
+                    int index = 0;
+                    for (; index < favorites.size(); index++) {
+                        if (favorites.get(index).getId().equals(favorite.getId())) {
+                            favorites.get(index).setFavs(favorite.getFavs());
+                            break;
                         }
-                        allFavorites.stateProperty().removeListener(this);
-                    } else if (newValue == ConnectState.FAILED) {
-                        allFavorites.stateProperty().removeListener(this);
+                    }
+                    if (index == favorites.size()) {
+                        favorites.add(favorite);
                     }
                 }
+                allFavorites.setOnSucceeded(null);
             });
         }
     }
@@ -986,15 +929,13 @@ public class DevoxxService implements Service {
                                 .param("3", user.getEmail())
                                 .object();
                         GluonObservableObject<String> accountUuid = fnVerifyAccount.call(String.class);
-                        accountUuid.initializedProperty().addListener((obs, ov, nv) -> {
-                            if (nv) {
-                                LOG.log(Level.INFO, "Verified user " + user + " as account with uuid " + accountUuid);
-                                cfpUserUuid.set(accountUuid.get());
-                                settingsService.store(DevoxxSettings.SAVED_ACCOUNT_ID, accountUuid.get());
+                        accountUuid.setOnSucceeded(e -> {
+                            LOG.log(Level.INFO, "Verified user " + user + " as account with uuid " + accountUuid);
+                            cfpUserUuid.set(accountUuid.get());
+                            settingsService.store(DevoxxSettings.SAVED_ACCOUNT_ID, accountUuid.get());
 
-                                if (successRunnable != null) {
-                                    successRunnable.run();
-                                }
+                            if (successRunnable != null) {
+                                successRunnable.run();
                             }
                         });
                     }

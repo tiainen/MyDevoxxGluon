@@ -25,12 +25,13 @@
  */
 package com.devoxx.model;
 
+import java.util.LinkedList;
 import java.util.List;
 
 public class ProposalTypes {
 
     private String content;
-    private List<ProposalType> proposalTypes;
+    private List<ProposalType> proposalTypes = new LinkedList<>(getProposalTypes());
 
     public String getContent() {
         return content;

@@ -37,14 +37,12 @@ import com.devoxx.model.Speaker;
 import com.devoxx.model.TalkSpeaker;
 import com.devoxx.service.DevoxxService;
 import com.devoxx.service.Service;
-import com.devoxx.util.WearableConstants;
 import com.devoxx.util.DevoxxSettings;
-import static com.devoxx.util.DevoxxSettings.TWITTER_URL;
+import com.devoxx.util.WearableConstants;
 import com.devoxx.views.helper.Util;
 import com.gluonhq.charm.down.Services;
 import com.gluonhq.charm.down.plugins.BrowserService;
 import com.gluonhq.charm.down.plugins.SettingsService;
-import com.gluonhq.connect.ConnectState;
 import com.gluonhq.connect.GluonObservableList;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.wearable.DataMap;
@@ -53,6 +51,9 @@ import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.Wearable;
 import com.google.android.gms.wearable.WearableListenerService;
 import com.sun.javafx.application.PlatformImpl;
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.collections.ObservableList;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -65,8 +66,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.beans.property.ReadOnlyObjectProperty;
-import javafx.collections.ObservableList;
+
+import static com.devoxx.util.DevoxxSettings.TWITTER_URL;
 
 public class WearService extends WearableListenerService {
     
@@ -207,14 +208,10 @@ public class WearService extends WearableListenerService {
             putDataMapRequest.getDataMap().putDataMapArrayList(WearableConstants.LIST_PATH, conferencesMap());
             sendMessage(putDataMapRequest);
         } else {
-            retrieveConferences.stateProperty().addListener((obs, ov, nv) -> {
-                if (ConnectState.SUCCEEDED.equals(nv)) {
-
-                    // store the list schedules
-                    putDataMapRequest.getDataMap().putDataMapArrayList(WearableConstants.LIST_PATH, conferencesMap());
-
-                    sendMessage(putDataMapRequest);
-                }
+            retrieveConferences.setOnSucceeded(e -> {
+                // store the list schedules
+                putDataMapRequest.getDataMap().putDataMapArrayList(WearableConstants.LIST_PATH, conferencesMap());
+                sendMessage(putDataMapRequest);
             });
         }
     }

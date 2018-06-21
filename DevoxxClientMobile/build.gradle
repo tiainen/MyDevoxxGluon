@@ -3,7 +3,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'org.javafxports:jfxmobile-plugin:1.3.10'
+        classpath 'org.javafxports:jfxmobile-plugin:1.3.12'
     }
 }
 
@@ -33,8 +33,6 @@ dependencies {
     compile 'com.gluonhq:charm-glisten-connect-view:4.4.5'
     compile 'com.gluonhq:charm-cloudlink-client:4.5.0'
     compile 'com.gluonhq:maps:1.0.2'
-
-    androidCompile 'com.google.android.gms:play-services-wearable:9.4.0'
 }
 
 configurations.all {
@@ -85,17 +83,5 @@ task printf() << {
 
 project.afterEvaluate {
     explodeAarDependencies(project.configurations.androidCompile)
-    androidRelease.dependsOn copyWearableAPK
 }
-
-task copyWearableAPK(type: Copy) {
-    description = 'Copying wearable apk into res/raw'
-    from project(':DevoxxClientWearable').file('build/javafxports/android/')
-    into project(':DevoxxClient').file('src/android/res/raw')
-    include 'DevoxxClientWearable.apk'
-    rename ('DevoxxClientWearable.apk', 'devoxx_client_wearable.apk')
-}
-
-// Note: Run androidRelease task for the client project only, and then install on mobile
-tasks.copyWearableAPK.dependsOn ':DevoxxClientWearable:androidRelease'
 

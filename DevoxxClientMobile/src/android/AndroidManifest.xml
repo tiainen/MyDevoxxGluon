@@ -97,18 +97,5 @@
             </intent-filter>
         </activity>
         
-        <!-- Android Wear Service Listener, runs in a separate process -->
-        <service android:name="com.gluonhq.wearable.android.service.WearService" 
-                 android:process=":wear">
-            <intent-filter>  
-                <action android:name="com.google.android.gms.wearable.DATA_CHANGED" />  
-                <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />  
-                <data android:scheme="wear" android:host="*" />  
-            </intent-filter> 
-        </service>
-
-        <!-- Wear app bundle -->
-        <meta-data android:name="com.google.android.wearable.beta.app"
-                android:resource="@xml/devoxx_client_wearable"/>
     </application>
 </manifest>

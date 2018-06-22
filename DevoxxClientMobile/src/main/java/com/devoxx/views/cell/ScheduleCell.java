@@ -135,8 +135,14 @@ public class ScheduleCell extends CharmListCell<Session> {
         listTile.setTextLine(2, DevoxxBundle.getString("OTN.SCHEDULE.IN_AT",
                 session.getRoomName(),
                 DevoxxSettings.TIME_FORMATTER.format(session.getStartDate()),
-                DevoxxSettings.TIME_FORMATTER.format(session.getEndDate())) +
-                (showDate ? "\n" + DevoxxSettings.DATE_FORMATTER.format(session.getStartDate()) : ""));
+                DevoxxSettings.TIME_FORMATTER.format(session.getEndDate())));
+        
+        if (showDate) {
+            final Label label = new Label(DevoxxSettings.DATE_FORMATTER.format(session.getStartDate()));
+            label.getStyleClass().add("extra-text");
+            // Hacky Code as it uses internals of ListTile
+            ((VBox) listTile.getChildren().get(0)).getChildren().add(label);
+        }
 
         Optional<Favorite> favorite = Optional.empty();
         for (Favorite fav : service.retrieveFavorites()) {
@@ -153,7 +159,8 @@ public class ScheduleCell extends CharmListCell<Session> {
         });
 
         // Hacky Code as it uses internals of ListTile
-        Label label = (Label) ((VBox) listTile.getChildren().get(0)).getChildren().get(2);
+        final VBox vBox = (VBox) listTile.getChildren().get(0);
+        Label label = (Label) vBox.getChildren().get(vBox.getChildren().size() - 1);
         Label favLabel = new Label();
         favLabel.textProperty().bind(fav.favsProperty().asString());
         favLabel.visibleProperty().bind(fav.favsProperty().greaterThanOrEqualTo(10));
@@ -161,7 +168,6 @@ public class ScheduleCell extends CharmListCell<Session> {
         Node graphic = MaterialDesignIcon.FAVORITE.graphic();
         graphic.getStyleClass().add("fav-graphic");
         favLabel.setGraphic(graphic);
-        favLabel.prefHeightProperty().bind(label.heightProperty());
         label.setGraphic(favLabel);
         label.setContentDisplay(ContentDisplay.RIGHT);
 

@@ -249,17 +249,22 @@
     -fx-font-size: 1.05em;
     -fx-wrap-text: false;
 }
+
+.schedule-cell > .list-tile > .text-box > .extra-text,
 .schedule-cell > .list-tile > .text-box > .tertiary-text {
     -fx-text-fill: dimgray;
     -fx-font-size: 0.95em;
 }
 
+.schedule-cell > .list-tile > .text-box > .extra-text > .fav-label,
+.schedule-cell > .list-tile > .text-box > .extra-text > .fav-label > .fav-graphic,
 .schedule-cell > .list-tile > .text-box > .tertiary-text > .fav-label,
 .schedule-cell > .list-tile > .text-box > .tertiary-text > .fav-label > .fav-graphic {
     -fx-text-fill: derive(crimson, 50%);
     -fx-font-size: 0.95em;
 }
 
+.schedule-cell > .list-tile > .text-box > .extra-text > .fav-label,
 .schedule-cell > .list-tile > .text-box > .tertiary-text > .fav-label {
     -fx-alignment: bottom-left;
     -fx-graphic-text-gap: 1.0;

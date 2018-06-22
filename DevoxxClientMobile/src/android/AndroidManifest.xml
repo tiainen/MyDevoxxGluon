@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" 
           package="com.devoxx" 
-          android:versionCode="263" 
-          android:versionName="2.9.0">
+          android:versionCode="275" 
+          android:versionName="2.9.1">
     <uses-sdk android:minSdkVersion="9" android:targetSdkVersion="23"/>
 
     <supports-screens android:xlargeScreens="true"/>
@@ -97,18 +97,5 @@
             </intent-filter>
         </activity>
         
-        <!-- Android Wear Service Listener, runs in a separate process -->
-        <service android:name="com.gluonhq.wearable.android.service.WearService" 
-                 android:process=":wear">
-            <intent-filter>  
-                <action android:name="com.google.android.gms.wearable.DATA_CHANGED" />  
-                <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />  
-                <data android:scheme="wear" android:host="*" />  
-            </intent-filter> 
-        </service>
-
-        <!-- Wear app bundle -->
-        <meta-data android:name="com.google.android.wearable.beta.app"
-                android:resource="@xml/devoxx_client_wearable"/>
     </application>
 </manifest>

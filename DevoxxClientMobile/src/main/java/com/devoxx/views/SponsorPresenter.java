@@ -44,7 +44,6 @@ import com.gluonhq.charm.glisten.control.Toast;
 import com.gluonhq.charm.glisten.layout.layer.FloatingActionButton;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
-import com.gluonhq.connect.ConnectState;
 import com.gluonhq.connect.GluonObservableObject;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -104,23 +103,20 @@ public class SponsorPresenter extends GluonPresenter<DevoxxApplication> {
     private void signIn() {
         message.setText("");
         final GluonObservableObject<String> passwordObject = service.authenticateSponsor();
-        passwordObject.stateProperty().addListener((o, ov, nv) -> {
-            if (nv == ConnectState.SUCCEEDED) {
-                if (password.getText().equals(passwordObject.get())) {
-                    Services.get(SettingsService.class).ifPresent(service -> {
+        passwordObject.setOnFailed(e -> message.setText(DevoxxBundle.getString("OTN.SPONSOR.VERIFICATION.FAILED")));
+        passwordObject.setOnSucceeded(e -> {
+            if (password.getText().equals(passwordObject.get())) {
+                Services.get(SettingsService.class).ifPresent(service -> {
                         service.store(DevoxxSettings.SPONSOR_NAME, name);
                         service.store(DevoxxSettings.SPONSOR_SLUG, slug);
                     });
-                    final Toast toast = new Toast(DevoxxBundle.getString("OTN.BADGES.LOGIN.SPONSOR", name), Toast.LENGTH_LONG);
-                    toast.show();
-                    loadAuthenticatedView(name, slug);
-                    password.clear();
-                } else {
-                    message.setText(DevoxxBundle.getString("OTN.SPONSOR.INCORRECT.PASSWORD"));
-                }
-            } else if (nv == ConnectState.FAILED) {
-                message.setText(DevoxxBundle.getString("OTN.SPONSOR.VERIFICATION.FAILED"));
-            }
+                final Toast toast = new Toast(DevoxxBundle.getString("OTN.BADGES.LOGIN.SPONSOR", name), Toast.LENGTH_LONG);
+                toast.show();
+                loadAuthenticatedView(name, slug);
+                password.clear();
+            } else {
+                message.setText(DevoxxBundle.getString("OTN.SPONSOR.INCORRECT.PASSWORD"));
+            } 
         });
     }
 

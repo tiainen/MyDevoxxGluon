@@ -43,7 +43,6 @@ import com.gluonhq.charm.glisten.control.CharmListView;
 import com.gluonhq.charm.glisten.control.Toast;
 import com.gluonhq.charm.glisten.layout.layer.FloatingActionButton;
 import com.gluonhq.charm.glisten.mvc.View;
-import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -143,7 +142,7 @@ public class BadgesPresenter extends GluonPresenter<DevoxxApplication> {
         shareButton.disableProperty().bind(lvBadges.itemsProperty().emptyProperty());
         getApp().getAppBar().getActionItems().setAll(getApp().getSearchButton(), shareButton);
         
-        FloatingActionButton scan = new FloatingActionButton(MaterialDesignIcon.SCANNER.text, e -> {
+        FloatingActionButton scan = new FloatingActionButton("", e -> {
             Services.get(BarcodeScanService.class).ifPresent(s -> {
                 final Optional<String> scanQr = s.scan(DevoxxBundle.getString("OTN.BADGES.ATTENDEE.QR.TITLE"), null, null); 
                 scanQr.ifPresent(qr -> {
@@ -169,6 +168,7 @@ public class BadgesPresenter extends GluonPresenter<DevoxxApplication> {
                 });
             });
         });
+        scan.getStyleClass().add("badge-scanner");
         badgesView.getLayers().add(scan.getLayer());
     }
 

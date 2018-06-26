@@ -27,6 +27,7 @@ package com.devoxx.views;
 
 import com.devoxx.DevoxxApplication;
 import com.devoxx.DevoxxView;
+import com.devoxx.control.DataLabel;
 import com.devoxx.model.Link;
 import com.devoxx.model.Session;
 import com.devoxx.model.Speaker;
@@ -48,6 +49,7 @@ import com.gluonhq.charm.glisten.control.BottomNavigation;
 import com.gluonhq.charm.glisten.control.BottomNavigationButton;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
+import javafx.beans.property.ReadOnlyListProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -238,29 +240,25 @@ public class SessionPresenter extends GluonPresenter<DevoxxApplication> {
     
     private ObservableList<Speaker> fetchSpeakers(Session activeSession) {
         ObservableList<Speaker> speakers = FXCollections.observableArrayList();
+        final ReadOnlyListProperty<Speaker> speakersList = service.retrieveSpeakers();
         if (activeSession.getTalk().getSpeakers() != null) {
             for (TalkSpeaker talkSpeaker : activeSession.getTalk().getSpeakers()) {
                 Link link = talkSpeaker.getLink();
                 if (link != null && link.getHref() != null && !link.getHref().isEmpty()) {
                     String speakerUUID = link.getHref().substring(link.getHref().lastIndexOf('/') + 1);
-                    ReadOnlyObjectProperty<Speaker> speaker = service.retrieveSpeaker(speakerUUID);
-                    if (speaker.get() != null) {
-                        speakers.add(speaker.get());
-                    } else {
-                        speaker.addListener((observable, oldValue, newValue) -> {
-                            if (newValue != null) {
-                                speakers.add(newValue);
-                                // select the first speaker when one becomes available
-                                if (speakers.size() == 1) {
-                                    speakerAvatarPane.setValue(newValue);
-                                }
-                            }
-                        });
+                    for (Speaker speaker : speakersList) {
+                        if (speaker.getUuid().equals(speakerUUID)) {
+                            speakers.add(speaker);
+                        }
                     }
                 }
             }
         }
         return speakers;
+    }
+    
+    private ReadOnlyObjectProperty<Speaker> fetchSpeakerDetail(String speakerUUID) {
+        return service.retrieveSpeaker(speakerUUID);
     }
 
     private AvatarPane<Speaker> createSpeakerAvatarPane(ObservableList<Speaker> speakers) {
@@ -272,6 +270,8 @@ public class SessionPresenter extends GluonPresenter<DevoxxApplication> {
             if (speaker == null) {
                 return new Placeholder(DevoxxBundle.getString("OTN.SESSION.NO_SPEAKERS"), MaterialDesignIcon.SPEAKER);
             }
+            fetchSpeakerDetail(speaker.getUuid());
+            
             Label name = new Label(speaker.getFullName());
             name.getStyleClass().add("name");
             name.setWrapText(true);
@@ -287,7 +287,12 @@ public class SessionPresenter extends GluonPresenter<DevoxxApplication> {
             company.setWrapText(true);
             GridPane.setHgrow(company, Priority.ALWAYS);
 
-            Label summary = new Label(speaker.getSummary());
+            Label summary = new DataLabel();
+            if (speaker.isDetailsRetrieved()) {
+                summary.setText(speaker.getSummary());
+            } else {
+                speaker.detailsRetrievedProperty().addListener(o ->  summary.setText(speaker.getSummary()));
+            }
             summary.getStyleClass().add("summary");
             summary.setWrapText(true);
             GridPane.setHgrow(summary, Priority.ALWAYS);

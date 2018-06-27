@@ -219,7 +219,7 @@ public class SessionVisuals {
     private ObservableList<Session> getList(SessionListType listType) {
         if (usingOfflineEmptyLists && service.isAuthenticated()) {
             // OTN-513 - First time user logs in: stop the listener
-            devoxxNotifications.preloadingScheduledSessionsDone();
+            devoxxNotifications.preloadingFavoriteSessionsDone();
             
             retrieveLists();
         }
@@ -251,7 +251,7 @@ public class SessionVisuals {
 
             if (!listContains(session, listType)) {
                 if (listType == SessionListType.FAVORITES) {
-                    devoxxNotifications.addScheduledSessionNotifications(session); 
+                    devoxxNotifications.addFavoriteSessionNotifications(session); 
                 }
                 Services.get(SettingsService.class).ifPresent(settings -> {
                     String skip = settings.retrieve(DevoxxSettings.SKIP_SCH_FAV_DIALOG);
@@ -281,7 +281,7 @@ public class SessionVisuals {
             retrieveLists();
 
             if (listType == SessionListType.FAVORITES) {
-                devoxxNotifications.removeScheduledSessionNotifications(session);
+                devoxxNotifications.removeFavoriteSessionNotifications(session);
             }
 
             getList(listType).remove(session);

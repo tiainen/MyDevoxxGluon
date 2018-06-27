@@ -617,9 +617,9 @@ public class DevoxxService implements Service {
             try {
                 DevoxxNotifications notifications = Injector.instantiateModelOrService(DevoxxNotifications.class);
                 // stop recreating notifications, after the list of scheduled sessions is fully retrieved
-                favoredSessions = internalRetrieveFavoredSessions(notifications::preloadingScheduledSessionsDone);
+                favoredSessions = internalRetrieveFavoredSessions(notifications::preloadingFavoriteSessionsDone);
                 // start recreating notifications as soon as the scheduled sessions are being retrieved
-                notifications.preloadScheduledSessions();
+                notifications.preloadFavoriteSessions();
             } catch (IllegalStateException ise) {
                 LOG.log(Level.WARNING, "Can't instantiate Notifications when running a background service");
             }

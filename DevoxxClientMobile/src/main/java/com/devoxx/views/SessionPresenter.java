@@ -287,10 +287,11 @@ public class SessionPresenter extends GluonPresenter<DevoxxApplication> {
             company.setWrapText(true);
             GridPane.setHgrow(company, Priority.ALWAYS);
 
-            Label summary = new DataLabel();
+            Label summary;
             if (speaker.isDetailsRetrieved()) {
-                summary.setText(speaker.getSummary());
+                summary = new Label(speaker.getSummary());
             } else {
+                summary = new DataLabel();
                 speaker.detailsRetrievedProperty().addListener(o ->  summary.setText(speaker.getSummary()));
             }
             summary.getStyleClass().add("summary");

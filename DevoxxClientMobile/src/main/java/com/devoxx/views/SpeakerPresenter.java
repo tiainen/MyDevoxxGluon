@@ -121,14 +121,15 @@ public class SpeakerPresenter extends GluonPresenter<DevoxxApplication> {
         final BottomNavigationButton infoButton = new BottomNavigationButton(DevoxxBundle.getString("OTN.BUTTON.INFO"), MaterialDesignIcon.INFO.graphic(), e -> {
             // when clicked create a label in a scrollpane. Label will contain
             // the speaker summary
-            Label speakerSummary = new DataLabel();
-            speakerSummary.setWrapText(true);
-            speakerSummary.getStyleClass().add("speaker-summary");
+            Label speakerSummary;
             if (activeSpeaker.isDetailsRetrieved()) {
-                speakerSummary.setText(activeSpeaker.getSummary());
+                speakerSummary = new Label(activeSpeaker.getSummary());
             } else {
+                speakerSummary = new DataLabel();
                 activeSpeaker.detailsRetrievedProperty().addListener(o -> speakerSummary.setText(activeSpeaker.getSummary()));
             }
+            speakerSummary.setWrapText(true);
+            speakerSummary.getStyleClass().add("speaker-summary");
             
             speakerView.setCenter(createScrollPane(speakerSummary));
         });

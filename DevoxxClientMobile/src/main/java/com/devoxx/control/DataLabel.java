@@ -26,6 +26,8 @@
 package com.devoxx.control;
 
 import com.gluonhq.charm.glisten.control.ProgressIndicator;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 
@@ -36,12 +38,17 @@ import javafx.scene.control.Label;
 public class DataLabel extends Label {
     
     public DataLabel() {
+        getStyleClass().add("data-label");
         setGraphic(new ProgressIndicator());
         setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
-        textProperty().addListener((o, ov, nv) -> {
-            if (nv != null) {
-                setContentDisplay(ContentDisplay.LEFT);
-                setGraphic(null);
+        textProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> o, String ov, String nv) {
+                if (nv != null) {
+                    DataLabel.this.setContentDisplay(ContentDisplay.LEFT);
+                    DataLabel.this.setGraphic(null);
+                    textProperty().removeListener(this);
+                }
             }
         });
     }

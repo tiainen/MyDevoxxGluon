@@ -208,17 +208,29 @@ public class ConfSelectorPresenter extends GluonPresenter<DevoxxApplication> {
     }
 
     private void selectNearestConference(GluonObservableList<Conference> conferences) {
+        if (conferences.size() == 0) return;
         long minPositiveDaysUntil = Long.MAX_VALUE;
-        Conference nearest = null;
+        long minNegativeDaysUntil = Long.MIN_VALUE;
+        Conference nearestFuture = null;
+        Conference nearestPast = conferences.get(0);
         for (Conference conference : conferences) {
             long days = conference.getDaysUntilEnd();
-            if (days >= 0 && days < minPositiveDaysUntil) {
-                minPositiveDaysUntil = days;
-                nearest = conference;
+            if (days >= 0) {
+                if (days < minPositiveDaysUntil) {
+                    minPositiveDaysUntil = days;
+                    nearestFuture = conference;
+                }
+            } else {
+                if (days > minNegativeDaysUntil) {
+                    minNegativeDaysUntil = days;
+                    nearestPast = conference;
+                }
             }
         }
-        if (nearest != null) {
-            selector.setSelectedItem(nearest);
+        if (nearestFuture != null) {
+            selector.setSelectedItem(nearestFuture);
+        } else {
+            selector.setSelectedItem(nearestPast);
         }
         if (selectNearestConferenceListener != null) {
             conferences.initializedProperty().removeListener(selectNearestConferenceListener);

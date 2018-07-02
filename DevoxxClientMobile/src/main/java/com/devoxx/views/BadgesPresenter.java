@@ -34,6 +34,7 @@ import com.devoxx.util.DevoxxSettings;
 import com.devoxx.views.cell.BadgeCell;
 import com.devoxx.views.helper.LoginPrompter;
 import com.devoxx.views.helper.Placeholder;
+import com.devoxx.views.helper.Util;
 import com.gluonhq.charm.down.Services;
 import com.gluonhq.charm.down.plugins.BarcodeScanService;
 import com.gluonhq.charm.down.plugins.SettingsService;
@@ -46,10 +47,13 @@ import com.gluonhq.charm.glisten.mvc.View;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.MenuItem;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 
 import javax.inject.Inject;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 public class BadgesPresenter extends GluonPresenter<DevoxxApplication> {
@@ -84,52 +88,75 @@ public class BadgesPresenter extends GluonPresenter<DevoxxApplication> {
             appBar.setNavIcon(getApp().getNavMenuButton());
             appBar.setTitleText(DevoxxView.BADGES.getTitle());
             
-            sponsor.setOnAction(e -> {
-                Services.get(SettingsService.class).ifPresent(service -> {
-                    service.store(DevoxxSettings.BADGE_TYPE, DevoxxSettings.BADGE_TYPE_SPONSOR);
-                    showSponsor(service);
-                });
-            });
-            
-            attendee.setOnAction(e -> {
-                Services.get(SettingsService.class).ifPresent(service -> {
-                    service.store(DevoxxSettings.BADGE_TYPE, DevoxxSettings.BADGE_TYPE_ATTENDEE);
-                    final Toast toast = new Toast(DevoxxBundle.getString("OTN.BADGES.LOGIN.ATTENDEE"));
-                    toast.setDuration(Duration.seconds(5));
-                    toast.show();
-                    showAttendee();
-                });
-            });
+            sponsor.setOnAction(e -> showSponsor());
+            attendee.setOnAction(e -> authenticate());
 
-            if (service.isAuthenticated() || !DevoxxSettings.USE_REMOTE_NOTES) {
-                loadAuthenticatedView();
-            } else {
-                loadAnonymousView();
-            }
+            loadContent();
         });
     }
 
+    private List<MenuItem> getMenuItems() {
+        final MenuItem scanAsDifferentUser = new MenuItem("Scan as Different User");
+        scanAsDifferentUser.setOnAction(ev -> reload());
+        return Collections.singletonList(scanAsDifferentUser);
+    }
+
+    private void reload() {
+        Util.removeKeysFromSettings(DevoxxSettings.BADGE_TYPE, DevoxxSettings.SPONSOR_NAME, DevoxxSettings.SPONSOR_SLUG);
+        loadContent();
+    }
+
+    private void loadContent() {
+        getApp().getAppBar().getMenuItems().clear();
+        final String badgeType = loadPreviousSelection();
+        if (badgeType == null) {
+            badgesView.setCenter(content);
+        } else {
+            switch (badgeType) {
+                case DevoxxSettings.BADGE_TYPE_SPONSOR:
+                    showSponsor();
+                    break;
+                case DevoxxSettings.BADGE_TYPE_ATTENDEE:
+                    authenticate();
+                    break;
+            }
+        }
+    }
+
+    private void authenticate() {
+        getApp().getAppBar().getMenuItems().setAll(getMenuItems());
+        getApp().getAppBar().setTitleText(DevoxxBundle.getString("OTN.VIEW.ATTENDEE"));
+        if (service.isAuthenticated() || !DevoxxSettings.USE_REMOTE_NOTES) {
+            loadAuthenticatedView();
+        } else {
+            loadAnonymousView();
+        }
+    }
+
+    private String loadPreviousSelection() {
+        final Optional<SettingsService> settingsService = Services.get(SettingsService.class);
+        if (settingsService.isPresent()) {
+            final SettingsService service = settingsService.get();
+            return service.retrieve(DevoxxSettings.BADGE_TYPE);
+        }
+        return null;
+    }
+
     private void loadAnonymousView() {
+        Util.showToast(DevoxxBundle.getString("OTN.BADGES.SELECT.ATTENDEE"), Duration.seconds(5));
         badgesView.setCenter(new LoginPrompter(service, ANONYMOUS_MESSAGE, DevoxxView.BADGES.getMenuIcon(), this::loadAuthenticatedView));
     }
 
     private void loadAuthenticatedView() {
-        final Optional<SettingsService> settingsService = Services.get(SettingsService.class);
-        if (settingsService.isPresent()) {
-            final SettingsService service = settingsService.get();
-            final String badgeType = service.retrieve(DevoxxSettings.BADGE_TYPE);
-            if (badgeType != null) {
-                switch (badgeType) {
-                    case DevoxxSettings.BADGE_TYPE_SPONSOR:
-                        showSponsor(settingsService.get());
-                        return;
-                    case DevoxxSettings.BADGE_TYPE_ATTENDEE:
-                        showAttendee();
-                        return;
-                }
-            }
+        Services.get(SettingsService.class).ifPresent(service -> {
+            service.store(DevoxxSettings.BADGE_TYPE, DevoxxSettings.BADGE_TYPE_ATTENDEE);
+        });
+        final ObservableList<MenuItem> menuItems = getApp().getAppBar().getMenuItems();
+        if (menuItems.size() > 0) {
+            menuItems.get(0).setText("Logout");
         }
-        badgesView.setCenter(content);
+        Util.showToast(DevoxxBundle.getString("OTN.BADGES.LOGIN.ATTENDEE"), Duration.seconds(5));
+        showAttendee();
     }
 
     private void showAttendee() {
@@ -171,13 +198,17 @@ public class BadgesPresenter extends GluonPresenter<DevoxxApplication> {
         scan.showOn(badgesView);
     }
 
-    private void showSponsor(SettingsService service) {
-        final String sponsorName = service.retrieve(DevoxxSettings.SPONSOR_NAME);
-        final String sponsorSlug = service.retrieve(DevoxxSettings.SPONSOR_SLUG);
-        if (sponsorSlug == null) {
-            DevoxxView.SPONSORS.switchView();
-        } else {
-            DevoxxView.SPONSOR.switchView().ifPresent(presenter -> ((SponsorPresenter)presenter).setSponsor(sponsorName, sponsorSlug));
+    private void showSponsor() {
+        final Optional<SettingsService> settingsService = Services.get(SettingsService.class);
+        if (settingsService.isPresent()) {
+            SettingsService service = settingsService.get();
+            final String sponsorName = service.retrieve(DevoxxSettings.SPONSOR_NAME);
+            final String sponsorSlug = service.retrieve(DevoxxSettings.SPONSOR_SLUG);
+            if (sponsorSlug == null) {
+                DevoxxView.SPONSORS.switchView();
+            } else {
+                DevoxxView.SPONSOR.switchView().ifPresent(presenter -> ((SponsorPresenter) presenter).setSponsor(sponsorName, sponsorSlug));
+            }
         }
     }
 }

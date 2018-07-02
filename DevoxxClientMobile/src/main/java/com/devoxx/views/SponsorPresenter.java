@@ -50,6 +50,7 @@ import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.PasswordField;
 import javafx.scene.layout.VBox;
 
@@ -85,6 +86,7 @@ public class SponsorPresenter extends GluonPresenter<DevoxxApplication> {
             AppBar appBar = getApp().getAppBar();
             appBar.setNavIcon(getApp().getNavMenuButton());
             appBar.setTitleText(DevoxxView.SPONSOR.getTitle());
+            appBar.getMenuItems().addAll(getApp().scanAsDifferentUser());
             checkAndLoadView();
         });
     }
@@ -103,9 +105,10 @@ public class SponsorPresenter extends GluonPresenter<DevoxxApplication> {
         passwordObject.setOnSucceeded(e -> {
             if (password.getText().equals(passwordObject.get())) {
                 Services.get(SettingsService.class).ifPresent(service -> {
-                        service.store(DevoxxSettings.SPONSOR_NAME, name);
-                        service.store(DevoxxSettings.SPONSOR_SLUG, slug);
-                    });
+                    service.store(DevoxxSettings.BADGE_TYPE, DevoxxSettings.BADGE_TYPE_SPONSOR);
+                    service.store(DevoxxSettings.SPONSOR_NAME, name);
+                    service.store(DevoxxSettings.SPONSOR_SLUG, slug); 
+                });
                 final Toast toast = new Toast(DevoxxBundle.getString("OTN.BADGES.LOGIN.SPONSOR", name), Toast.LENGTH_LONG);
                 toast.show();
                 loadAuthenticatedView(name, slug);
@@ -121,6 +124,10 @@ public class SponsorPresenter extends GluonPresenter<DevoxxApplication> {
         final Button shareButton = getApp().getShareButton(DevoxxSettings.BADGE_TYPE_SPONSOR);
         appBar.getActionItems().setAll(shareButton);
         appBar.setTitleText(DevoxxBundle.getString("OTN.SPONSOR.BADGES.FOR", name));
+        final ObservableList<MenuItem> menuItems = appBar.getMenuItems();
+        if (menuItems.size() > 0) {
+            menuItems.get(0).setText("Logout");
+        }
 
         final ObservableList<SponsorBadge> badges = service.retrieveSponsorBadges();
         final FilteredList<SponsorBadge> filteredBadges = new FilteredList<>(badges, badge -> 

@@ -765,9 +765,6 @@ public class DevoxxService implements Service {
 
     @Override
     public ObservableList<SponsorBadge> retrieveSponsorBadges() {
-        if (!isAuthenticated() && DevoxxSettings.USE_REMOTE_NOTES) {
-            throw new IllegalStateException("An authenticated user must be available when calling this method.");
-        }
         
         if (sponsorBadges == null) {
             final GluonObservableList<SponsorBadge> sponsorBadges = internalRetrieveSponsorBadges();

@@ -35,14 +35,10 @@ import com.devoxx.views.DevoxxSplash;
 import com.devoxx.views.SessionsPresenter;
 import com.devoxx.views.helper.ConnectivityUtils;
 import com.devoxx.views.helper.SessionVisuals;
+import com.devoxx.views.helper.Util;
 import com.gluonhq.charm.down.Platform;
 import com.gluonhq.charm.down.Services;
-import com.gluonhq.charm.down.plugins.ConnectivityService;
-import com.gluonhq.charm.down.plugins.DeviceService;
-import com.gluonhq.charm.down.plugins.DisplayService;
-import com.gluonhq.charm.down.plugins.SettingsService;
-import com.gluonhq.charm.down.plugins.ShareService;
-import com.gluonhq.charm.down.plugins.StorageService;
+import com.gluonhq.charm.down.plugins.*;
 import com.gluonhq.charm.glisten.afterburner.AppView;
 import com.gluonhq.charm.glisten.afterburner.GluonInstanceProvider;
 import com.gluonhq.charm.glisten.application.MobileApplication;
@@ -52,6 +48,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.MenuItem;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import javafx.stage.Window;
@@ -64,6 +61,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -219,6 +217,17 @@ public class DevoxxApplication extends MobileApplication {
     
     public Button getSearchButton() {
         return navSearchButton;
+    }
+    
+    public MenuItem scanAsDifferentUser() {
+        final MenuItem scanAsDifferentUser = new MenuItem("Scan as Different User");
+        scanAsDifferentUser.setOnAction(ev -> switchToBadgesView(DevoxxSettings.BADGE_TYPE, DevoxxSettings.SPONSOR_NAME, DevoxxSettings.SPONSOR_SLUG));
+        return scanAsDifferentUser;
+    }
+
+    private Optional<Object> switchToBadgesView(String... toRemove) {
+        Util.removeKeysFromSettings(toRemove);
+        return DevoxxView.BADGES.switchView();
     }
     
     public Button getShareButton(String badgeType) {

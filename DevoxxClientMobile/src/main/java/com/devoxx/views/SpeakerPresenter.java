@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016, Gluon Software
+ * Copyright (c) 2016, 2018 Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -26,20 +26,21 @@
 package com.devoxx.views;
 
 import com.devoxx.DevoxxApplication;
-import com.devoxx.service.Service;
+import com.devoxx.DevoxxView;
 import com.devoxx.model.Session;
+import com.devoxx.model.Speaker;
+import com.devoxx.model.Talk;
+import com.devoxx.service.Service;
+import com.devoxx.util.DevoxxBundle;
 import com.devoxx.views.cell.ScheduleCell;
+import com.devoxx.views.helper.SpeakerCard;
 import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.control.BottomNavigation;
+import com.gluonhq.charm.glisten.control.BottomNavigationButton;
 import com.gluonhq.charm.glisten.control.CharmListView;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
-import com.devoxx.DevoxxView;
-import com.devoxx.model.Speaker;
-import com.devoxx.model.Talk;
-import com.devoxx.util.DevoxxBundle;
-import com.devoxx.views.helper.SpeakerCard;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
@@ -48,8 +49,6 @@ import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Toggle;
-import javafx.scene.control.ToggleButton;
 
 import javax.inject.Inject;
 import java.time.LocalDate;
@@ -63,7 +62,6 @@ public class SpeakerPresenter extends GluonPresenter<DevoxxApplication> {
     @Inject
     private Service service;
 
-    private Toggle lastSelectedButton;
     private CharmListView<Session, LocalDate> sessionsListView;
 
     private ChangeListener<Number> widthListener = (observable, oldValue, newValue) -> resizeSpeakerCard();
@@ -77,9 +75,6 @@ public class SpeakerPresenter extends GluonPresenter<DevoxxApplication> {
             AppBar appBar = getApp().getAppBar();
             appBar.setNavIcon(getApp().getNavBackButton());
             appBar.setTitleText(DevoxxView.SPEAKER.getTitle());
-            if (lastSelectedButton != null) {
-                lastSelectedButton.setSelected(true);
-            }
             if(sessionsListView != null) {
                 sessionsListView.setSelectedItem(null);
             }
@@ -127,7 +122,7 @@ public class SpeakerPresenter extends GluonPresenter<DevoxxApplication> {
 
         BottomNavigation bottomNavigation = new BottomNavigation();
 
-        final ToggleButton infoButton = bottomNavigation.createButton(DevoxxBundle.getString("OTN.BUTTON.INFO"), MaterialDesignIcon.INFO.graphic(), e -> {
+        final BottomNavigationButton infoButton = new BottomNavigationButton(DevoxxBundle.getString("OTN.BUTTON.INFO"), MaterialDesignIcon.INFO.graphic(), e -> {
             // when clicked create a label in a scrollpane. Label will contain
             // the speaker summary
             Label speakerSummary = new Label(activeSpeaker.getSummary());
@@ -136,16 +131,13 @@ public class SpeakerPresenter extends GluonPresenter<DevoxxApplication> {
             speakerView.setCenter(createScrollPane(speakerSummary));
         });
 
-        final ToggleButton sessionsButton = bottomNavigation.createButton(DevoxxBundle.getString("OTN.BUTTON.SESSIONS"), MaterialDesignIcon.EVENT_NOTE.graphic(), e -> {
+        final BottomNavigationButton sessionsButton = new BottomNavigationButton(DevoxxBundle.getString("OTN.BUTTON.SESSIONS"), MaterialDesignIcon.EVENT_NOTE.graphic(), e -> {
             // when clicked we create a pane containing all sessions.
             speakerView.setCenter(createSessionsListView(activeSpeaker));
         });
 
         bottomNavigation.getActionItems().addAll(infoButton, sessionsButton);
-
-        // listen to the selected toggle so we ensure it is selected when the view is returned to
-        infoButton.getToggleGroup().selectedToggleProperty().addListener((o,ov,nv) -> lastSelectedButton = nv);
-        infoButton.setSelected(true);
+        infoButton.fire();
 
         return bottomNavigation;
     }

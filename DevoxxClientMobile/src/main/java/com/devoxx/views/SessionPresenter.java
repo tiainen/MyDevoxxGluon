@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, 2017, Gluon Software
+ * Copyright (c) 2016, 2018 Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -45,6 +45,7 @@ import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.control.AvatarPane;
 import com.gluonhq.charm.glisten.control.BottomNavigation;
+import com.gluonhq.charm.glisten.control.BottomNavigationButton;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -146,7 +147,7 @@ public class SessionPresenter extends GluonPresenter<DevoxxApplication> {
 
         BottomNavigation bottomNavigation = new BottomNavigation();
 
-        final ToggleButton infoButton = bottomNavigation.createButton(DevoxxBundle.getString("OTN.BUTTON.INFO"), MaterialDesignIcon.INFO.graphic(), e -> {
+        final BottomNavigationButton infoButton = new BottomNavigationButton(DevoxxBundle.getString("OTN.BUTTON.INFO"), MaterialDesignIcon.INFO.graphic(), e -> {
             // when clicked create a label in a scrollpane. Label will contain
             // session summary for this session.
             Label sessionSummary = new Label(session.getSummary());
@@ -170,7 +171,7 @@ public class SessionPresenter extends GluonPresenter<DevoxxApplication> {
         });
         infoButton.setUserData(Pane.INFO);
 
-        final ToggleButton speakerButton = bottomNavigation.createButton(DevoxxBundle.getString("OTN.BUTTON.SPEAKERS"), MaterialDesignIcon.ACCOUNT_CIRCLE.graphic(), e -> {
+        final BottomNavigationButton speakerButton = new BottomNavigationButton(DevoxxBundle.getString("OTN.BUTTON.SPEAKERS"), MaterialDesignIcon.ACCOUNT_CIRCLE.graphic(), e -> {
             // when clicked we create an avatar pane containing all speakers.
             // The entire avatar pane is not scrollable, as we want the speaker
             // avatars to remain fixed. Instead, we make the avatar content area
@@ -183,7 +184,7 @@ public class SessionPresenter extends GluonPresenter<DevoxxApplication> {
         });
         speakerButton.setUserData(Pane.SPEAKER);
 
-        final ToggleButton noteButton = bottomNavigation.createButton(DevoxxBundle.getString("OTN.BUTTON.NOTES"), MaterialDesignIcon.MESSAGE.graphic(), e -> {
+        final BottomNavigationButton noteButton = new BottomNavigationButton(DevoxxBundle.getString("OTN.BUTTON.NOTES"), MaterialDesignIcon.MESSAGE.graphic(), e -> {
             if (service.isAuthenticated() || !DevoxxSettings.USE_REMOTE_NOTES) {
                 loadAuthenticatedNotesView(session);
             } else {
@@ -197,7 +198,7 @@ public class SessionPresenter extends GluonPresenter<DevoxxApplication> {
         });
         noteButton.setUserData(Pane.NOTE);
 
-        final ToggleButton voteButton = bottomNavigation.createButton(DevoxxBundle.getString("OTN.BUTTON.VOTE"), MaterialDesignIcon.THUMBS_UP_DOWN.graphic(), e -> {
+        final BottomNavigationButton voteButton = new BottomNavigationButton(DevoxxBundle.getString("OTN.BUTTON.VOTE"), MaterialDesignIcon.THUMBS_UP_DOWN.graphic(), e -> {
             if (service.isAuthenticated()) {
                 if (isVotingPossible(session)) {
                     sessionView.setCenter(createVotePane(session));

@@ -159,7 +159,7 @@ public class DevoxxApplication extends MobileApplication {
                 .orElse("");
 
         String formFactorSuffix = Services.get(DisplayService.class)
-                .map(s -> s.isTablet() ? "_tablet" : "")
+                .map(s -> s.isTablet() ? "_tablet" : s.hasNotch() ? "_notch" : "")
                 .orElse("");
 
         String stylesheetName = String.format("devoxx_%s%s%s.css",

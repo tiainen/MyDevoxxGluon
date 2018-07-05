@@ -94,13 +94,22 @@ public class DevoxxService implements Service {
                 ras.addListener(RuntimeArgsService.LAUNCH_PUSH_NOTIFICATION_KEY, (f) -> {
                     System.out.println(">>> received a silent push notification with contents: " + f);
                     System.out.println("[DBG] writing reload file");
-                    File reloadMe = new File (rootDir, "reload");
-                    try (BufferedWriter br = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(reloadMe)))) {
-                        br.write(f);
-                        System.out.println("[DBG] writing reload file done");
-                    } catch (IOException ex) {
-                        LOG.log(Level.SEVERE, null, ex);
-                        System.out.println("[DBG] exception writing reload file "+ex);
+                    File file = null;
+                    if (isReloadNotification(f)) {
+                        System.out.println("Reload notification found");
+                        file = new File (rootDir, "reload");
+                    } else if (isRatingNotification(f)) {
+                        System.out.println("Rating notification found");
+                        file = new File (rootDir, "rating");
+                    }
+                    if (file != null) {
+                        try (BufferedWriter br = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)))) {
+                            br.write(f);
+                            System.out.println("[DBG] writing silent notification file done");
+                        } catch (IOException ex) {
+                            LOG.log(Level.SEVERE, null, ex);
+                            System.out.println("[DBG] exception writing reload file " + ex);
+                        }
                     }
                 });
             });
@@ -376,6 +385,19 @@ public class DevoxxService implements Service {
                 }
             }
         }
+    }
+
+    @Override
+    public boolean showRatingDialog() {
+        if (rootDir != null && getConference() != null) {
+            File rating = new File(rootDir, "rating");
+            LOG.log(Level.INFO, "Rating requested? " + rating.exists());
+            if (rating.exists()) {
+                rating.delete();
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -882,6 +904,11 @@ public class DevoxxService implements Service {
             });
         }
     }
+    
+    @Override
+    public User getAuthenticatedUser() {
+        return authenticationClient.getAuthenticatedUser();
+    }
 
     private ObservableList<Note> internalRetrieveNotes() {
         if (DevoxxSettings.USE_REMOTE_NOTES) {
@@ -985,19 +1012,13 @@ public class DevoxxService implements Service {
 
     private String readConferenceIdFromFile(File reload) {
         StringBuilder fileContent = new StringBuilder((int) reload.length());
-        Scanner scanner = null;
-        try {
-            scanner = new Scanner(reload);
+        try (Scanner scanner = new Scanner(reload)) {
             String lineSeparator = System.getProperty("line.separator");
             while (scanner.hasNextLine()) {
                 fileContent.append(scanner.nextLine()).append(lineSeparator);
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-        } finally {
-            if(scanner != null) {
-                scanner.close();
-            }
         }
         System.out.println("read reload file '"+fileContent.toString()+"'");
         return findConferenceIdFromString(fileContent.toString());
@@ -1018,6 +1039,42 @@ public class DevoxxService implements Service {
             e.printStackTrace();
         }
         return "";
+    }
+    
+    private static boolean isReloadNotification(String fileContent) {
+        try {
+            String trimmedContent = fileContent.replaceAll("\"", "")
+                    .replaceAll(" ", "")
+                    .replaceAll("\\}", ",");
+            String[] keyValue = trimmedContent.split(",");
+            for (String aKeyValue : keyValue) {
+                if (aKeyValue.contains("title")) {
+                    return "reload".equalsIgnoreCase(aKeyValue.split(":")[1]);
+                }
+            }
+        } catch (Exception e) {
+            LOG.log(Level.SEVERE, e.getMessage());
+            return false;
+        }
+        return false;
+    }
+
+    private static boolean isRatingNotification(String fileContent) {
+        try {
+            String trimmedContent = fileContent.replaceAll("\"", "")
+                    .replaceAll(" ", "")
+                    .replaceAll("\\}", ",");
+            String[] keyValue = trimmedContent.split(",");
+            for (String aKeyValue : keyValue) {
+                if (aKeyValue.contains("title")) {
+                    return "rating".equals(aKeyValue.split(":")[1]);
+                }
+            }
+        } catch (Exception e) {
+            LOG.log(Level.SEVERE, e.getMessage());
+            return false;
+        }
+        return false;
     }
 
     private void findAndSetConference(String configuredConference, GluonObservableList<Conference> conferences) {

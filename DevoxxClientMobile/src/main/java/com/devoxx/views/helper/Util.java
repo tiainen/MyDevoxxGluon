@@ -25,16 +25,17 @@
  */
 package com.devoxx.views.helper;
 
+import com.devoxx.model.Speaker;
+import com.devoxx.util.DevoxxBundle;
+import com.devoxx.util.ImageCache;
+import com.devoxx.views.ExhibitionMapPresenter;
+import com.gluonhq.charm.down.Platform;
 import com.gluonhq.charm.down.Services;
 import com.gluonhq.charm.down.plugins.BrowserService;
 import com.gluonhq.charm.glisten.control.Avatar;
 import com.gluonhq.charm.glisten.control.FloatingActionButton;
 import com.gluonhq.charm.glisten.control.Toast;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
-import com.devoxx.model.Speaker;
-import com.devoxx.util.ImageCache;
-import com.devoxx.util.DevoxxBundle;
-import com.devoxx.views.ExhibitionMapPresenter;
 import com.gluonhq.cloudlink.client.media.MediaClient;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -64,7 +65,7 @@ public class Util {
     public static ImageView getMediaBackgroundImageView() {
         final ImageView imageView = new ImageView(getMediaBackgroundImage());
         imageView.setPreserveRatio(true);
-        return imageView;
+         return imageView;
     }
 
     public static Image getMediaBackgroundImage() {
@@ -112,6 +113,28 @@ public class Util {
                     toast.show();
                 }
             });
+        });
+    }
+    
+    public static void requestRating() {
+        String url = null;
+        if(Platform.isAndroid()) {
+            String packageName = "com.devoxx";
+            url = "market://details?id=" + packageName;
+        } else if (Platform.isIOS()) {
+            String appId = "1094805620";
+            url = "itms-apps://itunes.apple.com/WebObjects/MZStore.woa/wa/viewContentsUserReviews?id=" + appId +"&amp;onlyLatestVersion=true&amp;pageNumber=0&amp;sortOrdering=1&amp;type=Purple+Software";
+        }
+        String finalUrl = url;
+        Services.get(BrowserService.class).ifPresent(b -> {
+            try {
+                if (finalUrl != null) {
+                    b.launchExternalBrowser(finalUrl);
+                }
+            } catch (IOException | URISyntaxException e1) {
+                Toast toast = new Toast("Failed to launch Store");
+                toast.show();
+            }
         });
     }
 

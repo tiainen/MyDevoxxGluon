@@ -37,6 +37,7 @@ import com.devoxx.views.helper.FilterSessionsPresenter;
 import com.devoxx.views.helper.LoginPrompter;
 import com.devoxx.views.helper.Placeholder;
 import com.devoxx.views.helper.SessionVisuals.SessionListType;
+import com.devoxx.views.helper.Util;
 import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
 import com.gluonhq.charm.glisten.afterburner.GluonView;
 import com.gluonhq.charm.glisten.application.MobileApplication;
@@ -47,6 +48,7 @@ import com.gluonhq.charm.glisten.control.CharmListView;
 import com.gluonhq.charm.glisten.control.Toast;
 import com.gluonhq.charm.glisten.layout.layer.SidePopupView;
 import com.gluonhq.charm.glisten.mvc.View;
+import com.gluonhq.charm.glisten.visual.GlistenStyleClasses;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Bindings;
@@ -60,6 +62,11 @@ import javafx.fxml.FXML;
 import javafx.geometry.Side;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 
 import javax.inject.Inject;
 import java.time.LocalDate;
@@ -141,6 +148,11 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
             // check if a reload was requested, each time the sessions view is opened
             service.checkIfReloadRequested();
             service.refreshFavorites();
+
+            if (service.showRatingDialog()) {
+                final GridPane reviewGrid = createReviewGrid();
+                sessions.setTop(reviewGrid);
+            }
         });
 
         // Filter
@@ -339,6 +351,57 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
             }
             session.setDecorated(colorFlag);
         }
+    }
+    
+    private GridPane createReviewGrid() {
+        final GridPane gridPane = new GridPane();
+        final HBox buttons = new HBox();
+        final Label header = new Label("Do you love Devoxx App?");
+        final Button no = createFlatButton("No");
+        final Button yes = createFlatButton("Yes");
+        final Button later = createFlatButton("Later");
+        final ImageView devoxxLogo = new ImageView();
+        devoxxLogo.getStyleClass().add("logo");
+        devoxxLogo.setPreserveRatio(true);
+        devoxxLogo.setFitWidth(64);
+        
+        buttons.getChildren().addAll(no, yes);
+        header.getStyleClass().add("heading");
+        gridPane.getStyleClass().add("review-grid");
+        buttons.getStyleClass().add("buttons");
+        no.getStyleClass().add("no");
+        yes.getStyleClass().add("yes");
+        later.setOnAction(e -> sessions.setTop(null));
+        no.setOnAction(e -> {
+            header.setText("Would you like to help us improve?");
+            final Button feedback = createFlatButton("Leave Feedback");
+            feedback.setOnAction(fe -> {
+                later.fire();
+                DevoxxView.FEEDBACK.switchView();
+            });
+            buttons.getChildren().setAll(later, feedback);
+        });
+        yes.setOnAction(e -> {
+            header.setText("Would you like to rate us?");
+            final Button review = createFlatButton("Rate this App");
+            review.setOnAction(re -> {
+                later.fire();
+                Util.requestRating();
+            });
+            buttons.getChildren().setAll(later, review);
+        });
+        
+        gridPane.add(devoxxLogo, 0, 0, 1, 2);
+        gridPane.add(header, 1, 0);
+        gridPane.add(buttons, 1, 1);
+        GridPane.setHgrow(buttons, Priority.ALWAYS);
+        return gridPane;
+    }
+    
+    private Button createFlatButton(String text) {
+        final Button button = new Button(text);
+        GlistenStyleClasses.applyStyleClass(button, GlistenStyleClasses.BUTTON_FLAT);
+        return button;
     }
 
     /**

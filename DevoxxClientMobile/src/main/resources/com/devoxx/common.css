@@ -1073,3 +1073,46 @@
 .data-label > .progress-indicator {
     -fx-color: -primary-swatch-500;
 }
+/* Rating Box */
+.review-grid {
+    -fx-padding: 0.2em 0.4em 0.2em 0.4em; 
+    -fx-background-color: #353C5C;
+}
+
+.review-grid > .heading {
+    -fx-text-fill: white;
+    -fx-padding: 0.5em 0 0 0.5em;
+    -fx-font-size: 1.1em;
+    -fx-font-weight: bold;
+}
+
+.review-grid > .logo.image-view {
+    -fx-image: url("images/devoxx-logo.png");
+}
+
+.review-grid > .buttons {
+    -fx-alignment: bottom-right;
+}
+
+.review-grid > .buttons > .button {
+    -fx-text-fill: white;
+    -fx-font-size:1.05em;
+    -fx-padding: 1.5mm 1.5mm 1.92mm 1.92mm;
+}
+
+.review-grid > .buttons > .button.no {
+    -fx-padding: 1.5mm 1.5mm 1.92mm 1.92mm;
+}
+
+/** Feedback View **/
+.feedback {
+    -fx-padding: 1em;
+}
+
+.feedback > .content {
+    -fx-spacing: 0.5em;
+}
+
+.feedback > .content > .charm-text-area {
+    -fx-border-insets: 0.25em 0 0 0;
+}

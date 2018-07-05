@@ -39,6 +39,7 @@ import com.devoxx.model.SponsorBadge;
 import com.devoxx.model.Track;
 import com.devoxx.model.Vote;
 import com.devoxx.views.helper.SessionVisuals.SessionListType;
+import com.gluonhq.cloudlink.client.user.User;
 import com.gluonhq.connect.GluonObservableList;
 import com.gluonhq.connect.GluonObservableObject;
 import javafx.beans.property.BooleanProperty;
@@ -81,6 +82,11 @@ public interface Service {
      * Execute a reload of sessions and speakers when a reload is requested.
      */
     void checkIfReloadRequested();
+
+    /**
+     * Returns true if a rating dialog has been requested from the GCL.
+     */
+    boolean showRatingDialog();
 
     /**
      * Returns a list of sessions at the conference.
@@ -259,4 +265,10 @@ public interface Service {
      * @param sponsorBadge The sponsor badge to be send to the GCL remote function.
      */
     void saveSponsorBadge(SponsorBadge sponsorBadge);
+
+    /**
+     * Returns the authenticated user, if present. Otherwise, returns null.
+     * @return The authenticated user, if present.
+     */
+    User getAuthenticatedUser();
 }

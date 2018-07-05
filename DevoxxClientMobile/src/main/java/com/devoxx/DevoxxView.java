@@ -56,6 +56,7 @@ public class DevoxxView {
     public static final AppView BADGE           = view( BadgePresenter.class,          MaterialDesignIcon.CONTACTS);
     public static final AppView SEARCH          = view( SearchPresenter.class,         MaterialDesignIcon.SEARCH);
     public static final AppView ABOUT           = view( AboutPresenter.class,          MaterialDesignIcon.AC_UNIT,            SHOW_IN_DRAWER);
+    public static final AppView FEEDBACK        = view( FeedbackPresenter.class,       MaterialDesignIcon.CREATE,             SKIP_VIEW_STACK);
     public static final AppView CONF_SELECTOR   = view( ConfSelectorPresenter.class,   MaterialDesignIcon.ANNOUNCEMENT,       SHOW_IN_DRAWER, HOME_VIEW, SKIP_VIEW_STACK);
 
     private static AppView view(Class<? extends GluonPresenter<?>> presenterClass, MaterialDesignIcon menuIcon, AppView.Flag... flags ) {

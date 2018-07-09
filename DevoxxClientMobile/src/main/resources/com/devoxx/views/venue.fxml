@@ -6,17 +6,15 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 <View fx:id="venue" styleClass="venue-view" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.devoxx.views.VenuePresenter">
-    <center>
-        <StackPane alignment="TOP_CENTER">
-            <!-- ImageView lies beneath the rest of the content to fix OTN-469 -->
-            <ImageView fx:id="imageView" preserveRatio="true"/>
-            <GridPane fx:id="venueDetail" styleClass="venue-detail">
-                <!-- A transparent spacer to push down the rest of the content to show imageView-->
-                <Region fx:id="imageSpacer" GridPane.rowIndex="0"/>
-                <Label fx:id="name" styleClass="name" wrapText="true" GridPane.rowIndex="1" />
-                <Label fx:id="address" styleClass="address" wrapText="true" GridPane.rowIndex="2" GridPane.vgrow="ALWAYS"/>
-                <MapView fx:id="mapView" GridPane.rowIndex="3" GridPane.vgrow="ALWAYS" GridPane.hgrow="ALWAYS"/>
-            </GridPane>
-        </StackPane>
-    </center>
+    <StackPane alignment="TOP_CENTER">
+        <!-- ImageView lies beneath the rest of the content to fix OTN-469 -->
+        <ImageView fx:id="imageView" preserveRatio="true"/>
+        <GridPane fx:id="venueDetail" styleClass="venue-detail">
+            <!-- A transparent spacer to push down the rest of the content to show imageView-->
+            <Region fx:id="imageSpacer" GridPane.rowIndex="0"/>
+            <Label fx:id="name" styleClass="name" wrapText="true" GridPane.rowIndex="1"/>
+            <Label fx:id="address" styleClass="address" wrapText="true" GridPane.rowIndex="2" GridPane.vgrow="ALWAYS"/>
+            <MapView fx:id="mapView" GridPane.rowIndex="3" GridPane.vgrow="ALWAYS" GridPane.hgrow="ALWAYS"/>
+        </GridPane>
+    </StackPane>
 </View>

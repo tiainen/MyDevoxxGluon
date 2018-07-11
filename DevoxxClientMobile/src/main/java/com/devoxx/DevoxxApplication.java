@@ -27,6 +27,7 @@ package com.devoxx;
 
 import com.airhacks.afterburner.injection.Injector;
 import com.devoxx.model.Badge;
+import com.devoxx.model.SponsorBadge;
 import com.devoxx.service.DevoxxService;
 import com.devoxx.service.Service;
 import com.devoxx.util.*;
@@ -45,7 +46,6 @@ import com.gluonhq.charm.down.plugins.StorageService;
 import com.gluonhq.charm.glisten.afterburner.AppView;
 import com.gluonhq.charm.glisten.afterburner.GluonInstanceProvider;
 import com.gluonhq.charm.glisten.application.MobileApplication;
-import com.gluonhq.charm.glisten.layout.layer.SidePopupView;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import com.gluonhq.cloudlink.client.usage.UsageClient;
 import javafx.beans.value.ChangeListener;
@@ -68,12 +68,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.devoxx.DevoxxView.SEARCH;
-import com.devoxx.model.SponsorBadge;
 
 public class DevoxxApplication extends MobileApplication {
 
     private static final Logger LOG = Logger.getLogger(DevoxxApplication.class.getName());
-    public static final String MENU_LAYER = "SideMenu";
     public static final String POPUP_FILTER_SESSIONS_MENU = "FilterSessionsMenu";
 
     private static final GluonInstanceProvider instanceSupplier = new GluonInstanceProvider() {{
@@ -85,14 +83,13 @@ public class DevoxxApplication extends MobileApplication {
         Injector.setInstanceSupplier(this);
     }};
 
-    private final Button navMenuButton   = MaterialDesignIcon.MENU.button(e -> showLayer(DevoxxApplication.MENU_LAYER));
+    private final Button navMenuButton   = MaterialDesignIcon.MENU.button(e -> getDrawer().open());
     private final Button navBackButton   = MaterialDesignIcon.ARROW_BACK.button(e -> switchToPreviousView());
     private final Button navHomeButton   = MaterialDesignIcon.HOME.button(e -> goHome());
     private final Button navSearchButton = MaterialDesignIcon.SEARCH.button(e -> SEARCH.switchView());
 
     private Service service;
 
-    private DevoxxDrawerPresenter drawerPresenter;
     private boolean skipVideo = false;
     private boolean signUp = false;
 
@@ -129,12 +126,6 @@ public class DevoxxApplication extends MobileApplication {
             );
             addViewFactory(SPLASH_VIEW, DevoxxSplash::new);
         }
-        
-        addLayerFactory(MENU_LAYER, () -> {
-            SidePopupView sidePopupView = new SidePopupView(drawerPresenter.getDrawer());
-            drawerPresenter.setSidePopupView(sidePopupView);
-            return sidePopupView;
-        });
     }
 
     @Override
@@ -168,7 +159,7 @@ public class DevoxxApplication extends MobileApplication {
                 .orElse("");
 
         String formFactorSuffix = Services.get(DisplayService.class)
-                .map(s -> s.isTablet() ? "_tablet" : "")
+                .map(s -> s.isTablet() ? "_tablet" : s.hasNotch() ? "_notch" : "")
                 .orElse("");
 
         String stylesheetName = String.format("devoxx_%s%s%s.css",
@@ -184,7 +175,7 @@ public class DevoxxApplication extends MobileApplication {
             window.setHeight(700);
         }
         
-        drawerPresenter = Injector.instantiateModelOrService(DevoxxDrawerPresenter.class);
+        Injector.instantiateModelOrService(DevoxxDrawerPresenter.class);
 
         scene.getWindow().showingProperty().addListener(new ChangeListener<Boolean>() {
             @Override

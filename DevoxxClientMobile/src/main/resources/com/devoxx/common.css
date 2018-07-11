@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016, 2017, Gluon Software
+ * Copyright (c) 2016, 2018 Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -488,6 +488,16 @@
 
 .badge-view {
     -fx-padding: 0.910488em;
+}
+
+.badge-scanner.fab {
+    -fx-graphic: url(images/qrcode-scan.png);
+    -fx-content-display: graphic-only;
+}
+
+.badge-scanner.fab > .image-view {
+    -fx-translate-x: -1.0;
+    -fx-translate-y: -1.0;
 }
 
 /** Sponsor View **/
@@ -1057,4 +1067,9 @@
 .sch-fav-dialog > .label,
 .sch-fav-dialog > * > .icon-text {
     -fx-text-fill: #333333;
+}
+
+/** DataLabel **/
+.data-label > .progress-indicator {
+    -fx-color: -primary-swatch-500;
 }

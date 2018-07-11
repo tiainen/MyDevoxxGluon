@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, 2018 Gluon Software
+ * Copyright (c) 2018, Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -23,29 +23,33 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.devoxx.model;
+package com.devoxx.control;
 
-import java.util.LinkedList;
-import java.util.List;
+import com.gluonhq.charm.glisten.control.ProgressIndicator;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.Label;
 
-public class ProposalTypes {
-
-    private String content;
-    private List<ProposalType> proposalTypes = new LinkedList<>();
-
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
-
-    public List<ProposalType> getProposalTypes() {
-        return proposalTypes;
-    }
-
-    public void setProposalTypes(List<ProposalType> proposalTypes) {
-        this.proposalTypes = proposalTypes;
+/**
+ * A label with a ProgressIndicator as placeholder is shown
+ * until the text property is updated to a non-null value.
+ */
+public class DataLabel extends Label {
+    
+    public DataLabel() {
+        getStyleClass().add("data-label");
+        setGraphic(new ProgressIndicator());
+        setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+        textProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> o, String ov, String nv) {
+                if (nv != null) {
+                    DataLabel.this.setContentDisplay(ContentDisplay.LEFT);
+                    DataLabel.this.setGraphic(null);
+                    textProperty().removeListener(this);
+                }
+            }
+        });
     }
 }

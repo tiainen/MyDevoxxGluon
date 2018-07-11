@@ -3,7 +3,5 @@
 <?import com.gluonhq.charm.glisten.mvc.View?>
 <?import com.gluonhq.charm.glisten.control.CharmListView?>
 <View fx:id="speakers" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.devoxx.views.SpeakersPresenter">
-   <center>
-      <CharmListView fx:id="speakersListView"/>
-   </center>
+   <CharmListView fx:id="speakersListView"/>
 </View>

@@ -40,8 +40,8 @@ import com.gluonhq.charm.down.plugins.SettingsService;
 import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.control.CharmListView;
+import com.gluonhq.charm.glisten.control.FloatingActionButton;
 import com.gluonhq.charm.glisten.control.Toast;
-import com.gluonhq.charm.glisten.layout.layer.FloatingActionButton;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import com.gluonhq.connect.GluonObservableObject;
@@ -86,10 +86,6 @@ public class SponsorPresenter extends GluonPresenter<DevoxxApplication> {
             appBar.setNavIcon(getApp().getNavMenuButton());
             appBar.setTitleText(DevoxxView.SPONSOR.getTitle());
             checkAndLoadView();
-        });
-        
-        sponsorView.setOnHiding(event -> {
-            sponsorView.getLayers().clear();
         });
     }
 
@@ -163,7 +159,7 @@ public class SponsorPresenter extends GluonPresenter<DevoxxApplication> {
                 });
             });
         });
-        sponsorView.getLayers().add(scan.getLayer());
+        scan.showOn(sponsorView);
     }
 
     private void checkAndLoadView() {

@@ -32,8 +32,7 @@ import com.devoxx.service.Service;
 import com.devoxx.views.helper.Util;
 import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
 import com.gluonhq.charm.glisten.control.AppBar;
-import com.gluonhq.charm.glisten.layout.Layer;
-import com.gluonhq.charm.glisten.layout.layer.FloatingActionButton;
+import com.gluonhq.charm.glisten.control.FloatingActionButton;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import com.gluonhq.maps.MapLayer;
@@ -83,7 +82,7 @@ public class VenuePresenter extends GluonPresenter<DevoxxApplication> {
     private FloatingActionButton webActionButton;
 
     public void initialize() {
-        venue.getLayers().add(createFloatingActionButtons());
+        createFloatingActionButtons();
 
         ReadOnlyObjectProperty<Conference> venueProperty = service.conferenceProperty();
         venueProperty.addListener((observableValue, oldVenue, venue) -> {
@@ -133,7 +132,9 @@ public class VenuePresenter extends GluonPresenter<DevoxxApplication> {
         mapView.addLayer(venueMarker);
 
         String url = conference.getWwwURL();
-        webActionButton.setVisible(url != null && !url.isEmpty());
+        if (url == null || url.isEmpty()) {
+            webActionButton.hide();
+        }
 
         resizeImages();
     }
@@ -142,10 +143,10 @@ public class VenuePresenter extends GluonPresenter<DevoxxApplication> {
         return service.getConference();
     }
 
-    private Layer createFloatingActionButtons() {
+    private void createFloatingActionButtons() {
         webActionButton = Util.createWebLaunchFAB(() -> getVenue().getWwwURL());
         webActionButton.getStyleClass().add("secondary");
-        return webActionButton.getLayer();
+        webActionButton.showOn(venue);
     }
 
     private MapLayer createVenueMarker(MapPoint venue) {

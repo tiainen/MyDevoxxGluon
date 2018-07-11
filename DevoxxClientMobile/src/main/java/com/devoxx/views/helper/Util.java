@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016, Gluon Software
+/*
+ * Copyright (c) 2016, 2018 Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -28,8 +28,8 @@ package com.devoxx.views.helper;
 import com.gluonhq.charm.down.Services;
 import com.gluonhq.charm.down.plugins.BrowserService;
 import com.gluonhq.charm.glisten.control.Avatar;
+import com.gluonhq.charm.glisten.control.FloatingActionButton;
 import com.gluonhq.charm.glisten.control.Toast;
-import com.gluonhq.charm.glisten.layout.layer.FloatingActionButton;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import com.devoxx.model.Speaker;
 import com.devoxx.util.ImageCache;
@@ -84,7 +84,7 @@ public class Util {
         Avatar avatar = new Avatar();
         avatar.getStyleClass().addAll(newStyleClasses);
 
-        Image image = ImageCache.get(speaker.getPicture(), () -> DEFAULT_IMAGE, downloadedImage -> avatar.setImage(downloadedImage));
+        Image image = ImageCache.get(speaker.getAvatarURL(), () -> DEFAULT_IMAGE, downloadedImage -> avatar.setImage(downloadedImage));
         avatar.setImage(image);
 
         avatar.setCache(true);

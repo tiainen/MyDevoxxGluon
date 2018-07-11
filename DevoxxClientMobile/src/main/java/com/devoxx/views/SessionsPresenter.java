@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, 2017, 2018, Gluon Software
+ * Copyright (c) 2016, 2018 Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -42,6 +42,7 @@ import com.gluonhq.charm.glisten.afterburner.GluonView;
 import com.gluonhq.charm.glisten.application.MobileApplication;
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.control.BottomNavigation;
+import com.gluonhq.charm.glisten.control.BottomNavigationButton;
 import com.gluonhq.charm.glisten.control.CharmListView;
 import com.gluonhq.charm.glisten.control.Toast;
 import com.gluonhq.charm.glisten.layout.layer.SidePopupView;
@@ -59,8 +60,6 @@ import javafx.fxml.FXML;
 import javafx.geometry.Side;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.Toggle;
-import javafx.scene.control.ToggleButton;
 
 import javax.inject.Inject;
 import java.time.LocalDate;
@@ -102,13 +101,12 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
     private SidePopupView filterPopup;
     private FilteredList<Session> filteredSessions;
 
-    private Toggle lastSelectedButton;
     private EventHandler<ActionEvent> currentHandler;
 
     private GluonView filterSessionsView;
     private FilterSessionsPresenter filterPresenter;
     
-    private ToggleButton favoriteButton;
+    private BottomNavigationButton favoriteButton;
 
     public void initialize() {
         createView();
@@ -127,7 +125,6 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
 
             // Will never be null
             if (DevoxxSettings.conferenceHasFavorite(service.getConference())) {
-                lastSelectedButton.setSelected(true);
                 if (currentHandler != null) {
                     currentHandler.handle(null);
                 }
@@ -177,7 +174,7 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
             sessions.setCenter(createSessionsList(ContentDisplayMode.ALL));
             appBar.getActionItems().remove(refreshButton);
         };
-        ToggleButton sessionsButton = bottomNavigation.createButton(DevoxxBundle.getString("OTN.BUTTON.SESSIONS"), SESSIONS_ICON.graphic(), allHandler);
+        BottomNavigationButton sessionsButton = new BottomNavigationButton(DevoxxBundle.getString("OTN.BUTTON.SESSIONS"), SESSIONS_ICON.graphic(), allHandler);
         
         // show favorite sessions
         EventHandler<ActionEvent> favoriteHandler = e -> {
@@ -190,16 +187,18 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
                 }
             }
         };
-        favoriteButton = bottomNavigation.createButton(DevoxxBundle.getString("OTN.BUTTON.MY_FAVORITES"), FAVORITE_ICON.graphic(), favoriteHandler);
+        favoriteButton = new BottomNavigationButton(DevoxxBundle.getString("OTN.BUTTON.MY_FAVORITES"), FAVORITE_ICON.graphic(), favoriteHandler);
 
         bottomNavigation.getActionItems().addAll(sessionsButton, favoriteButton);
 
         // listen to the selected toggle so we ensure it is selected when the view is returned to
-        favoriteButton.getToggleGroup().selectedToggleProperty().addListener((o,ov,nv) -> {
-            lastSelectedButton = nv;
-            if (nv == sessionsButton) {
+        sessionsButton.selectedProperty().addListener((o,ov,nv) -> {
+            if (nv) {
                 currentHandler = allHandler;
-            } else if (nv == favoriteButton) {
+            }
+        });
+        favoriteButton.selectedProperty().addListener((o,ov,nv) -> {
+            if (nv) {
                 currentHandler = favoriteHandler;
             }
         });

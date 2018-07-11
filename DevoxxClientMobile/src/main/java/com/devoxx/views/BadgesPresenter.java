@@ -40,10 +40,9 @@ import com.gluonhq.charm.down.plugins.SettingsService;
 import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.control.CharmListView;
+import com.gluonhq.charm.glisten.control.FloatingActionButton;
 import com.gluonhq.charm.glisten.control.Toast;
-import com.gluonhq.charm.glisten.layout.layer.FloatingActionButton;
 import com.gluonhq.charm.glisten.mvc.View;
-import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -84,7 +83,6 @@ public class BadgesPresenter extends GluonPresenter<DevoxxApplication> {
             AppBar appBar = getApp().getAppBar();
             appBar.setNavIcon(getApp().getNavMenuButton());
             appBar.setTitleText(DevoxxView.BADGES.getTitle());
-            badgesView.getLayers().clear();
             
             sponsor.setOnAction(e -> {
                 Services.get(SettingsService.class).ifPresent(service -> {
@@ -143,7 +141,7 @@ public class BadgesPresenter extends GluonPresenter<DevoxxApplication> {
         shareButton.disableProperty().bind(lvBadges.itemsProperty().emptyProperty());
         getApp().getAppBar().getActionItems().setAll(getApp().getSearchButton(), shareButton);
         
-        FloatingActionButton scan = new FloatingActionButton(MaterialDesignIcon.SCANNER.text, e -> {
+        FloatingActionButton scan = new FloatingActionButton("", e -> {
             Services.get(BarcodeScanService.class).ifPresent(s -> {
                 final Optional<String> scanQr = s.scan(DevoxxBundle.getString("OTN.BADGES.ATTENDEE.QR.TITLE"), null, null); 
                 scanQr.ifPresent(qr -> {
@@ -169,7 +167,8 @@ public class BadgesPresenter extends GluonPresenter<DevoxxApplication> {
                 });
             });
         });
-        badgesView.getLayers().add(scan.getLayer());
+        scan.getStyleClass().add("badge-scanner");
+        scan.showOn(badgesView);
     }
 
     private void showSponsor(SettingsService service) {

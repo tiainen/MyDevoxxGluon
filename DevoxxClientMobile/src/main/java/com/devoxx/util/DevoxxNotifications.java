@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016, 2017 Gluon Software
+/*
+ * Copyright (c) 2016, 2018 Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -221,30 +221,52 @@ public class DevoxxNotifications {
      */
     private void addAlreadyFavoredSessionNotifications(Session session) {
         final String sessionId = session.getTalk().getId();
-
-        if (!startSessionNotificationMap.containsKey(sessionId)) {
-            final Notification dummyStartNotification = getStartNotification(session, null);
-            // Remove notification to avoid duplicate notification
-            notificationsService.ifPresent(ns -> {
-                // we need to add the notification first so because no direct method
-                // exists on LocalNotificationsService to un-schedule a notification.
-                // and un-scheduling is done via the listener attached to notifications observable list
-                ns.getNotifications().add(dummyStartNotification);
-                ns.getNotifications().remove(dummyStartNotification);
-            });
-
-            // Add notification
-            createStartNotification(session).ifPresent(n -> startSessionNotificationMap.put(sessionId, n));
+        
+        final ZonedDateTime now = ZonedDateTime.now(service.getConference().getConferenceZoneId());
+        // Add notification 15 min before session starts
+        ZonedDateTime dateTimeStart = session.getStartDate().plusMinutes(SHOW_SESSION_START_NOTIFICATION);
+        if (DevoxxSettings.NOTIFICATION_TESTS) {
+            dateTimeStart = dateTimeStart.minus(DevoxxSettings.NOTIFICATION_OFFSET, SECONDS);
         }
         
-        if (!voteSessionNotificationMap.containsKey(sessionId)) {
-            final Notification dummyVoteNotification = getVoteNotification(session, null);
-            notificationsService.ifPresent(ns -> {
-                ns.getNotifications().add(dummyVoteNotification);
-                ns.getNotifications().remove(dummyVoteNotification);
-            });
-            
-            createVoteNotification(session).ifPresent(n -> voteSessionNotificationMap.put(sessionId, n));
+        if (dateTimeStart.isAfter(now)) {
+            if (!startSessionNotificationMap.containsKey(sessionId)) {
+                final Notification dummyStartNotification = getStartNotification(session, null);
+                // Remove notification to avoid duplicate notification
+                notificationsService.ifPresent(ns -> {
+                    // we need to add the notification first so because no direct method
+                    // exists on LocalNotificationsService to un-schedule a notification.
+                    // and un-scheduling is done via the listener attached to notifications observable list
+                    ns.getNotifications().add(dummyStartNotification);
+                    ns.getNotifications().remove(dummyStartNotification);
+                });
+
+                // Add notification
+                createStartNotification(session).ifPresent(n -> {
+                    System.out.println("Adding final start notification");
+                    startSessionNotificationMap.put(sessionId, n);
+                });
+            }
+        }
+        
+        // Add notification 2 min before session ends
+        ZonedDateTime dateTimeVote = session.getEndDate().plusMinutes(SHOW_VOTE_NOTIFICATION);
+        if (DevoxxSettings.NOTIFICATION_TESTS) {
+            dateTimeVote = dateTimeVote.minus(DevoxxSettings.NOTIFICATION_OFFSET, SECONDS);
+        }
+        if (dateTimeVote.isAfter(now)) {
+            if (!voteSessionNotificationMap.containsKey(sessionId)) {
+                final Notification dummyVoteNotification = getVoteNotification(session, null);
+                notificationsService.ifPresent(ns -> {
+                    ns.getNotifications().add(dummyVoteNotification);
+                    ns.getNotifications().remove(dummyVoteNotification);
+                });
+
+                createVoteNotification(session).ifPresent(n -> {
+                    System.out.println("Adding final vote notification");
+                    voteSessionNotificationMap.put(sessionId, n);
+                });
+            }
         }
     }
     

@@ -254,11 +254,11 @@ public class SessionVisuals {
                     devoxxNotifications.addFavoriteSessionNotifications(session); 
                 }
                 Services.get(SettingsService.class).ifPresent(settings -> {
-                    String skip = settings.retrieve(DevoxxSettings.SKIP_SCH_FAV_DIALOG);
+                    String skip = settings.retrieve(DevoxxSettings.SKIP_FAV_DIALOG);
                     if (skip == null || skip.isEmpty() || !Boolean.parseBoolean(skip)) {
                         final Dialog<TextFlow> information = createFavoriteDialog();
                         information.showAndWait();
-                        settings.store(DevoxxSettings.SKIP_SCH_FAV_DIALOG, Boolean.TRUE.toString());
+                        settings.store(DevoxxSettings.SKIP_FAV_DIALOG, Boolean.TRUE.toString());
                     }
                 }); 
             }

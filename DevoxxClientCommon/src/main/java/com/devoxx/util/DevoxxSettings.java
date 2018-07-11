@@ -95,7 +95,7 @@ public class DevoxxSettings {
 
     public final static Locale LOCALE = Locale.getDefault();
     public static final String SKIP_VIDEO = "SKIP_VIDEO";
-    public static final String SKIP_SCH_FAV_DIALOG = "SKIP_SCH_FAV_DIALOG";
+    public static final String SKIP_FAV_DIALOG = "SKIP_FAV_DIALOG";
     public static final String SIGN_UP = "sign_up";
     public static final String SAVED_CONFERENCE_ID = "devoxx_cfp_id";
     public static final String SAVED_ACCOUNT_ID = "devoxx_cfp_account";

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2016, 2018 Gluon Software
  * All rights reserved.
  *
@@ -84,7 +84,7 @@ public class Util {
         Avatar avatar = new Avatar();
         avatar.getStyleClass().addAll(newStyleClasses);
 
-        Image image = ImageCache.get(speaker.getPicture(), () -> DEFAULT_IMAGE, downloadedImage -> avatar.setImage(downloadedImage));
+        Image image = ImageCache.get(speaker.getAvatarURL(), () -> DEFAULT_IMAGE, downloadedImage -> avatar.setImage(downloadedImage));
         avatar.setImage(image);
 
         avatar.setCache(true);

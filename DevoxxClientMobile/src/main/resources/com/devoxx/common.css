@@ -1068,3 +1068,8 @@
 .sch-fav-dialog > * > .icon-text {
     -fx-text-fill: #333333;
 }
+
+/** DataLabel **/
+.data-label > .progress-indicator {
+    -fx-color: -primary-swatch-500;
+}

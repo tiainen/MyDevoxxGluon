@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2016, 2018 Gluon Software
  * All rights reserved.
  *
@@ -27,6 +27,13 @@ package com.devoxx.views;
 
 import com.devoxx.DevoxxApplication;
 import com.devoxx.DevoxxView;
+import com.devoxx.control.DataLabel;
+import com.devoxx.model.Session;
+import com.devoxx.model.Speaker;
+import com.devoxx.model.Talk;
+import com.devoxx.service.Service;
+import com.devoxx.util.DevoxxBundle;
+import com.devoxx.DevoxxView;
 import com.devoxx.model.Session;
 import com.devoxx.model.Speaker;
 import com.devoxx.model.Talk;
@@ -39,6 +46,7 @@ import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.control.BottomNavigation;
 import com.gluonhq.charm.glisten.control.BottomNavigationButton;
 import com.gluonhq.charm.glisten.control.CharmListView;
+import com.gluonhq.charm.glisten.control.ProgressIndicator;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -89,21 +97,9 @@ public class SpeakerPresenter extends GluonPresenter<DevoxxApplication> {
     }
 
     public void setSpeaker(Speaker activeSpeaker) {
+        updateWithSpeaker(activeSpeaker);
         if (!activeSpeaker.isDetailsRetrieved()) {
-            ReadOnlyObjectProperty<Speaker> speaker = service.retrieveSpeaker(activeSpeaker.getUuid());
-            if (speaker.get() != null) {
-                updateWithSpeaker(speaker.get());
-            } else {
-                updateWithSpeaker(activeSpeaker);
-
-                speaker.addListener((observable, oldValue, newValue) -> {
-                    if (newValue != null) {
-                        updateWithSpeaker(newValue);
-                    }
-                });
-            }
-        } else {
-            updateWithSpeaker(activeSpeaker);
+            service.retrieveSpeaker(activeSpeaker.getUuid());
         }
     }
 
@@ -125,9 +121,16 @@ public class SpeakerPresenter extends GluonPresenter<DevoxxApplication> {
         final BottomNavigationButton infoButton = new BottomNavigationButton(DevoxxBundle.getString("OTN.BUTTON.INFO"), MaterialDesignIcon.INFO.graphic(), e -> {
             // when clicked create a label in a scrollpane. Label will contain
             // the speaker summary
-            Label speakerSummary = new Label(activeSpeaker.getSummary());
+            Label speakerSummary;
+            if (activeSpeaker.isDetailsRetrieved()) {
+                speakerSummary = new Label(activeSpeaker.getSummary());
+            } else {
+                speakerSummary = new DataLabel();
+                activeSpeaker.detailsRetrievedProperty().addListener(o -> speakerSummary.setText(activeSpeaker.getSummary()));
+            }
             speakerSummary.setWrapText(true);
             speakerSummary.getStyleClass().add("speaker-summary");
+            
             speakerView.setCenter(createScrollPane(speakerSummary));
         });
 
@@ -152,6 +155,7 @@ public class SpeakerPresenter extends GluonPresenter<DevoxxApplication> {
                 for (Session session : sessions) {
                     if (acceptedTalk.getId().equals(session.getTalk().getId())) {
                         speakerSessions.add(session);
+                        break;
                     }
                 }
             }
@@ -163,7 +167,17 @@ public class SpeakerPresenter extends GluonPresenter<DevoxxApplication> {
         sessionsListView = new CharmListView<>(fetchSessions(activeSpeaker));
         sessionsListView.getStyleClass().add("sessions-list");
         sessionsListView.setCellFactory(p -> new ScheduleCell(service, true));
-        sessionsListView.setPlaceholder(new Label(DevoxxBundle.getString("OTN.SPEAKER.THERE_ARE_NO_SESSIONS")));
+        
+        if (activeSpeaker.isDetailsRetrieved()) {
+            sessionsListView.setItems(fetchSessions(activeSpeaker));
+        } else {
+            sessionsListView.setPlaceholder(new ProgressIndicator());
+            activeSpeaker.detailsRetrievedProperty().addListener(o -> {
+                sessionsListView.setItems(fetchSessions(activeSpeaker));
+                sessionsListView.setPlaceholder(new Label(DevoxxBundle.getString("OTN.SPEAKER.THERE_ARE_NO_SESSIONS")));
+            });
+        }
+        
         return sessionsListView;
     }
     

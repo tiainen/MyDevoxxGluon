@@ -59,7 +59,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Toggle;
-import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
@@ -127,11 +126,9 @@ public class SessionPresenter extends GluonPresenter<DevoxxApplication> {
         final BottomNavigation bottomNavigation = createBottomNavigation(activeSession);
         sessionView.setBottom(bottomNavigation);
 
-        for (Node node : bottomNavigation.getActionItems()) {
-            ToggleButton toggleButton = (ToggleButton) node;
-            if (toggleButton.getUserData().equals(visiblePane)) {
-                toggleButton.setSelected(true);
-                lastSelectedButton = toggleButton;
+        for (BottomNavigationButton button : bottomNavigation.getActionItems()) {
+            if (button.getUserData().equals(visiblePane)) {
+                button.fire();
             }
         }
 
@@ -227,8 +224,7 @@ public class SessionPresenter extends GluonPresenter<DevoxxApplication> {
         if (DevoxxSettings.conferenceHasVoting(service.getConference())) {
             bottomNavigation.getActionItems().add(voteButton);
         }
-
-        infoButton.setSelected(true);
+        infoButton.fire();
 
         return bottomNavigation;
     }

@@ -40,8 +40,8 @@ import com.gluonhq.charm.down.plugins.SettingsService;
 import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.control.CharmListView;
+import com.gluonhq.charm.glisten.control.FloatingActionButton;
 import com.gluonhq.charm.glisten.control.Toast;
-import com.gluonhq.charm.glisten.layout.layer.FloatingActionButton;
 import com.gluonhq.charm.glisten.mvc.View;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -83,7 +83,6 @@ public class BadgesPresenter extends GluonPresenter<DevoxxApplication> {
             AppBar appBar = getApp().getAppBar();
             appBar.setNavIcon(getApp().getNavMenuButton());
             appBar.setTitleText(DevoxxView.BADGES.getTitle());
-            badgesView.getLayers().clear();
             
             sponsor.setOnAction(e -> {
                 Services.get(SettingsService.class).ifPresent(service -> {
@@ -169,7 +168,7 @@ public class BadgesPresenter extends GluonPresenter<DevoxxApplication> {
             });
         });
         scan.getStyleClass().add("badge-scanner");
-        badgesView.getLayers().add(scan.getLayer());
+        scan.showOn(badgesView);
     }
 
     private void showSponsor(SettingsService service) {

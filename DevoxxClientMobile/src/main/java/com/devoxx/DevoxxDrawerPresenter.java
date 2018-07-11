@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016, Gluon Software
+ * Copyright (c) 2016, 2018 Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -27,35 +27,29 @@ package com.devoxx;
 
 import com.devoxx.model.Conference;
 import com.devoxx.service.Service;
+import com.devoxx.util.DevoxxBundle;
+import com.devoxx.util.DevoxxCountry;
+import com.devoxx.util.DevoxxSettings;
 import com.devoxx.views.helper.Util;
 import com.gluonhq.charm.glisten.afterburner.AppView;
 import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
 import com.gluonhq.charm.glisten.control.NavigationDrawer;
-import com.gluonhq.charm.glisten.layout.layer.SidePopupView;
-import com.gluonhq.charm.glisten.mvc.View;
+import com.gluonhq.charm.glisten.control.Toast;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
-
-import java.util.Optional;
-
-import static com.gluonhq.charm.glisten.application.MobileApplication.HOME_VIEW;
-
-import com.devoxx.util.DevoxxBundle;
-import com.devoxx.util.DevoxxCountry;
-import com.devoxx.util.DevoxxSettings;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Region;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import com.gluonhq.charm.glisten.control.Toast;
-import javafx.scene.Node;
-import javafx.scene.image.Image;
+
+import static com.gluonhq.charm.glisten.application.MobileApplication.HOME_VIEW;
 
 @Singleton
 public class DevoxxDrawerPresenter extends GluonPresenter<DevoxxApplication> {
-
 
     private final NavigationDrawer drawer;
     private final Header header;
@@ -65,7 +59,7 @@ public class DevoxxDrawerPresenter extends GluonPresenter<DevoxxApplication> {
     private Service service;
     
     public DevoxxDrawerPresenter() {
-        drawer = new NavigationDrawer();
+        drawer = getApp().getDrawer();
         header = new Header();
         
         drawer.setHeader(header);
@@ -90,16 +84,11 @@ public class DevoxxDrawerPresenter extends GluonPresenter<DevoxxApplication> {
             }
         });
         drawer.getItems().add(logOut);
-        
-        drawer.addEventHandler(NavigationDrawer.ITEM_SELECTED, e -> getApp().hideLayer(DevoxxApplication.MENU_LAYER));
-        
-        getApp().viewProperty().addListener((obs, oldView, newView) -> {
-            Optional.ofNullable(oldView)
-                    .flatMap(v -> DevoxxView.REGISTRY.getView(oldView))
-                    .ifPresent(otnView -> otnView.getMenuItem().setSelected(false));
-            updateDrawer(newView);
+        drawer.openProperty().addListener((o, nv, ov) -> {
+            if (nv) {
+                logOut.setVisible(service.isAuthenticated() && !DevoxxSettings.AUTO_AUTHENTICATION);
+            }
         });
-        updateDrawer(getApp().getView());
     }
 
     @PostConstruct
@@ -110,17 +99,10 @@ public class DevoxxDrawerPresenter extends GluonPresenter<DevoxxApplication> {
         );
     }
 
-    private void updateDrawer(View view) {
-        DevoxxView.REGISTRY.getView(view).ifPresent(otnView -> {
-            drawer.setSelectedItem(otnView.getMenuItem());
-            otnView.selectMenuItem();
-        });
-    }
-
     private String getConferenceShortName(Conference conference) {
         if (conference != null) {
             String conferenceShortName = DevoxxCountry.getConfShortName(conference.getCountry());
-            if (conferenceShortName != null) {
+            if (!conferenceShortName.isEmpty()) {
                 if (DevoxxSettings.conferenceHasBadgeView(conference)) {
                     for (Node item : drawer.getItems()) {
                         if (((NavigationDrawer.Item) item).getTitle().equals(DevoxxBundle.getString("OTN.VIEW.NOTES"))) {
@@ -143,19 +125,6 @@ public class DevoxxDrawerPresenter extends GluonPresenter<DevoxxApplication> {
             }
         }
         return "";
-    }
-
-    public final void setSidePopupView(SidePopupView sidePopupView) {
-        sidePopupView.showingProperty().addListener((obs, ov, nv) -> {
-            if (nv) {
-                logOut.setVisible(service.isAuthenticated() && !DevoxxSettings.AUTO_AUTHENTICATION);
-            }
-        });
-        header.setSidePopupView(sidePopupView);
-    }
-    
-    public final NavigationDrawer getDrawer() {
-        return drawer;
     }
 
     private class Header extends Region {
@@ -187,16 +156,6 @@ public class DevoxxDrawerPresenter extends GluonPresenter<DevoxxApplication> {
             getChildren().addAll(background, text/*, profileButton*/);
         }
 
-        protected void setSidePopupView(SidePopupView sidePopupView) {
-//            sidePopupView.showingProperty().addListener((obs, ov, nv) -> {
-//                if (nv) {
-//                    // the profile button is only visible when the user is logged in,
-//                    // and we check every time the drawer is shown
-//                    profileButton.setVisible(service.isAuthenticated());
-//                }
-//            });
-        }
-        
         @Override
         protected void layoutChildren() {
             double w = getWidth();

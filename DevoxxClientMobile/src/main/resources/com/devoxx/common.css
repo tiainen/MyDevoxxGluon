@@ -249,9 +249,21 @@
     -fx-font-size: 1.05em;
     -fx-wrap-text: false;
 }
+
 .schedule-cell > .list-tile > .text-box > .tertiary-text {
     -fx-text-fill: dimgray;
     -fx-font-size: 0.95em;
+}
+
+.schedule-cell > .list-tile > .text-box > .extra-text {
+    -fx-text-fill: derive(dimgray, 20%);
+    -fx-font-size: 0.90em;
+}
+
+.schedule-cell > .list-tile > .text-box > .extra-text > .fav-label,
+.schedule-cell > .list-tile > .text-box > .tertiary-text > .fav-label {
+    -fx-alignment: bottom-left;
+    -fx-graphic-text-gap: 1.0;
 }
 
 .schedule-cell > .list-tile > .text-box > .tertiary-text > .fav-label,
@@ -260,9 +272,10 @@
     -fx-font-size: 0.95em;
 }
 
-.schedule-cell > .list-tile > .text-box > .tertiary-text > .fav-label {
-    -fx-alignment: bottom-left;
-    -fx-graphic-text-gap: 1.0;
+.schedule-cell > .list-tile > .text-box > .extra-text > .fav-label,
+.schedule-cell > .list-tile > .text-box > .extra-text > .fav-label > .fav-graphic {
+    -fx-text-fill: derive(crimson, 50%);
+    -fx-font-size: 0.90em;
 }
 
 .schedule-cell > .list-tile > .secondary-graphic {

@@ -73,6 +73,7 @@ public class ScheduleCell extends CharmListCell<Session> {
     private final ListTile listTile;
     private final SecondaryGraphic secondaryGraphic;
     private final Label trackLabel;
+    private Label startDateLabel;
     private Session session;
     private boolean showDate;
     private PseudoClass oldPseudoClass;
@@ -138,10 +139,10 @@ public class ScheduleCell extends CharmListCell<Session> {
                 DevoxxSettings.TIME_FORMATTER.format(session.getEndDate())));
         
         if (showDate) {
-            final Label label = new Label(DevoxxSettings.DATE_FORMATTER.format(session.getStartDate()));
-            label.getStyleClass().add("extra-text");
+            initializeStartLabel();
+            startDateLabel.setText(DevoxxSettings.DATE_FORMATTER.format(session.getStartDate()));
             // Hacky Code as it uses internals of ListTile
-            ((VBox) listTile.getChildren().get(0)).getChildren().add(label);
+            ((VBox) listTile.getChildren().get(0)).getChildren().add(startDateLabel);
         }
 
         Optional<Favorite> favorite = Optional.empty();
@@ -172,6 +173,13 @@ public class ScheduleCell extends CharmListCell<Session> {
         label.setContentDisplay(ContentDisplay.RIGHT);
 
         pseudoClassStateChanged(PSEUDO_CLASS_COLORED, session.isDecorated());
+    }
+
+    private void initializeStartLabel() {
+        if (startDateLabel == null) {
+            startDateLabel = new Label();
+            startDateLabel.getStyleClass().add("extra-text");
+        }
     }
 
     private String convertSpeakersToString(List<TalkSpeaker> speakers) {

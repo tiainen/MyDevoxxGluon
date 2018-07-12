@@ -9,6 +9,6 @@
     <VBox fx:id="content" styleClass="content">
         <PasswordField fx:id="password" promptText="Password" onAction="#signIn"/>
         <Button fx:id="signIn" text="Sign In" onAction="#signIn"/>
-        <Label fx:id="message"/>
+        <Label fx:id="message" styleClass="data-label"/>
     </VBox>
 </View>

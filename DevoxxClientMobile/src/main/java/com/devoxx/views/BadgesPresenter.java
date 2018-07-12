@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2017, 2018 Gluon Software
  * All rights reserved.
  *
@@ -77,6 +77,7 @@ public class BadgesPresenter extends GluonPresenter<DevoxxApplication> {
     private Service service;
     
     private CharmListView<Badge, String> lvBadges;
+    private FloatingActionButton scan;
 
     public void initialize() {
         lvBadges = new CharmListView<>();
@@ -93,6 +94,12 @@ public class BadgesPresenter extends GluonPresenter<DevoxxApplication> {
 
             loadContent();
         });
+        
+        badgesView.setOnHiding(event -> {
+            if (scan != null) {
+                scan.hide();
+            }
+        });
     }
 
     private List<MenuItem> getMenuItems() {
@@ -107,6 +114,9 @@ public class BadgesPresenter extends GluonPresenter<DevoxxApplication> {
     }
 
     private void loadContent() {
+        if (scan != null) {
+            scan.hide();
+        }
         getApp().getAppBar().getMenuItems().clear();
         final String badgeType = loadPreviousSelection();
         if (badgeType == null) {
@@ -167,35 +177,37 @@ public class BadgesPresenter extends GluonPresenter<DevoxxApplication> {
         final Button shareButton = getApp().getShareButton(DevoxxSettings.BADGE_TYPE_ATTENDEE);
         shareButton.disableProperty().bind(lvBadges.itemsProperty().emptyProperty());
         getApp().getAppBar().getActionItems().setAll(getApp().getSearchButton(), shareButton);
-        
-        FloatingActionButton scan = new FloatingActionButton("", e -> {
-            Services.get(BarcodeScanService.class).ifPresent(s -> {
-                final Optional<String> scanQr = s.scan(DevoxxBundle.getString("OTN.BADGES.ATTENDEE.QR.TITLE"), null, null); 
-                scanQr.ifPresent(qr -> {
-                    Badge badge = new Badge(qr);
-                    if (badge.getBadgeId() != null) {
-                        boolean exists = false;
-                        for (Badge b : badges) {
-                            if (b.getBadgeId().equals(badge.getBadgeId())) {
-                                Toast toast = new Toast(DevoxxBundle.getString("OTN.BADGES.QR.EXISTS"));
-                                toast.show();
-                                exists = true;
-                                break;
+
+        if (scan == null) {
+            scan = new FloatingActionButton("", e -> {
+                Services.get(BarcodeScanService.class).ifPresent(s -> {
+                    final Optional<String> scanQr = s.scan(DevoxxBundle.getString("OTN.BADGES.ATTENDEE.QR.TITLE"), null, null);
+                    scanQr.ifPresent(qr -> {
+                        Badge badge = new Badge(qr);
+                        if (badge.getBadgeId() != null) {
+                            boolean exists = false;
+                            for (Badge b : badges) {
+                                if (b.getBadgeId().equals(badge.getBadgeId())) {
+                                    Toast toast = new Toast(DevoxxBundle.getString("OTN.BADGES.QR.EXISTS"));
+                                    toast.show();
+                                    exists = true;
+                                    break;
+                                }
                             }
+                            if (!exists) {
+                                lvBadges.itemsProperty().add(badge);
+                                DevoxxView.BADGE.switchView().ifPresent(presenter -> ((BadgePresenter) presenter).setBadgeId(badge.getBadgeId(), null));
+                            }
+                        } else {
+                            Toast toast = new Toast(DevoxxBundle.getString("OTN.BADGES.BAD.QR"));
+                            toast.show();
                         }
-                        if (!exists) {
-                            lvBadges.itemsProperty().add(badge);
-                            DevoxxView.BADGE.switchView().ifPresent(presenter -> ((BadgePresenter) presenter).setBadgeId(badge.getBadgeId(), null));
-                        }
-                    } else {
-                        Toast toast = new Toast(DevoxxBundle.getString("OTN.BADGES.BAD.QR"));
-                        toast.show();
-                    }
+                    });
                 });
             });
-        });
-        scan.getStyleClass().add("badge-scanner");
-        scan.showOn(badgesView);
+            scan.getStyleClass().add("badge-scanner");
+        }
+        scan.show();
     }
 
     private void showSponsor() {

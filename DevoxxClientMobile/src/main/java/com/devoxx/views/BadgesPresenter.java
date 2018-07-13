@@ -103,7 +103,7 @@ public class BadgesPresenter extends GluonPresenter<DevoxxApplication> {
     }
 
     private List<MenuItem> getMenuItems() {
-        final MenuItem scanAsDifferentUser = new MenuItem("Scan as Different User");
+        final MenuItem scanAsDifferentUser = new MenuItem(DevoxxBundle.getString("OTN.BADGES.SCAN.DIFFERENT.USER"));
         scanAsDifferentUser.setOnAction(ev -> reload());
         return Collections.singletonList(scanAsDifferentUser);
     }

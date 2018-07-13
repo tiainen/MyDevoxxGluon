@@ -220,7 +220,7 @@ public class DevoxxApplication extends MobileApplication {
     }
     
     public MenuItem scanAsDifferentUser() {
-        final MenuItem scanAsDifferentUser = new MenuItem("Scan as Different User");
+        final MenuItem scanAsDifferentUser = new MenuItem(DevoxxBundle.getString("OTN.BADGES.SCAN.DIFFERENT.USER"));
         scanAsDifferentUser.setOnAction(ev -> switchToBadgesView(DevoxxSettings.BADGE_TYPE, DevoxxSettings.SPONSOR_NAME, DevoxxSettings.SPONSOR_SLUG));
         return scanAsDifferentUser;
     }

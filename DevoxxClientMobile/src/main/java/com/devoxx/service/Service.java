@@ -29,6 +29,7 @@ import com.devoxx.model.Badge;
 import com.devoxx.model.Conference;
 import com.devoxx.model.Exhibitor;
 import com.devoxx.model.Favorite;
+import com.devoxx.model.Feedback;
 import com.devoxx.model.Floor;
 import com.devoxx.model.Note;
 import com.devoxx.model.ProposalType;
@@ -271,4 +272,9 @@ public interface Service {
      * @return The authenticated user, if present.
      */
     User getAuthenticatedUser();
+
+    /**
+     * Submits the user feedback
+     */
+    void submitFeedback(Feedback feedback);
 }

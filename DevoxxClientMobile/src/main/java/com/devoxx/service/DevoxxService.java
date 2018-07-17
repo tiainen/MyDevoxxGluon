@@ -910,6 +910,16 @@ public class DevoxxService implements Service {
         return authenticationClient.getAuthenticatedUser();
     }
 
+    @Override
+    public void submitFeedback(Feedback feedback) {
+        RemoteFunctionObject fnValidateSponsor = RemoteFunctionBuilder.create("sendFeedback")
+                .param("name", feedback.getName())
+                .param("email", feedback.getEmail())
+                .param("message", feedback.getMessage())
+                .object();
+        fnValidateSponsor.call(String.class);
+    }
+
     private ObservableList<Note> internalRetrieveNotes() {
         if (DevoxxSettings.USE_REMOTE_NOTES) {
             return DataProvider.retrieveList(cloudDataClient.createListDataReader(authenticationClient.getAuthenticatedUser().getKey() + "_notes",

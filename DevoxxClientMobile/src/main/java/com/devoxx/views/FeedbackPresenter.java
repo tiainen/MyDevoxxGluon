@@ -27,21 +27,28 @@ package com.devoxx.views;
 
 import com.devoxx.DevoxxApplication;
 import com.devoxx.DevoxxView;
+import com.devoxx.model.Feedback;
 import com.devoxx.service.Service;
+import com.devoxx.util.DevoxxBundle;
 import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.control.TextArea;
 import com.gluonhq.charm.glisten.control.TextField;
+import com.gluonhq.charm.glisten.control.TextInput;
+import com.gluonhq.charm.glisten.control.Toast;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import com.gluonhq.cloudlink.client.user.User;
+import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 
 import javax.inject.Inject;
 
 public class FeedbackPresenter extends GluonPresenter<DevoxxApplication> {
-    
+
+    private static final PseudoClass PSEUDO_CLASS_ERROR = PseudoClass.getPseudoClass("error");
+
     @FXML
     private View feedback;
 
@@ -52,7 +59,7 @@ public class FeedbackPresenter extends GluonPresenter<DevoxxApplication> {
     private TextField email;
     
     @FXML
-    private TextArea textArea;
+    private TextArea message;
     
     @Inject
     private Service service;
@@ -68,7 +75,12 @@ public class FeedbackPresenter extends GluonPresenter<DevoxxApplication> {
             
             final Button close = MaterialDesignIcon.CLEAR.button(e -> DevoxxView.SESSIONS.switchView());
             final Button send = MaterialDesignIcon.SEND.button(e -> {
-                // SEND
+                final String nameText = name.getText();
+                final String emailText = email.getText();
+                final String messageText = message.getText();
+                if (validateInput(name, email, message)) {
+                    sendFeedback(nameText, emailText, messageText);
+                }
             });
             AppBar appBar = getApp().getAppBar();
             appBar.setNavIcon(close);
@@ -77,5 +89,41 @@ public class FeedbackPresenter extends GluonPresenter<DevoxxApplication> {
         });
         
         feedback.setOnShown(e -> feedback.requestFocus());
+        addValidator(name, email, message);
+    }
+
+    private void sendFeedback(String nameText, String emailText, String messageText) {
+        final Feedback feedback = new Feedback(nameText, emailText, messageText);
+        service.submitFeedback(feedback);
+        final Toast toast = new Toast(DevoxxBundle.getString("OTN.FEEDBACK.SUCCESS"));
+        toast.show();
+        DevoxxView.SESSIONS.switchView();
+    }
+
+    private boolean validateInput(TextInput... textInputs) {
+        boolean status = true;
+        for (TextInput textInput : textInputs) {
+            if (textInput.getText().isEmpty()) {
+                textInput.pseudoClassStateChanged(PSEUDO_CLASS_ERROR, true);
+                status = status && false;
+            } else {
+                textInput.pseudoClassStateChanged(PSEUDO_CLASS_ERROR, false);
+                status = status && true;
+            }    
+        }
+        return status;
+    }
+
+    private void addValidator(TextInput... textInputs) {
+        for (TextInput textInput : textInputs) {
+            if (textInput.getText().isEmpty()) {
+                textInput.setErrorValidator(s -> {
+                    if (s.isEmpty()) {
+                        return "Cannot be empty";
+                    }
+                    return "";
+                });
+            }
+        }
     }
 }

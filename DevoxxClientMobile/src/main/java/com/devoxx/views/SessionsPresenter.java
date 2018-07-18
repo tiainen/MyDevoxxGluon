@@ -242,7 +242,7 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
             scheduleListView.getStyleClass().add("schedule-view");
             scheduleListView.setHeadersFunction(s -> s.getStartDate().toLocalDate());
             scheduleListView.setHeaderCellFactory(c -> new ScheduleHeaderCell());
-            scheduleListView.setCellFactory(p -> new ScheduleCell(service));
+            scheduleListView.setCellFactory(p -> new ScheduleCell(service, false, true));
             Comparator<Session> sessionComparator = (s1, s2) -> {
                 int compareStartDate = s1.getStartDate().compareTo(s2.getStartDate());
                 if (compareStartDate == 0) {
@@ -328,6 +328,7 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
      */
     private void updateSessionsDecoration(List<Session> sessions) {
         TimeSlot previousTimeSlot = null;
+        Session previousSessionWithType = null;
         boolean colorFlag = true;
         for (Session session : sessions) {
             ZonedDateTime sessionStartDateTime = session.getStartDate();
@@ -338,6 +339,13 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
                 colorFlag = !colorFlag;
             }
             session.setDecorated(colorFlag);
+
+            if (previousSessionWithType == null ||
+                    session.getStartDate().toLocalDate().isAfter(previousSessionWithType.getStartDate().toLocalDate()) ||
+                    !session.getTalk().getTalkType().equals(previousSessionWithType.getTalk().getTalkType())) {
+                previousSessionWithType = session;
+                session.setShowSessionType(true);
+            }
         }
     }
 

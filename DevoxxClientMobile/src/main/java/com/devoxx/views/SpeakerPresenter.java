@@ -33,12 +33,6 @@ import com.devoxx.model.Speaker;
 import com.devoxx.model.Talk;
 import com.devoxx.service.Service;
 import com.devoxx.util.DevoxxBundle;
-import com.devoxx.DevoxxView;
-import com.devoxx.model.Session;
-import com.devoxx.model.Speaker;
-import com.devoxx.model.Talk;
-import com.devoxx.service.Service;
-import com.devoxx.util.DevoxxBundle;
 import com.devoxx.views.cell.ScheduleCell;
 import com.devoxx.views.helper.SpeakerCard;
 import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
@@ -49,7 +43,6 @@ import com.gluonhq.charm.glisten.control.CharmListView;
 import com.gluonhq.charm.glisten.control.ProgressIndicator;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
-import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -166,7 +159,7 @@ public class SpeakerPresenter extends GluonPresenter<DevoxxApplication> {
     private CharmListView<Session, LocalDate> createSessionsListView(Speaker activeSpeaker) {
         sessionsListView = new CharmListView<>(fetchSessions(activeSpeaker));
         sessionsListView.getStyleClass().add("sessions-list");
-        sessionsListView.setCellFactory(p -> new ScheduleCell(service, true));
+        sessionsListView.setCellFactory(p -> new ScheduleCell(service, true, false));
         
         if (activeSpeaker.isDetailsRetrieved()) {
             sessionsListView.setItems(fetchSessions(activeSpeaker));

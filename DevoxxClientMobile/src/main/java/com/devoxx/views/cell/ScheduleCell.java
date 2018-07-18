@@ -46,7 +46,9 @@ import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
@@ -76,15 +78,17 @@ public class ScheduleCell extends CharmListCell<Session> {
     private Label startDateLabel;
     private Session session;
     private boolean showDate;
+    private boolean showSessionType;
     private PseudoClass oldPseudoClass;
 
     public ScheduleCell(Service service) {
-        this(service, false);
+        this(service, false, false);
     }
 
-    public ScheduleCell(Service service, boolean showDate) {
+    public ScheduleCell(Service service, boolean showDate, boolean showSessionType) {
         this.service = service;
         this.showDate = showDate;
+        this.showSessionType = showSessionType;
         
         trackLabel = new Label();
         secondaryGraphic = new SecondaryGraphic();
@@ -105,7 +109,15 @@ public class ScheduleCell extends CharmListCell<Session> {
         if (item != null && !empty) {
             updateListTile();
             secondaryGraphic.updateGraphic(session);
-            setGraphic(listTile);
+            if (showSessionType && item.isShowSessionType()) {
+                final BorderPane borderPane = new BorderPane(listTile);
+                final HBox sessionType = new HBox(new Label(item.getTalk().getTalkType()));
+                sessionType.getStyleClass().add("session-type");
+                borderPane.setTop(sessionType);
+                setGraphic(borderPane);
+            } else {
+                setGraphic(listTile);
+            }
 
             // FIX for OTN-568
             listTile.setOnMouseReleased(event -> {

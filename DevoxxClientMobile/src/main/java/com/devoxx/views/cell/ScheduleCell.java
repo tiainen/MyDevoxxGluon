@@ -74,11 +74,11 @@ public class ScheduleCell extends CharmListCell<Session> {
     private final Service service;
     private final ListTile listTile;
     private final BorderPane borderPane;
-    private final HBox sessionType;
-    private final Label sessionTypeLabel;
     private final SecondaryGraphic secondaryGraphic;
     private final Label trackLabel;
     private Label startDateLabel;
+    private Label sessionTypeLabel;
+    private HBox sessionType;
     private Session session;
     private boolean showDate;
     private boolean showSessionType;
@@ -100,11 +100,13 @@ public class ScheduleCell extends CharmListCell<Session> {
         listTile.setWrapText(true);
         listTile.setPrimaryGraphic(new Group(trackLabel));
         listTile.setSecondaryGraphic(secondaryGraphic);
-        
-        sessionTypeLabel = new Label();
-        sessionType = new HBox(sessionTypeLabel);
-        sessionType.getStyleClass().add("session-type");
+
         borderPane = new BorderPane(listTile);
+        if (showSessionType) {
+            sessionTypeLabel = new Label();
+            sessionType = new HBox(sessionTypeLabel);
+            sessionType.getStyleClass().add("session-type");
+        }
 
         setText(null);
         getStyleClass().add("schedule-cell");
@@ -116,14 +118,9 @@ public class ScheduleCell extends CharmListCell<Session> {
         session = item;
         if (item != null && !empty) {
             updateListTile();
+            updateSessionType();
+            
             secondaryGraphic.updateGraphic(session);
-            if (showSessionType && item.isShowSessionType()) {
-                sessionTypeLabel.setText(item.getTalk().getTalkType());
-                borderPane.setTop(sessionType);
-            } else {
-                borderPane.setTop(null);
-            }
-
             setGraphic(borderPane);
 
             // FIX for OTN-568
@@ -133,6 +130,17 @@ public class ScheduleCell extends CharmListCell<Session> {
             });
         } else {
             setGraphic(null);
+        }
+    }
+
+    private void updateSessionType() {
+        if (showSessionType) {
+            if (session.isShowSessionType()) {
+                sessionTypeLabel.setText(session.getTalk().getTalkType());
+                borderPane.setTop(sessionType);
+            } else {
+                borderPane.setTop(null);
+            }
         }
     }
 

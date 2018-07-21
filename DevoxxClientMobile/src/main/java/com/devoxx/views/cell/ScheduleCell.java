@@ -73,6 +73,9 @@ public class ScheduleCell extends CharmListCell<Session> {
     
     private final Service service;
     private final ListTile listTile;
+    private final BorderPane borderPane;
+    private final HBox sessionType;
+    private final Label sessionTypeLabel;
     private final SecondaryGraphic secondaryGraphic;
     private final Label trackLabel;
     private Label startDateLabel;
@@ -97,6 +100,11 @@ public class ScheduleCell extends CharmListCell<Session> {
         listTile.setWrapText(true);
         listTile.setPrimaryGraphic(new Group(trackLabel));
         listTile.setSecondaryGraphic(secondaryGraphic);
+        
+        sessionTypeLabel = new Label();
+        sessionType = new HBox(sessionTypeLabel);
+        sessionType.getStyleClass().add("session-type");
+        borderPane = new BorderPane(listTile);
 
         setText(null);
         getStyleClass().add("schedule-cell");
@@ -110,14 +118,13 @@ public class ScheduleCell extends CharmListCell<Session> {
             updateListTile();
             secondaryGraphic.updateGraphic(session);
             if (showSessionType && item.isShowSessionType()) {
-                final BorderPane borderPane = new BorderPane(listTile);
-                final HBox sessionType = new HBox(new Label(item.getTalk().getTalkType()));
-                sessionType.getStyleClass().add("session-type");
+                sessionTypeLabel.setText(item.getTalk().getTalkType());
                 borderPane.setTop(sessionType);
-                setGraphic(borderPane);
             } else {
-                setGraphic(listTile);
+                borderPane.setTop(null);
             }
+
+            setGraphic(borderPane);
 
             // FIX for OTN-568
             listTile.setOnMouseReleased(event -> {

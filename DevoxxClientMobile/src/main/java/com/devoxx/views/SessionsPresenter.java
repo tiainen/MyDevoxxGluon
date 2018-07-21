@@ -340,8 +340,9 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
             }
             session.setDecorated(colorFlag);
 
+            session.setShowSessionType(false);
             if (previousSessionWithType == null ||
-                    session.getStartDate().toLocalDate().isAfter(previousSessionWithType.getStartDate().toLocalDate()) ||
+                    session.getStartDate().toLocalDate().toEpochDay() > previousSessionWithType.getStartDate().toLocalDate().toEpochDay() ||
                     !session.getTalk().getTalkType().equals(previousSessionWithType.getTalk().getTalkType())) {
                 previousSessionWithType = session;
                 session.setShowSessionType(true);

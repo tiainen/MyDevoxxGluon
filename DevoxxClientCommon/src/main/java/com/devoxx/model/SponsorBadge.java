@@ -25,8 +25,8 @@
  */
 package com.devoxx.model;
 
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 
 import java.util.Locale;
 import java.util.Objects;
@@ -42,55 +42,24 @@ public class SponsorBadge extends Badge {
     public SponsorBadge(String qr) {
         if (qr != null && ! qr.isEmpty() && qr.split("::").length == 5) {
             String[] split = qr.split("::");
-            badgeId.set(split[0]);
-            lastName.set(split[1]);
-            firstName.set(split[2]);
-            company.set(split[3]);
-            email.set(split[4]);
+            setBadgeId(split[0]);
+            setLastName(split[1]);
+            setFirstName(split[2]);
+            setCompany(split[3]);
+            setEmail(split[4]);
         }
     }
 
-    private final StringProperty badgeId = new SimpleStringProperty();
-    public final StringProperty badgeIdProperty() { return badgeId; }
-    public final String getBadgeId() { return badgeId.get(); }
-    public final void setBadgeId(String badgeId) { this.badgeId.set(badgeId); }
-
-    private final StringProperty firstName = new SimpleStringProperty();
-    public final StringProperty firstNameProperty() { return firstName; }
-    public final String getFirstName() { return firstName.get(); }
-    public final void setFirstName(String firstName) { this.firstName.set(firstName); }
-
-    private final StringProperty lastName = new SimpleStringProperty();
-    public final StringProperty lastNameProperty() { return lastName; }
-    public final String getLastName() { return lastName.get(); }
-    public final void setLastName(String lastName) { this.lastName.set(lastName); }
-
-    private final StringProperty company = new SimpleStringProperty();
-    public final StringProperty companyProperty() { return company; }
-    public final String getCompany() { return company.get(); }
-    public final void setCompany(String company) { this.company.set(company); }
-
-    private final StringProperty email = new SimpleStringProperty();
-    public final StringProperty emailProperty() { return email; }
-    public final String getEmail() { return email.get(); }
-    public final void setEmail(String email) { this.email.set(email); }
-
-    private final StringProperty details = new SimpleStringProperty();
-    public final StringProperty detailsProperty() { return details; }
-    public final String getDetails() { return safeStr(details.get()); }
-    public final void setDetails(String details) { this.details.set(details); }
-
-
-    // slug
-    private final StringProperty slug = new SimpleStringProperty(this, "slug");
-    public final StringProperty slugProperty() {
-       return slug;
+    // sponsor
+    private final ObjectProperty<Sponsor> sponsor = new SimpleObjectProperty<>(this, "sponsor");
+    public final ObjectProperty<Sponsor> sponsorProperty() {
+       return sponsor;
     }
-    public final String getSlug() {
-       return slug.get();
+    public final Sponsor getSponsor() {
+       return sponsor.get();
     }
-    public final void setSlug(String value) {
-        slug.set(value);
+    public final void setSponsor(Sponsor value) {
+        sponsor.set(value);
     }
 
     @Override
@@ -105,7 +74,7 @@ public class SponsorBadge extends Badge {
                 containsKeyword(getCompany(), lowerKeyword)  ||
                 containsKeyword(getEmail(), lowerKeyword)    ||
                 containsKeyword(getDetails(), lowerKeyword)  ||
-                containsKeyword(getSlug(), lowerKeyword);
+                containsKeyword(getSponsor(), lowerKeyword);
     }
 
     @Override
@@ -114,19 +83,19 @@ public class SponsorBadge extends Badge {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         SponsorBadge that = (SponsorBadge) o;
-        return Objects.equals(badgeId, that.badgeId) &&
-                Objects.equals(slug, that.slug);
+        return Objects.equals(getBadgeId(), that.getBadgeId()) &&
+                Objects.equals(sponsor, that.sponsor);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), badgeId, slug);
+        return Objects.hash(super.hashCode(), getBadgeId(), sponsor);
     }
 
     @Override
     public String toCSV() {
         StringBuilder csv = new StringBuilder(super.toCSV());
-        csv.append(",").append(safeStr(getSlug()));
+        csv.append(",").append(safeStr(getSponsor().getName()));
         return csv.toString();
     }
 }

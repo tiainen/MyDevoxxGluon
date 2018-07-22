@@ -28,6 +28,8 @@ package com.devoxx.views;
 import com.devoxx.DevoxxApplication;
 import com.devoxx.DevoxxView;
 import com.devoxx.model.Badge;
+import com.devoxx.model.BadgeType;
+import com.devoxx.model.Sponsor;
 import com.devoxx.model.SponsorBadge;
 import com.devoxx.service.Service;
 import com.devoxx.util.DevoxxBundle;
@@ -57,7 +59,7 @@ import javafx.scene.layout.VBox;
 import javax.inject.Inject;
 import java.util.Optional;
 
-public class SponsorPresenter extends GluonPresenter<DevoxxApplication> {
+public class SponsorBadgePresenter extends GluonPresenter<DevoxxApplication> {
 
     private static final String EMPTY_LIST_MESSAGE = DevoxxBundle.getString("OTN.BADGES.EMPTY_LIST_MESSAGE");
 
@@ -77,30 +79,28 @@ public class SponsorPresenter extends GluonPresenter<DevoxxApplication> {
     private Service service;
 
     private CharmListView<SponsorBadge, String> lvBadges;
-    private String name;
-    private String slug;
     private FloatingActionButton scan;
+    private Sponsor sponsor;
 
     public void initialize() {
 
         sponsorView.setOnShowing(event -> {
             AppBar appBar = getApp().getAppBar();
             appBar.setNavIcon(getApp().getNavMenuButton());
-            appBar.setTitleText(DevoxxView.SPONSOR.getTitle());
+            appBar.setTitleText(DevoxxView.SPONSOR_BADGE.getTitle());
             appBar.getMenuItems().addAll(getApp().scanAsDifferentUser());
             checkAndLoadView();
         });
         
-        sponsorView.setOnHiding(event -> {
+        sponsorView.setOnHidden(event -> {
             if (scan != null) {
                 scan.hide();
             }
         });
     }
 
-    public void setSponsor(String name, String slug) {
-        this.name = name;
-        this.slug = slug;
+    public void setSponsor(Sponsor sponsor) {
+        this.sponsor = sponsor;
         checkAndLoadView();
     }
 
@@ -117,13 +117,12 @@ public class SponsorPresenter extends GluonPresenter<DevoxxApplication> {
             message.setGraphic(null);
             if (password.getText().equals(passwordObject.get())) {
                 Services.get(SettingsService.class).ifPresent(service -> {
-                    service.store(DevoxxSettings.BADGE_TYPE, DevoxxSettings.BADGE_TYPE_SPONSOR);
-                    service.store(DevoxxSettings.SPONSOR_NAME, name);
-                    service.store(DevoxxSettings.SPONSOR_SLUG, slug); 
+                    service.store(DevoxxSettings.BADGE_TYPE, BadgeType.SPONSOR.toString());
+                    service.store(DevoxxSettings.BADGE_SPONSOR, sponsor.toCSV());
                 });
-                final Toast toast = new Toast(DevoxxBundle.getString("OTN.BADGES.LOGIN.SPONSOR", name), Toast.LENGTH_LONG);
+                final Toast toast = new Toast(DevoxxBundle.getString("OTN.BADGES.LOGIN.SPONSOR", sponsor.getName()), Toast.LENGTH_LONG);
                 toast.show();
-                loadAuthenticatedView(name, slug);
+                loadAuthenticatedView(sponsor);
                 password.clear();
             } else {
                 message.setText(DevoxxBundle.getString("OTN.SPONSOR.INCORRECT.PASSWORD"));
@@ -131,21 +130,22 @@ public class SponsorPresenter extends GluonPresenter<DevoxxApplication> {
         });
     }
 
-    private void loadAuthenticatedView(String name, String slug) {
+    private void loadAuthenticatedView(Sponsor sponsor) {
         final AppBar appBar = getApp().getAppBar();
-        final Button shareButton = getApp().getShareButton(DevoxxSettings.BADGE_TYPE_SPONSOR);
+        final Button shareButton = getApp().getShareButton(BadgeType.SPONSOR, sponsor);
         appBar.getActionItems().setAll(shareButton);
-        appBar.setTitleText(DevoxxBundle.getString("OTN.SPONSOR.BADGES.FOR", name));
+        appBar.setTitleText(DevoxxBundle.getString("OTN.SPONSOR.BADGES.FOR", sponsor.getName()));
         final ObservableList<MenuItem> menuItems = appBar.getMenuItems();
         if (menuItems.size() > 0) {
             menuItems.get(0).setText("Logout");
         }
 
-        final ObservableList<SponsorBadge> badges = service.retrieveSponsorBadges();
-        final FilteredList<SponsorBadge> filteredBadges = new FilteredList<>(badges, badge -> 
-                badge != null && badge.getSlug() != null && badge.getSlug().equals(slug));
+        final ObservableList<SponsorBadge> badges = service.retrieveSponsorBadges(sponsor);
+        final FilteredList<SponsorBadge> filteredBadges = new FilteredList<>(badges, badge -> {
+             return badge != null && badge.getSponsor() != null && badge.getSponsor().equals(sponsor);
+        });
         lvBadges = new CharmListView<>();
-        lvBadges.setPlaceholder(new Placeholder(EMPTY_LIST_MESSAGE, DevoxxView.SPONSOR.getMenuIcon()));
+        lvBadges.setPlaceholder(new Placeholder(EMPTY_LIST_MESSAGE, DevoxxView.SPONSOR_BADGE.getMenuIcon()));
         lvBadges.setCellFactory(param -> new BadgeCell<>());
         lvBadges.setItems(filteredBadges);
         sponsorView.setCenter(lvBadges);
@@ -154,13 +154,13 @@ public class SponsorPresenter extends GluonPresenter<DevoxxApplication> {
         if (scan == null) {
             scan = new FloatingActionButton("", e -> {
                 Services.get(BarcodeScanService.class).ifPresent(s -> {
-                    final Optional<String> scanQr = s.scan(DevoxxBundle.getString("OTN.BADGES.SPONSOR.QR.TITLE", name), null, null);
+                    final Optional<String> scanQr = s.scan(DevoxxBundle.getString("OTN.BADGES.SPONSOR.QR.TITLE", sponsor.getName()), null, null);
                     scanQr.ifPresent(qr -> {
                         SponsorBadge badge = new SponsorBadge(qr);
                         if (badge.getBadgeId() != null) {
                             boolean exists = false;
                             for (Badge b : filteredBadges) {
-                                if (b.getBadgeId().equals(badge.getBadgeId())) {
+                                if (b != null && b.getBadgeId() != null && b.getBadgeId().equals(badge.getBadgeId())) {
                                     Toast toast = new Toast(DevoxxBundle.getString("OTN.BADGES.QR.EXISTS"));
                                     toast.show();
                                     exists = true;
@@ -168,9 +168,9 @@ public class SponsorPresenter extends GluonPresenter<DevoxxApplication> {
                                 }
                             }
                             if (!exists) {
-                                badge.setSlug(slug);
+                                badge.setSponsor(sponsor);
                                 badges.add(badge);
-                                DevoxxView.BADGE.switchView().ifPresent(presenter -> ((BadgePresenter) presenter).setBadgeId(badge.getBadgeId(), slug));
+                                DevoxxView.BADGE.switchView().ifPresent(presenter -> ((BadgePresenter) presenter).setBadge(badge, BadgeType.SPONSOR));
                             }
                         } else {
                             Toast toast = new Toast(DevoxxBundle.getString("OTN.BADGES.BAD.QR"));
@@ -186,11 +186,10 @@ public class SponsorPresenter extends GluonPresenter<DevoxxApplication> {
 
     private void checkAndLoadView() {
         Services.get(SettingsService.class).ifPresent(service -> {
-            final String name = service.retrieve(DevoxxSettings.SPONSOR_NAME);
-            final String sponsor = service.retrieve(DevoxxSettings.SPONSOR_SLUG);
+            final Sponsor sponsor = Sponsor.fromCSV(service.retrieve(DevoxxSettings.BADGE_SPONSOR));
             // if found, no need to prompt password
-            if (name != null && sponsor != null) {
-                loadAuthenticatedView(name, sponsor);
+            if (sponsor != null && sponsor.equals(this.sponsor)) {
+                loadAuthenticatedView(sponsor);
             } else {
                 if (scan != null) {
                     scan.hide();

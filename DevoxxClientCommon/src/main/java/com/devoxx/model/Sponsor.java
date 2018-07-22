@@ -75,6 +75,31 @@ public class Sponsor extends Searchable implements Mergeable<Sponsor> {
         }
     }
 
+    public String toCSV() {
+        StringBuilder csv = new StringBuilder();
+        csv.append(safeStr(getName()))
+           .append(",").append(safeStr(getSlug()))
+           .append(",").append(safeStr(getLevel().getShortName()));
+        return csv.toString();
+    }
+
+    public static Sponsor fromCSV(String csv) {
+        Sponsor sponsor = null;
+        if (csv == null || csv.isEmpty()) return null;
+        final String[] split = csv.split(",");
+        if (split.length == 3) {
+            sponsor = new Sponsor();
+            sponsor.setName(split[0]);
+            sponsor.setSlug(split[1]);
+            sponsor.setLevel(split[2]);
+        }
+        return sponsor;
+    }
+
+    private static String safeStr(String s) {
+        return s == null? "": s.trim();
+    }
+
     @Override
     public boolean merge(Sponsor other) {
         boolean changed = false;
@@ -102,5 +127,20 @@ public class Sponsor extends Searchable implements Mergeable<Sponsor> {
         return containsKeyword(getName(), lowerKeyword)        ||
                 containsKeyword(getSlug(), lowerKeyword) ||
                 containsKeyword(getLevel(), lowerKeyword);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Sponsor sponsor = (Sponsor) o;
+        return Objects.equals(name, sponsor.name) &&
+                Objects.equals(slug, sponsor.slug) &&
+                level == sponsor.level;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, slug, level);
     }
 }

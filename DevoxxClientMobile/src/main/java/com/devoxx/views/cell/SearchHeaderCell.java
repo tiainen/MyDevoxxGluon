@@ -45,7 +45,7 @@ public class SearchHeaderCell extends CharmListCell<Searchable> {
         ICON_MAP.put( Session.class,   DevoxxView.SESSIONS.getMenuIcon() );
         ICON_MAP.put( Note.class,      DevoxxView.NOTES.getMenuIcon() );
         ICON_MAP.put( Speaker.class,   DevoxxView.SPEAKER.getMenuIcon() );
-        ICON_MAP.put( Sponsor.class,   DevoxxView.SPONSOR.getMenuIcon() );
+        ICON_MAP.put( Sponsor.class,   DevoxxView.SPONSOR_BADGE.getMenuIcon() );
     }
 
     private final ListTile tile;

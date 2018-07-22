@@ -77,6 +77,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static com.devoxx.views.helper.Util.safeStr;
+
 public class DevoxxService implements Service {
 
     private static final Logger LOG = Logger.getLogger(DevoxxService.class.getName());
@@ -116,6 +118,7 @@ public class DevoxxService implements Service {
     private final PushClient pushClient;
     private final DataClient localDataClient;
     private final DataClient cloudDataClient;
+    private final DataClient nonAuthenticatedCloudDataClient;
 
     private final StringProperty cfpUserUuid = new SimpleStringProperty(this, "cfpUserUuid", "");
 
@@ -166,6 +169,10 @@ public class DevoxxService implements Service {
 
         cloudDataClient = DataClientBuilder.create()
                 .authenticateWith(authenticationClient)
+                .operationMode(OperationMode.CLOUD_FIRST)
+                .build();
+
+        nonAuthenticatedCloudDataClient = DataClientBuilder.create()
                 .operationMode(OperationMode.CLOUD_FIRST)
                 .build();
 
@@ -764,30 +771,10 @@ public class DevoxxService implements Service {
     }
 
     @Override
-    public ObservableList<SponsorBadge> retrieveSponsorBadges() {
+    public ObservableList<SponsorBadge> retrieveSponsorBadges(Sponsor sponsor) {
         
         if (sponsorBadges == null) {
-            final GluonObservableList<SponsorBadge> sponsorBadges = internalRetrieveSponsorBadges();
-            this.sponsorBadges = sponsorBadges;
-            
-            // every scanned sponsor badge must be posted with the remote function
-            sponsorBadges.initializedProperty().addListener(new ChangeListener<Boolean>() {
-                @Override
-                public void changed(ObservableValue<? extends Boolean> o, Boolean ov, Boolean nv) {
-                    if (nv) {
-                        sponsorBadges.addListener((ListChangeListener<SponsorBadge>) c -> {
-                            while (c.next()) {
-                                if (c.wasAdded()) {
-                                    for (SponsorBadge sponsorBadge : c.getAddedSubList()) {
-                                        saveSponsorBadge(sponsorBadge);
-                                    }
-                                }
-                            }
-                        });
-                    }
-                    sponsorBadges.initializedProperty().removeListener(this);
-                }
-            });
+            sponsorBadges = internalRetrieveSponsorBadges(sponsor);
         }
 
         return sponsorBadges;
@@ -796,13 +783,13 @@ public class DevoxxService implements Service {
     @Override
     public void saveSponsorBadge(SponsorBadge sponsorBadge) {
         RemoteFunctionObject fnSponsorBadge = RemoteFunctionBuilder.create("saveSponsorBadge")
-                .param("0", sponsorBadge.getSlug())
-                .param("1", sponsorBadge.getBadgeId())
-                .param("2", sponsorBadge.getFirstName())
-                .param("3", sponsorBadge.getLastName())
-                .param("4", sponsorBadge.getCompany())
-                .param("5", sponsorBadge.getEmail())
-                .param("6", sponsorBadge.getDetails())
+                .param("0", safeStr(sponsorBadge.getSponsor().getSlug()))
+                .param("1", safeStr(sponsorBadge.getBadgeId()))
+                .param("2", safeStr(sponsorBadge.getFirstName()))
+                .param("3", safeStr(sponsorBadge.getLastName()))
+                .param("4", safeStr(sponsorBadge.getCompany()))
+                .param("5", safeStr(sponsorBadge.getEmail()))
+                .param("6", safeStr(sponsorBadge.getDetails()))
                 .param("7", ZonedDateTime.now().format(DateTimeFormatter.ISO_INSTANT))
                 .object();
         GluonObservableObject<String> sponsorBadgeResult = fnSponsorBadge.call(String.class);
@@ -900,8 +887,8 @@ public class DevoxxService implements Service {
         }
     }
 
-    private GluonObservableList<SponsorBadge> internalRetrieveSponsorBadges() {
-        return DataProvider.retrieveList(cloudDataClient.createListDataReader(authenticationClient.getAuthenticatedUser().getKey() + "_sponsor_badges",
+    private GluonObservableList<SponsorBadge> internalRetrieveSponsorBadges(Sponsor sponsor) {
+        return DataProvider.retrieveList(nonAuthenticatedCloudDataClient.createListDataReader(getConference().getId() + "_" + sponsor.getSlug() + "_sponsor_badges",
                 SponsorBadge.class, SyncFlag.LIST_WRITE_THROUGH, SyncFlag.OBJECT_WRITE_THROUGH));
     }
 
@@ -950,7 +937,6 @@ public class DevoxxService implements Service {
             if (DevoxxSettings.conferenceHasBadgeView(getConference())) {
                 retrieveBadges();
                 retrieveSponsors();
-                retrieveSponsorBadges();
             }
             
             retrieveFavoredSessions();
@@ -975,8 +961,7 @@ public class DevoxxService implements Service {
         Services.get(SettingsService.class).ifPresent(settingsService -> {
             settingsService.remove(DevoxxSettings.SAVED_ACCOUNT_ID);
             settingsService.remove(DevoxxSettings.BADGE_TYPE);
-            settingsService.remove(DevoxxSettings.SPONSOR_NAME);
-            settingsService.remove(DevoxxSettings.SPONSOR_SLUG);
+            settingsService.remove(DevoxxSettings.BADGE_SPONSOR);
         });
     }
 

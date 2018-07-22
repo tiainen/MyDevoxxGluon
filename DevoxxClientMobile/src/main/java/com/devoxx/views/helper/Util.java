@@ -25,6 +25,10 @@
  */
 package com.devoxx.views.helper;
 
+import com.devoxx.model.Speaker;
+import com.devoxx.util.DevoxxBundle;
+import com.devoxx.util.ImageCache;
+import com.devoxx.views.ExhibitionMapPresenter;
 import com.gluonhq.charm.down.Services;
 import com.gluonhq.charm.down.plugins.BrowserService;
 import com.gluonhq.charm.down.plugins.SettingsService;
@@ -32,10 +36,6 @@ import com.gluonhq.charm.glisten.control.Avatar;
 import com.gluonhq.charm.glisten.control.FloatingActionButton;
 import com.gluonhq.charm.glisten.control.Toast;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
-import com.devoxx.model.Speaker;
-import com.devoxx.util.ImageCache;
-import com.devoxx.util.DevoxxBundle;
-import com.devoxx.views.ExhibitionMapPresenter;
 import com.gluonhq.cloudlink.client.media.MediaClient;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -174,4 +174,7 @@ public class Util {
         toast.show();
     }
 
+    public static String safeStr(String s) {
+        return s == null? "": s.trim();
+    }
 }

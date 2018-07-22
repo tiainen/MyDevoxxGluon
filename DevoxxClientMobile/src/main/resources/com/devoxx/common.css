@@ -1076,6 +1076,10 @@
 }
 
 /** DataLabel **/
+.sponsor-view .data-label {
+    -fx-min-height: 32;
+}
+
 .data-label > .progress-indicator {
     -fx-color: -primary-swatch-500;
 }

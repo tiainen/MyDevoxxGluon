@@ -100,10 +100,7 @@ public class DevoxxSettings {
     public static final String SAVED_CONFERENCE_ID = "devoxx_cfp_id";
     public static final String SAVED_ACCOUNT_ID = "devoxx_cfp_account";
     public static final String BADGE_TYPE = "badge-type";
-    public static final String BADGE_TYPE_SPONSOR = "sponsor";
-    public static final String BADGE_TYPE_ATTENDEE = "attendee";
-    public static final String SPONSOR_NAME = "sponsor-name";
-    public static final String SPONSOR_SLUG = "sponsor-slug";
+    public static final String BADGE_SPONSOR = "badge-sponsor";
 
     private static final String WEARABLE_DAY_PATTERN  = "MMMM dd, uuuu";
     private static final String TIME_PATTERN = "h:mma";

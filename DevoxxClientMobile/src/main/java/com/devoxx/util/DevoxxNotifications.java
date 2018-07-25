@@ -243,7 +243,7 @@ public class DevoxxNotifications {
 
                 // Add notification
                 createStartNotification(session).ifPresent(n -> {
-                    System.out.println("Adding final start notification");
+                    LOG.log(Level.INFO, "Adding final start notification");
                     startSessionNotificationMap.put(sessionId, n);
                 });
             }
@@ -263,7 +263,7 @@ public class DevoxxNotifications {
                 });
 
                 createVoteNotification(session).ifPresent(n -> {
-                    System.out.println("Adding final vote notification");
+                    LOG.log(Level.INFO, "Adding final vote notification");
                     voteSessionNotificationMap.put(sessionId, n);
                 });
             }

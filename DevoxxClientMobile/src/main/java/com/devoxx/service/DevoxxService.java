@@ -138,16 +138,13 @@ public class DevoxxService implements Service {
 
     // user specific data
     private ObservableList<Session> favoredSessions;
-    private ObservableList<Session> scheduledSessions;
     private ObservableList<Note> notes;
     private ObservableList<Badge> badges;
     private ObservableList<SponsorBadge> sponsorBadges;
 
     private GluonObservableObject<Favorites> allFavorites;
     private ListChangeListener<Session> internalFavoredSessionsListener = null;
-    private ListChangeListener<Session> internalScheduledSessionsListener = null;
     private ObservableList<Session> internalFavoredSessions = FXCollections.observableArrayList();
-    private ObservableList<Session> internalScheduledSessions = FXCollections.observableArrayList();
     private ObservableList<Favorite> favorites = FXCollections.observableArrayList();
     private ObservableList<Sponsor> sponsors = FXCollections.observableArrayList();
 
@@ -185,9 +182,6 @@ public class DevoxxService implements Service {
             if ("".equals(nv)) {
                 if (internalFavoredSessions != null && internalFavoredSessionsListener != null) {
                     internalFavoredSessions.removeListener(internalFavoredSessionsListener);
-                }
-                if (internalScheduledSessions != null && internalScheduledSessionsListener != null) {
-                    internalScheduledSessions.removeListener(internalScheduledSessionsListener);
                 }
             }
         });
@@ -387,13 +381,6 @@ public class DevoxxService implements Service {
                     internalFavoredSessions.removeListener(internalFavoredSessionsListener);
                     internalFavoredSessions.clear();
                     return retrieveFavoredSessions();
-                }
-            } else if (sessionListType == SessionListType.SCHEDULED) {
-                scheduledSessions = null;
-                if (internalScheduledSessions != null && internalScheduledSessionsListener != null) {
-                    internalScheduledSessions.removeListener(internalScheduledSessionsListener);
-                    internalScheduledSessions.clear();
-                    return retrieveScheduledSessions();
                 }
             }
         }
@@ -627,34 +614,21 @@ public class DevoxxService implements Service {
         }
 
         if (favoredSessions == null) {
-            favoredSessions = internalRetrieveFavoredSessions();
-        }
-
-        return favoredSessions;
-    }
-
-    @Override
-    public ObservableList<Session> retrieveScheduledSessions() {
-        if (!isAuthenticated()) {
-            throw new IllegalStateException("An authenticated user must be available when calling this method.");
-        }
-
-        if (scheduledSessions == null) {
             try {
                 DevoxxNotifications notifications = Injector.instantiateModelOrService(DevoxxNotifications.class);
                 // stop recreating notifications, after the list of scheduled sessions is fully retrieved
-                scheduledSessions = internalRetrieveScheduledSessions(notifications::preloadingScheduledSessionsDone);
+                favoredSessions = internalRetrieveFavoredSessions(notifications::preloadingFavoriteSessionsDone);
                 // start recreating notifications as soon as the scheduled sessions are being retrieved
-                notifications.preloadScheduledSessions();
+                notifications.preloadFavoriteSessions();
             } catch (IllegalStateException ise) {
                 LOG.log(Level.WARNING, "Can't instantiate Notifications when running a background service");
             }
         }
 
-        return scheduledSessions;
+        return favoredSessions;
     }
 
-    public ObservableList<Session> internalRetrieveFavoredSessions() {
+    private ObservableList<Session> internalRetrieveFavoredSessions(Runnable onStateSucceeded) {
         if (!isAuthenticated()) {
             throw new IllegalStateException("An authenticated user that was verified at Devoxx CFP must be available when calling this method.");
         }
@@ -669,39 +643,13 @@ public class DevoxxService implements Service {
             for (SessionId sessionId : functionSessions.get().getFavored()) {
                 findSession(sessionId.getId()).ifPresent(internalFavoredSessions::add);
             }
-
             internalFavoredSessionsListener = initializeSessionsListener(internalFavoredSessions, "favored");
             ready.set(true);
+            onStateSucceeded.run();
         });
         functionSessions.setOnFailed(e -> LOG.log(Level.WARNING, String.format(REMOTE_FUNCTION_FAILED_MSG, "favored"), e.getSource().getException()));
 
         return internalFavoredSessions;
-    }
-
-    public ObservableList<Session> internalRetrieveScheduledSessions(Runnable onStateSucceeded) {
-        if (!isAuthenticated()) {
-            throw new IllegalStateException("An authenticated user that was verified at Devoxx CFP must be available when calling this method.");
-        }
-
-        RemoteFunctionObject fnScheduled = RemoteFunctionBuilder.create("scheduled")
-                .param("0", getConference().getCfpEndpoint())
-                .param("1", cfpUserUuid.get())
-                .object();
-
-        GluonObservableObject<Scheduled> functionSessions = fnScheduled.call(Scheduled.class);
-        functionSessions.setOnSucceeded(e -> {
-            for (SessionId sessionId : functionSessions.get().getScheduled()) {
-                findSession(sessionId.getId()).ifPresent(internalScheduledSessions::add);
-            }
-
-            internalScheduledSessionsListener = initializeSessionsListener(internalScheduledSessions, "scheduled");
-            if (onStateSucceeded != null) {
-                onStateSucceeded.run();
-            }
-        });
-        functionSessions.setOnFailed(e -> LOG.log(Level.WARNING, String.format(REMOTE_FUNCTION_FAILED_MSG, "scheduled"), e.getSource().getException()));
-
-        return internalScheduledSessions;
     }
 
     private ListChangeListener<Session> initializeSessionsListener(ObservableList<Session> sessions, String functionPrefix) {
@@ -956,8 +904,9 @@ public class DevoxxService implements Service {
                 retrieveSponsorBadges();
             }
             
-            retrieveFavoredSessions();
-            retrieveScheduledSessions();
+            if (DevoxxSettings.conferenceHasFavorite(getConference())) {
+                retrieveFavoredSessions();
+            }
         } else {
             ready.set(true);
         }
@@ -969,10 +918,8 @@ public class DevoxxService implements Service {
         badges = null;
         sponsorBadges = null;
         favoredSessions = null;
-        scheduledSessions = null;
         sponsors.clear();
         internalFavoredSessions.clear();
-        internalScheduledSessions.clear();
         ready.set(false);
 
         Services.get(SettingsService.class).ifPresent(settingsService -> {

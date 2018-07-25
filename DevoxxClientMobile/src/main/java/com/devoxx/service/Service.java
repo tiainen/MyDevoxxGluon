@@ -190,14 +190,6 @@ public interface Service {
     ObservableList<Session> retrieveFavoredSessions();
 
     /**
-     * Returns a list of sessions that the authenticated user has scheduled.
-     *
-     * @return
-     * @throws IllegalStateException when no user is currently authenticated
-     */
-    ObservableList<Session> retrieveScheduledSessions();
-
-    /**
      * Returns a list of notes that the authenticated user has written. Each note belongs to a specific session.
      *
      * @return

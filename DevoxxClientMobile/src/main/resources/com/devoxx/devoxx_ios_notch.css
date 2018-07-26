@@ -51,3 +51,8 @@
 .venue-detail .address {
     -fx-padding: 0em 0em 0.8em 0.8em;
 }
+
+/* Filter view inside session view */
+.sessions-filter {
+    -fx-padding: 11.52mm 0 0 0;
+}

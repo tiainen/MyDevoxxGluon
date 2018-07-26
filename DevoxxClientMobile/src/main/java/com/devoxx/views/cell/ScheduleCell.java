@@ -46,7 +46,9 @@ import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
@@ -71,20 +73,25 @@ public class ScheduleCell extends CharmListCell<Session> {
     
     private final Service service;
     private final ListTile listTile;
+    private final BorderPane borderPane;
     private final SecondaryGraphic secondaryGraphic;
     private final Label trackLabel;
     private Label startDateLabel;
+    private Label sessionTypeLabel;
+    private HBox sessionType;
     private Session session;
     private boolean showDate;
+    private boolean showSessionType;
     private PseudoClass oldPseudoClass;
 
     public ScheduleCell(Service service) {
-        this(service, false);
+        this(service, false, false);
     }
 
-    public ScheduleCell(Service service, boolean showDate) {
+    public ScheduleCell(Service service, boolean showDate, boolean showSessionType) {
         this.service = service;
         this.showDate = showDate;
+        this.showSessionType = showSessionType;
         
         trackLabel = new Label();
         secondaryGraphic = new SecondaryGraphic();
@@ -93,6 +100,13 @@ public class ScheduleCell extends CharmListCell<Session> {
         listTile.setWrapText(true);
         listTile.setPrimaryGraphic(new Group(trackLabel));
         listTile.setSecondaryGraphic(secondaryGraphic);
+
+        borderPane = new BorderPane(listTile);
+        if (showSessionType) {
+            sessionTypeLabel = new Label();
+            sessionType = new HBox(sessionTypeLabel);
+            sessionType.getStyleClass().add("session-type");
+        }
 
         setText(null);
         getStyleClass().add("schedule-cell");
@@ -104,8 +118,10 @@ public class ScheduleCell extends CharmListCell<Session> {
         session = item;
         if (item != null && !empty) {
             updateListTile();
+            updateSessionType();
+            
             secondaryGraphic.updateGraphic(session);
-            setGraphic(listTile);
+            setGraphic(borderPane);
 
             // FIX for OTN-568
             listTile.setOnMouseReleased(event -> {
@@ -114,6 +130,17 @@ public class ScheduleCell extends CharmListCell<Session> {
             });
         } else {
             setGraphic(null);
+        }
+    }
+
+    private void updateSessionType() {
+        if (showSessionType) {
+            if (session.isShowSessionType()) {
+                sessionTypeLabel.setText(session.getTalk().getTalkType());
+                borderPane.setTop(sessionType);
+            } else {
+                borderPane.setTop(null);
+            }
         }
     }
 

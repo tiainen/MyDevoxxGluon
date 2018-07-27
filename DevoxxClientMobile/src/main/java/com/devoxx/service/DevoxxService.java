@@ -1055,7 +1055,7 @@ public class DevoxxService implements Service {
         try {
             JsonObject jsonObject = createJsonObject(fileContent);
             JsonString title = (JsonString) jsonObject.get("title");
-            return title != null && title.getString().equalsIgnoreCase("reload");
+            return title != null && title.getString().equalsIgnoreCase(DevoxxSettings.RELOAD);
         } catch (Exception e) {
             LOG.log(Level.SEVERE, e.getMessage());
             return false;
@@ -1067,7 +1067,7 @@ public class DevoxxService implements Service {
         try {
             JsonObject jsonObject = createJsonObject(fileContent);
             JsonString title = (JsonString) jsonObject.get("title");
-            return title != null && title.getString().equalsIgnoreCase("rating");
+            return title != null && title.getString().equalsIgnoreCase(DevoxxSettings.RATING);
         } catch (Exception e) {
             LOG.log(Level.SEVERE, e.getMessage());
             return false;

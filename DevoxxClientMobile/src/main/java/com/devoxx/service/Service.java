@@ -276,5 +276,5 @@ public interface Service {
     /**
      * Submits the user feedback
      */
-    void submitFeedback(Feedback feedback);
+    void sendFeedback(Feedback feedback);
 }

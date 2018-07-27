@@ -7,7 +7,12 @@ import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClientBuilder;
 import com.amazonaws.services.simpleemail.model.*;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class FeedbackLambda implements RequestHandler<FeedbackMail, String> {
+
+    private static final Logger LOG = Logger.getLogger(FeedbackLambda.class.getName());
 
     private static final String SOURCE = "devoxx@gluonhq.com";
     private static final String TO = "info@devoxx.com";
@@ -32,9 +37,9 @@ public class FeedbackLambda implements RequestHandler<FeedbackMail, String> {
                                     .withCharset("UTF-8").withData(SUBJECT)))
                     .withSource(SOURCE);
             client.sendEmail(request);
-            System.out.println("Email sent!");
+            LOG.log(Level.INFO, "Email sent!");
         } catch (Exception ex) {
-            System.out.println("The email was not sent. Error message: " + ex.getMessage());
+            LOG.log(Level.SEVERE, "The email was not sent. Error message: " + ex.getMessage());
         }
         return "";
     }

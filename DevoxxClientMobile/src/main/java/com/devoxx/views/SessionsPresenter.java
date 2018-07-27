@@ -152,6 +152,8 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
             if (service.showRatingDialog()) {
                 final GridPane reviewGrid = createReviewGrid();
                 sessions.setTop(reviewGrid);
+            } else {
+                sessions.setTop(null);
             }
         });
 
@@ -356,10 +358,10 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
     private GridPane createReviewGrid() {
         final GridPane gridPane = new GridPane();
         final HBox buttons = new HBox();
-        final Label header = new Label("Do you love Devoxx App?");
-        final Button no = createFlatButton("No");
-        final Button yes = createFlatButton("Yes");
-        final Button later = createFlatButton("Later");
+        final Label header = new Label(DevoxxBundle.getString("OTN.FEEDBACK.QUESTION.DEVOXX"));
+        final Button no = createFlatButton(DevoxxBundle.getString("OTN.FEEDBACK.NO"));
+        final Button yes = createFlatButton(DevoxxBundle.getString("OTN.FEEDBACK.YES"));
+        final Button later = createFlatButton(DevoxxBundle.getString("OTN.FEEDBACK.LATER"));
         final ImageView devoxxLogo = new ImageView();
         devoxxLogo.getStyleClass().add("logo");
         devoxxLogo.setPreserveRatio(true);
@@ -373,8 +375,8 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
         yes.getStyleClass().add("yes");
         later.setOnAction(e -> sessions.setTop(null));
         no.setOnAction(e -> {
-            header.setText("Would you like to help us improve?");
-            final Button feedback = createFlatButton("Leave Feedback");
+            header.setText(DevoxxBundle.getString("OTN.FEEDBACK.QUESTION.IMPROVE"));
+            final Button feedback = createFlatButton(DevoxxBundle.getString("OTN.FEEDBACK.BUTTON.FEEDBACK"));
             feedback.setOnAction(fe -> {
                 later.fire();
                 DevoxxView.FEEDBACK.switchView();
@@ -382,8 +384,8 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
             buttons.getChildren().setAll(later, feedback);
         });
         yes.setOnAction(e -> {
-            header.setText("Would you like to rate us?");
-            final Button review = createFlatButton("Rate this App");
+            header.setText(DevoxxBundle.getString("OTN.FEEDBACK.QUESTION.RATE"));
+            final Button review = createFlatButton(DevoxxBundle.getString("OTN.FEEDBACK.BUTTON.RATE"));
             review.setOnAction(re -> {
                 later.fire();
                 Util.requestRating();

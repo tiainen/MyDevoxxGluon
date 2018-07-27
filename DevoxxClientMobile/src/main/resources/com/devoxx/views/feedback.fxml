@@ -9,7 +9,7 @@
         <VBox styleClass="content">
             <TextField fx:id="name" floatText="Name"/>
             <TextField fx:id="email" floatText="Email"/>
-            <TextArea  fx:id="message" floatText="Write your feedback" VBox.vgrow="ALWAYS"/>
+            <TextArea  fx:id="message" floatText="Write your feedback"/>
         </VBox>
     </center>
 </View>

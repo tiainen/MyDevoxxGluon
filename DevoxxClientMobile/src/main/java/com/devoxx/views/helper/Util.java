@@ -27,6 +27,7 @@ package com.devoxx.views.helper;
 
 import com.devoxx.model.Speaker;
 import com.devoxx.util.DevoxxBundle;
+import com.devoxx.util.DevoxxSettings;
 import com.devoxx.util.ImageCache;
 import com.devoxx.views.ExhibitionMapPresenter;
 import com.gluonhq.charm.down.Platform;
@@ -119,11 +120,9 @@ public class Util {
     public static void requestRating() {
         String url = null;
         if(Platform.isAndroid()) {
-            String packageName = "com.devoxx";
-            url = "market://details?id=" + packageName;
+            url = DevoxxSettings.ANDROID_REVIEW_URL;
         } else if (Platform.isIOS()) {
-            String appId = "1094805620";
-            url = "itms-apps://itunes.apple.com/WebObjects/MZStore.woa/wa/viewContentsUserReviews?id=" + appId +"&amp;onlyLatestVersion=true&amp;pageNumber=0&amp;sortOrdering=1&amp;type=Purple+Software";
+            url = DevoxxSettings.IOS_REVIEW_URL;
         }
         String finalUrl = url;
         Services.get(BrowserService.class).ifPresent(b -> {

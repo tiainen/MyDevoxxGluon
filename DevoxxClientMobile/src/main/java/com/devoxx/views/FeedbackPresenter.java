@@ -94,8 +94,8 @@ public class FeedbackPresenter extends GluonPresenter<DevoxxApplication> {
 
     private void sendFeedback(String nameText, String emailText, String messageText) {
         final Feedback feedback = new Feedback(nameText, emailText, messageText);
-        service.submitFeedback(feedback);
-        final Toast toast = new Toast(DevoxxBundle.getString("OTN.FEEDBACK.SUCCESS"));
+        service.sendFeedback(feedback);
+        final Toast toast = new Toast(DevoxxBundle.getString("OTN.FEEDBACK.MSG.SUCCESS"));
         toast.show();
         DevoxxView.SESSIONS.switchView();
     }
@@ -105,10 +105,9 @@ public class FeedbackPresenter extends GluonPresenter<DevoxxApplication> {
         for (TextInput textInput : textInputs) {
             if (textInput.getText().isEmpty()) {
                 textInput.pseudoClassStateChanged(PSEUDO_CLASS_ERROR, true);
-                status = status && false;
+                status = false;
             } else {
                 textInput.pseudoClassStateChanged(PSEUDO_CLASS_ERROR, false);
-                status = status && true;
             }    
         }
         return status;
@@ -119,7 +118,7 @@ public class FeedbackPresenter extends GluonPresenter<DevoxxApplication> {
             if (textInput.getText().isEmpty()) {
                 textInput.setErrorValidator(s -> {
                     if (s.isEmpty()) {
-                        return "Cannot be empty";
+                        return DevoxxBundle.getString("OTN.FEEDBACK.MSG.EMPTY");
                     }
                     return "";
                 });

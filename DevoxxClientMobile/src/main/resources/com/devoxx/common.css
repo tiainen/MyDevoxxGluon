@@ -1120,3 +1120,7 @@
 .feedback > .content > .charm-text-area:error {
     -fx-border-color: #f44336;
 }
+
+.feedback > .content > .charm-text-area:error > .float {
+    -fx-text-fill: #f44336;
+}

@@ -34,7 +34,6 @@ import com.devoxx.util.SponsorCategory;
 import com.devoxx.views.cell.SponsorCell;
 import com.devoxx.views.cell.SponsorHeaderCell;
 import com.devoxx.views.helper.Placeholder;
-import com.devoxx.views.helper.Util;
 import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.control.CharmListView;
@@ -43,7 +42,6 @@ import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.util.Duration;
 
 import javax.inject.Inject;
 
@@ -63,17 +61,14 @@ public class SponsorsPresenter extends GluonPresenter<DevoxxApplication> {
     public void initialize() {
         sponsors.setOnShowing(event -> {
             AppBar appBar = getApp().getAppBar();
-            appBar.setNavIcon(getApp().getNavMenuButton());
+            appBar.setNavIcon(getApp().getNavBackButton());
             appBar.setTitleText(DevoxxView.SPONSORS.getTitle());
             appBar.getActionItems().add(MaterialDesignIcon.REFRESH.button(e -> {
                 sponsorListView.setItems(service.retrieveSponsors());
                 Toast toast = new Toast(DevoxxBundle.getString("OTN.SPONSORS.REFRESH_MESSAGE"));
                 toast.show();
             }));
-            appBar.getMenuItems().addAll(getApp().scanAsDifferentUser());
             sponsorListView.setSelectedItem(null);
-
-            Util.showToast(DevoxxBundle.getString("OTN.BADGES.SELECT.SPONSOR"), Duration.seconds(5));
         });
 
         sponsorListView.getStyleClass().add("sponsor-list-view");

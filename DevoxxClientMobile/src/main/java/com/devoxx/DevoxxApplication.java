@@ -37,7 +37,6 @@ import com.devoxx.views.DevoxxSplash;
 import com.devoxx.views.SessionsPresenter;
 import com.devoxx.views.helper.ConnectivityUtils;
 import com.devoxx.views.helper.SessionVisuals;
-import com.devoxx.views.helper.Util;
 import com.gluonhq.charm.down.Platform;
 import com.gluonhq.charm.down.Services;
 import com.gluonhq.charm.down.plugins.*;
@@ -50,7 +49,6 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.MenuItem;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import javafx.stage.Window;
@@ -63,7 +61,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -219,17 +216,6 @@ public class DevoxxApplication extends MobileApplication {
     
     public Button getSearchButton() {
         return navSearchButton;
-    }
-    
-    public MenuItem scanAsDifferentUser() {
-        final MenuItem scanAsDifferentUser = new MenuItem(DevoxxBundle.getString("OTN.BADGES.SCAN.DIFFERENT.USER"));
-        scanAsDifferentUser.setOnAction(ev -> switchToBadgesView(DevoxxSettings.BADGE_TYPE, DevoxxSettings.BADGE_SPONSOR));
-        return scanAsDifferentUser;
-    }
-
-    private Optional<Object> switchToBadgesView(String... toRemove) {
-        Util.removeKeysFromSettings(toRemove);
-        return DevoxxView.BADGES.switchView();
     }
     
     public Button getShareButton(BadgeType badgeType, Sponsor sponsor) {

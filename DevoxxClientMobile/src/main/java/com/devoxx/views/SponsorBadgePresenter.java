@@ -36,6 +36,7 @@ import com.devoxx.util.DevoxxBundle;
 import com.devoxx.util.DevoxxSettings;
 import com.devoxx.views.cell.BadgeCell;
 import com.devoxx.views.helper.Placeholder;
+import com.devoxx.views.helper.Util;
 import com.gluonhq.charm.down.Services;
 import com.gluonhq.charm.down.plugins.BarcodeScanService;
 import com.gluonhq.charm.down.plugins.SettingsService;
@@ -78,17 +79,16 @@ public class SponsorBadgePresenter extends GluonPresenter<DevoxxApplication> {
     @Inject
     private Service service;
 
-    private CharmListView<SponsorBadge, String> lvBadges;
-    private FloatingActionButton scan;
     private Sponsor sponsor;
+    private FloatingActionButton scan;
+    private CharmListView<SponsorBadge, String> sponsorBadges;
 
     public void initialize() {
 
         sponsorView.setOnShowing(event -> {
             AppBar appBar = getApp().getAppBar();
-            appBar.setNavIcon(getApp().getNavMenuButton());
+            appBar.setNavIcon(getApp().getNavBackButton());
             appBar.setTitleText(DevoxxView.SPONSOR_BADGE.getTitle());
-            appBar.getMenuItems().addAll(getApp().scanAsDifferentUser());
             checkAndLoadView();
         });
         
@@ -131,25 +131,28 @@ public class SponsorBadgePresenter extends GluonPresenter<DevoxxApplication> {
     }
 
     private void loadAuthenticatedView(Sponsor sponsor) {
-        final AppBar appBar = getApp().getAppBar();
-        final Button shareButton = getApp().getShareButton(BadgeType.SPONSOR, sponsor);
-        appBar.getActionItems().setAll(shareButton);
-        appBar.setTitleText(DevoxxBundle.getString("OTN.SPONSOR.BADGES.FOR", sponsor.getName()));
-        final ObservableList<MenuItem> menuItems = appBar.getMenuItems();
-        if (menuItems.size() > 0) {
-            menuItems.get(0).setText("Logout");
-        }
-
+        
         final ObservableList<SponsorBadge> badges = service.retrieveSponsorBadges(sponsor);
         final FilteredList<SponsorBadge> filteredBadges = new FilteredList<>(badges, badge -> {
-             return badge != null && badge.getSponsor() != null && badge.getSponsor().equals(sponsor);
+            return badge != null && badge.getSponsor() != null && badge.getSponsor().equals(sponsor);
         });
-        lvBadges = new CharmListView<>();
-        lvBadges.setPlaceholder(new Placeholder(EMPTY_LIST_MESSAGE, DevoxxView.SPONSOR_BADGE.getMenuIcon()));
-        lvBadges.setCellFactory(param -> new BadgeCell<>());
-        lvBadges.setItems(filteredBadges);
-        sponsorView.setCenter(lvBadges);
-        shareButton.disableProperty().bind(lvBadges.itemsProperty().emptyProperty());
+        
+        if (sponsorBadges == null) {
+            sponsorBadges = new CharmListView<>();
+            sponsorBadges.setPlaceholder(new Placeholder(EMPTY_LIST_MESSAGE, DevoxxView.SPONSOR_BADGE.getMenuIcon()));
+            sponsorBadges.setCellFactory(param -> new BadgeCell<>());
+            sponsorBadges.setItems(filteredBadges);
+        }
+        sponsorView.setCenter(sponsorBadges);
+
+        final Button shareButton = getApp().getShareButton(BadgeType.SPONSOR, sponsor);
+        final AppBar appBar = getApp().getAppBar();
+        appBar.setTitleText(DevoxxBundle.getString("OTN.SPONSOR.BADGES.FOR", sponsor.getName()));
+        appBar.setNavIcon(getApp().getNavMenuButton());
+        appBar.getActionItems().setAll(shareButton);
+        appBar.getMenuItems().addAll(getBadgeChangeMenuItem("Logout"));
+        
+        shareButton.disableProperty().bind(sponsorBadges.itemsProperty().emptyProperty());
 
         if (scan == null) {
             scan = new FloatingActionButton("", e -> {
@@ -199,6 +202,15 @@ public class SponsorBadgePresenter extends GluonPresenter<DevoxxApplication> {
                 content.requestFocus();
             }
         });
+    }
+
+    private MenuItem getBadgeChangeMenuItem(String text) {
+        final MenuItem scanAsDifferentUser = new MenuItem(text);
+        scanAsDifferentUser.setOnAction(e -> {
+            Util.removeKeysFromSettings(DevoxxSettings.BADGE_TYPE, DevoxxSettings.BADGE_SPONSOR);
+            DevoxxView.BADGES.switchView();
+        });
+        return scanAsDifferentUser;
     }
     
 }

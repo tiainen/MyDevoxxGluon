@@ -27,43 +27,24 @@ package com.devoxx.views;
 
 import com.devoxx.DevoxxApplication;
 import com.devoxx.DevoxxView;
-import com.devoxx.model.Badge;
 import com.devoxx.model.BadgeType;
 import com.devoxx.model.Sponsor;
-import com.devoxx.service.Service;
-import com.devoxx.util.DevoxxBundle;
 import com.devoxx.util.DevoxxSettings;
-import com.devoxx.views.cell.BadgeCell;
-import com.devoxx.views.helper.LoginPrompter;
-import com.devoxx.views.helper.Placeholder;
-import com.devoxx.views.helper.Util;
 import com.gluonhq.charm.down.Services;
-import com.gluonhq.charm.down.plugins.BarcodeScanService;
 import com.gluonhq.charm.down.plugins.SettingsService;
 import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
 import com.gluonhq.charm.glisten.control.AppBar;
-import com.gluonhq.charm.glisten.control.CharmListView;
-import com.gluonhq.charm.glisten.control.FloatingActionButton;
-import com.gluonhq.charm.glisten.control.Toast;
 import com.gluonhq.charm.glisten.mvc.View;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
-import javafx.scene.control.MenuItem;
 import javafx.scene.layout.VBox;
-import javafx.util.Duration;
 
-import javax.inject.Inject;
 import java.util.Optional;
 
-import static com.devoxx.model.BadgeType.ATTENDEE;
 import static com.devoxx.model.BadgeType.valueOf;
 
 public class BadgesPresenter extends GluonPresenter<DevoxxApplication> {
     
-    private static final String ANONYMOUS_MESSAGE = DevoxxBundle.getString("OTN.BADGES.ANONYMOUS_MESSAGE");
-    private static final String EMPTY_LIST_MESSAGE = DevoxxBundle.getString("OTN.BADGES.EMPTY_LIST_MESSAGE");
-
     @FXML
     private View badgesView;
 
@@ -76,16 +57,7 @@ public class BadgesPresenter extends GluonPresenter<DevoxxApplication> {
     @FXML
     private Button attendee;
     
-    @Inject
-    private Service service;
-    
-    private CharmListView<Badge, String> lvBadges;
-    private FloatingActionButton scan;
-
     public void initialize() {
-        lvBadges = new CharmListView<>();
-        lvBadges.setPlaceholder(new Placeholder(EMPTY_LIST_MESSAGE, DevoxxView.BADGES.getMenuIcon()));
-        lvBadges.setCellFactory(param -> new BadgeCell<>());
         
         badgesView.setOnShowing(event -> {
             AppBar appBar = getApp().getAppBar();
@@ -93,34 +65,13 @@ public class BadgesPresenter extends GluonPresenter<DevoxxApplication> {
             appBar.setTitleText(DevoxxView.BADGES.getTitle());
             
             sponsor.setOnAction(e -> showSponsor());
-            attendee.setOnAction(e -> authenticate());
+            attendee.setOnAction(e -> showAttendee());
 
             loadContent();
         });
-        
-        badgesView.setOnHiding(event -> {
-            if (scan != null) {
-                scan.hide();
-            }
-        });
-    }
-
-    private MenuItem getBadgeChangeMenuItem(String text) {
-        final MenuItem scanAsDifferentUser = new MenuItem(text);
-        scanAsDifferentUser.setOnAction(ev -> reload());
-        return scanAsDifferentUser;
-    }
-
-    private void reload() {
-        Util.removeKeysFromSettings(DevoxxSettings.BADGE_TYPE, DevoxxSettings.BADGE_SPONSOR);
-        loadContent();
     }
 
     private void loadContent() {
-        if (scan != null) {
-            scan.hide();
-        }
-        getApp().getAppBar().getMenuItems().clear();
         final BadgeType badgeType = loadPreviousSelection();
         if (badgeType == null) {
             badgesView.setCenter(content);
@@ -130,19 +81,9 @@ public class BadgesPresenter extends GluonPresenter<DevoxxApplication> {
                     showSponsor();
                     break;
                 case ATTENDEE:
-                    authenticate();
+                    showAttendee();
                     break;
             }
-        }
-    }
-
-    private void authenticate() {
-        getApp().getAppBar().getMenuItems().setAll(getBadgeChangeMenuItem(DevoxxBundle.getString("OTN.BADGES.SCAN.DIFFERENT.USER")));
-        getApp().getAppBar().setTitleText(DevoxxBundle.getString("OTN.VIEW.ATTENDEE"));
-        if (service.isAuthenticated() || !DevoxxSettings.USE_REMOTE_NOTES) {
-            loadAuthenticatedView();
-        } else {
-            loadAnonymousView();
         }
     }
 
@@ -158,58 +99,8 @@ public class BadgesPresenter extends GluonPresenter<DevoxxApplication> {
         return null;
     }
 
-    private void loadAnonymousView() {
-        badgesView.setCenter(new LoginPrompter(service, ANONYMOUS_MESSAGE, DevoxxView.BADGES.getMenuIcon(), this::loadAuthenticatedView));
-    }
-
-    private void loadAuthenticatedView() {
-        Services.get(SettingsService.class).ifPresent(service -> {
-            service.store(DevoxxSettings.BADGE_TYPE, BadgeType.ATTENDEE.toString());
-        });
-        Util.showToast(DevoxxBundle.getString("OTN.BADGES.LOGIN.ATTENDEE"), Duration.seconds(5));
-        showAttendee();
-    }
-
     private void showAttendee() {
-        final ObservableList<Badge> badges = service.retrieveBadges();
-        lvBadges.setItems(badges);
-        badgesView.setCenter(lvBadges);
-
-        final Button shareButton = getApp().getShareButton(BadgeType.ATTENDEE, null);
-        shareButton.disableProperty().bind(lvBadges.itemsProperty().emptyProperty());
-        getApp().getAppBar().getActionItems().setAll(getApp().getSearchButton(), shareButton);
-        getApp().getAppBar().getMenuItems().setAll(getBadgeChangeMenuItem("Logout"));
-
-        if (scan == null) {
-            scan = new FloatingActionButton("", e -> {
-                Services.get(BarcodeScanService.class).ifPresent(s -> {
-                    final Optional<String> scanQr = s.scan(DevoxxBundle.getString("OTN.BADGES.ATTENDEE.QR.TITLE"), null, null);
-                    scanQr.ifPresent(qr -> {
-                        Badge badge = new Badge(qr);
-                        if (badge.getBadgeId() != null) {
-                            boolean exists = false;
-                            for (Badge b : badges) {
-                                if (b.getBadgeId().equals(badge.getBadgeId())) {
-                                    Toast toast = new Toast(DevoxxBundle.getString("OTN.BADGES.QR.EXISTS"));
-                                    toast.show();
-                                    exists = true;
-                                    break;
-                                }
-                            }
-                            if (!exists) {
-                                lvBadges.itemsProperty().add(badge);
-                                DevoxxView.BADGE.switchView().ifPresent(presenter -> ((BadgePresenter) presenter).setBadge(badge, ATTENDEE));
-                            }
-                        } else {
-                            Toast toast = new Toast(DevoxxBundle.getString("OTN.BADGES.BAD.QR"));
-                            toast.show();
-                        }
-                    });
-                });
-            });
-            scan.getStyleClass().add("badge-scanner");
-        }
-        scan.show();
+        DevoxxView.ATTENDEE_BADGE.switchView();
     }
 
     private void showSponsor() {

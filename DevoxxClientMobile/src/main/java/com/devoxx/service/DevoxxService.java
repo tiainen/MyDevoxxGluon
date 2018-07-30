@@ -64,6 +64,10 @@ import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.scene.control.Button;
 
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.json.JsonString;
 import java.io.*;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -94,15 +98,24 @@ public class DevoxxService implements Service {
                     .orElseThrow(() -> new IOException("Private storage file not available"));
             Services.get(RuntimeArgsService.class).ifPresent(ras -> {
                 ras.addListener(RuntimeArgsService.LAUNCH_PUSH_NOTIFICATION_KEY, (f) -> {
-                    System.out.println(">>> received a silent push notification with contents: " + f);
-                    System.out.println("[DBG] writing reload file");
-                    File reloadMe = new File (rootDir, "reload");
-                    try (BufferedWriter br = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(reloadMe)))) {
-                        br.write(f);
-                        System.out.println("[DBG] writing reload file done");
-                    } catch (IOException ex) {
-                        LOG.log(Level.SEVERE, null, ex);
-                        System.out.println("[DBG] exception writing reload file "+ex);
+                    LOG.log(Level.INFO, ">>> received a silent push notification with contents: " + f);
+                    LOG.log(Level.INFO, "[DBG] writing reload file");
+                    File file = null;
+                    if (isReloadNotification(f)) {
+                        LOG.log(Level.INFO, "Reload notification found");
+                        file = new File (rootDir, DevoxxSettings.RELOAD);
+                    } else if (isRatingNotification(f)) {
+                        LOG.log(Level.INFO, "Rating notification found");
+                        file = new File (rootDir, DevoxxSettings.RATING);
+                    }
+                    if (file != null) {
+                        try (BufferedWriter br = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)))) {
+                            br.write(f);
+                            LOG.log(Level.INFO, "[DBG] writing silent notification file done");
+                        } catch (IOException ex) {
+                            LOG.log(Level.SEVERE, null, ex);
+                            LOG.log(Level.INFO, "[DBG] exception writing reload file " + ex);
+                        }
                     }
                 });
             });
@@ -363,20 +376,33 @@ public class DevoxxService implements Service {
     @Override
     public void checkIfReloadRequested() {
         if (rootDir != null && getConference() != null) {
-            File reload = new File(rootDir, "reload");
+            File reload = new File(rootDir, DevoxxSettings.RELOAD);
             LOG.log(Level.INFO, "Reload requested? " + reload.exists());
             if (reload.exists()) {
                 String conferenceIdForReload = readConferenceIdFromFile(reload);
                 LOG.log(Level.INFO, "Reload requested for conference: " + conferenceIdForReload + ", current conference: " + getConference().getId());
-                System.out.println("[DBB] reload exists for conference: '" + conferenceIdForReload + "', current conference: '" + getConference().getId()+"'");
+                LOG.log(Level.INFO, "[DBB] reload exists for conference: '" + conferenceIdForReload + "', current conference: '" + getConference().getId()+"'");
                 if (!conferenceIdForReload.isEmpty() && conferenceIdForReload.equalsIgnoreCase(getConference().getId())) {
                     reload.delete();
                     retrieveSessionsInternal();
                     retrieveSpeakersInternal();
-                    System.out.println("[DBB] data reloading for "+conferenceIdForReload);
+                    LOG.log(Level.INFO, "[DBB] data reloading for "+conferenceIdForReload);
                 }
             }
         }
+    }
+
+    @Override
+    public boolean showRatingDialog() {
+        if (rootDir != null) {
+            File rating = new File(rootDir, DevoxxSettings.RATING);
+            LOG.log(Level.INFO, "Rating requested? " + rating.exists());
+            if (rating.exists()) {
+                rating.delete();
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -814,6 +840,21 @@ public class DevoxxService implements Service {
             });
         }
     }
+    
+    @Override
+    public User getAuthenticatedUser() {
+        return authenticationClient.getAuthenticatedUser();
+    }
+
+    @Override
+    public void sendFeedback(Feedback feedback) {
+        RemoteFunctionObject fnSendFeedback = RemoteFunctionBuilder.create("sendFeedback")
+                .param("name", feedback.getName())
+                .param("email", feedback.getEmail())
+                .param("message", feedback.getMessage())
+                .object();
+        fnSendFeedback.call(String.class);
+    }
 
     private ObservableList<Note> internalRetrieveNotes() {
         if (DevoxxSettings.USE_REMOTE_NOTES) {
@@ -914,39 +955,57 @@ public class DevoxxService implements Service {
 
     private String readConferenceIdFromFile(File reload) {
         StringBuilder fileContent = new StringBuilder((int) reload.length());
-        Scanner scanner = null;
-        try {
-            scanner = new Scanner(reload);
+        try (Scanner scanner = new Scanner(reload)) {
             String lineSeparator = System.getProperty("line.separator");
             while (scanner.hasNextLine()) {
                 fileContent.append(scanner.nextLine()).append(lineSeparator);
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-        } finally {
-            if(scanner != null) {
-                scanner.close();
-            }
         }
-        System.out.println("read reload file '"+fileContent.toString()+"'");
+        LOG.log(Level.INFO, "read reload file '" + fileContent.toString() + "'");
         return findConferenceIdFromString(fileContent.toString());
     }
 
     private String findConferenceIdFromString(String fileContent) {
+        // fileContent: {"aps": {"content-available":1},"body":"DevoxxUS2017","title":"My Devoxx 031607"}
         try {
-            String trimmedContent = fileContent.replaceAll("\"", "")
-                                               .replaceAll(" ", "")
-                                               .replaceAll("\\}", ",");
-            String[] keyValue = trimmedContent.split(",");
-            for (String aKeyValue : keyValue) {
-                if (aKeyValue.contains("body")) {
-                    return aKeyValue.split(":")[1];
-                }
-            }
+            JsonObject jsonObject = createJsonObject(fileContent);
+            JsonString body = (JsonString) jsonObject.get("body");
+            return body.getString();
         } catch (Exception e) {
             e.printStackTrace();
         }
         return "";
+    }
+    
+    private static boolean isReloadNotification(String fileContent) {
+        // fileContent: {"id":"", "body":"test", "title":"reload"}
+        try {
+            JsonObject jsonObject = createJsonObject(fileContent);
+            JsonString title = (JsonString) jsonObject.get("title");
+            return title != null && title.getString().equalsIgnoreCase(DevoxxSettings.RELOAD);
+        } catch (Exception e) {
+            LOG.log(Level.SEVERE, e.getMessage());
+            return false;
+        }
+    }
+
+    private static boolean isRatingNotification(String fileContent) {
+        // fileContent: {"id":"", "body":"test", "title":"rating"}
+        try {
+            JsonObject jsonObject = createJsonObject(fileContent);
+            JsonString title = (JsonString) jsonObject.get("title");
+            return title != null && title.getString().equalsIgnoreCase(DevoxxSettings.RATING);
+        } catch (Exception e) {
+            LOG.log(Level.SEVERE, e.getMessage());
+            return false;
+        }
+    }
+
+    private static JsonObject createJsonObject(String fileContent) {
+        JsonReader reader = Json.createReader(new StringReader(fileContent));
+        return (JsonObject) reader.read();
     }
 
     private void findAndSetConference(String configuredConference, GluonObservableList<Conference> conferences) {

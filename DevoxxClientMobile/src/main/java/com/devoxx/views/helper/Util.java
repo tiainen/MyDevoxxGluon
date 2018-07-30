@@ -29,6 +29,8 @@ import com.devoxx.model.Speaker;
 import com.devoxx.util.DevoxxBundle;
 import com.devoxx.util.ImageCache;
 import com.devoxx.views.ExhibitionMapPresenter;
+import com.devoxx.util.DevoxxSettings;
+import com.gluonhq.charm.down.Platform;
 import com.gluonhq.charm.down.Services;
 import com.gluonhq.charm.down.plugins.BrowserService;
 import com.gluonhq.charm.down.plugins.SettingsService;
@@ -114,6 +116,26 @@ public class Util {
                     toast.show();
                 }
             });
+        });
+    }
+    
+    public static void requestRating() {
+        String url = null;
+        if(Platform.isAndroid()) {
+            url = DevoxxSettings.ANDROID_REVIEW_URL;
+        } else if (Platform.isIOS()) {
+            url = DevoxxSettings.IOS_REVIEW_URL;
+        }
+        String finalUrl = url;
+        Services.get(BrowserService.class).ifPresent(b -> {
+            try {
+                if (finalUrl != null) {
+                    b.launchExternalBrowser(finalUrl);
+                }
+            } catch (IOException | URISyntaxException e1) {
+                Toast toast = new Toast("Failed to launch Store");
+                toast.show();
+            }
         });
     }
 

@@ -93,6 +93,17 @@ public class DevoxxSettings {
      */
     public final static int PROCESSING_TIME_OUT = 15; // seconds
 
+    /**
+     * URL to submit review on App Store
+     */
+    public static final String IOS_REVIEW_URL = "itms-apps://itunes.apple.com/app/itunes-u/id1094805620?action=write-review";
+
+    /**
+     * URL to submit review on Play Store
+     */
+    public static final String ANDROID_REVIEW_URL = "market://details?id=com.devoxx";
+    
+
     public final static Locale LOCALE = Locale.getDefault();
     public static final String SKIP_VIDEO = "SKIP_VIDEO";
     public static final String SKIP_FAV_DIALOG = "SKIP_FAV_DIALOG";
@@ -101,6 +112,8 @@ public class DevoxxSettings {
     public static final String SAVED_ACCOUNT_ID = "devoxx_cfp_account";
     public static final String BADGE_TYPE = "badge-type";
     public static final String BADGE_SPONSOR = "badge-sponsor";
+    public static final String RELOAD = "reload";
+    public static final String RATING = "rating";
 
     private static final String WEARABLE_DAY_PATTERN  = "MMMM dd, uuuu";
     private static final String TIME_PATTERN = "h:mma";

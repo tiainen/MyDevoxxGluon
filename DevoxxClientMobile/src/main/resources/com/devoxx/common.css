@@ -1117,6 +1117,13 @@
     -fx-border-insets: 0.25em 0 0 0;
 }
 
+/* TODO: Remove when GM has TextArea validator styling support */
+.feedback > .content > .charm-text-area > .error {
+    -fx-font-size: 0.75em;
+    -fx-text-fill: #f44336;
+    -fx-padding: 0 0 0 0.65em;
+}
+
 .feedback > .content > .charm-text-area:error {
     -fx-border-color: #f44336;
 }

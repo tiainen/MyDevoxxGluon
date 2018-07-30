@@ -26,23 +26,23 @@
 package com.devoxx.views;
 
 import com.devoxx.DevoxxApplication;
+import com.devoxx.DevoxxView;
+import com.devoxx.model.Exhibitor;
+import com.devoxx.model.Note;
 import com.devoxx.model.Searchable;
-import com.devoxx.service.Service;
 import com.devoxx.model.Session;
+import com.devoxx.model.Speaker;
+import com.devoxx.service.Service;
 import com.devoxx.util.DevoxxBundle;
 import com.devoxx.util.DevoxxSearch;
+import com.devoxx.views.cell.SearchCell;
 import com.devoxx.views.cell.SearchHeaderCell;
+import com.devoxx.views.helper.Placeholder;
 import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.control.CharmListView;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
-import com.devoxx.DevoxxView;
-import com.devoxx.model.Exhibitor;
-import com.devoxx.model.Note;
-import com.devoxx.model.Speaker;
-import com.devoxx.views.cell.SearchCell;
-import com.devoxx.views.helper.Placeholder;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
@@ -85,9 +85,11 @@ public class SearchPresenter extends GluonPresenter<DevoxxApplication> {
         searchTextField.getStyleClass().add("search-text-field");
         searchTextField.setPromptText(DevoxxBundle.getString("OTN.SEARCH.PROMPT"));
         
-        clearButton = MaterialDesignIcon.CLOSE.button(e -> {
+        clearButton = MaterialDesignIcon.CLEAR.button(e -> {
             searchTextField.clear();
             searchListView.itemsProperty().clear();
+            // there is a jump in keyboard due to focus
+            searchTextField.requestFocus();
         });
         clearButton.disableProperty().bind(Bindings.createBooleanBinding(() -> {
                 final String text = searchTextField.getText();
@@ -117,7 +119,7 @@ public class SearchPresenter extends GluonPresenter<DevoxxApplication> {
             if (!appBar.getStyleClass().contains("search-app-bar")) {
                 appBar.getStyleClass().add("search-app-bar");
             }
-            appBar.setNavIcon(getApp().getNavMenuButton());
+            appBar.setNavIcon(getApp().getNavBackButton());
             appBar.setTitle(searchTextField);
             appBar.getActionItems().add(clearButton);
             setTextFieldWidth(appBar);
@@ -134,6 +136,7 @@ public class SearchPresenter extends GluonPresenter<DevoxxApplication> {
                 appBar.getStyleClass().remove("search-app-bar");
             }
             appBar.setPrefHeight(-1);
+            searchTextField.clear();
         });
 
         searchListView.setPlaceholder(emptySearchPlaceholder);

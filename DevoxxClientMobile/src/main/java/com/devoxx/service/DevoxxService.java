@@ -393,7 +393,7 @@ public class DevoxxService implements Service {
 
     @Override
     public boolean showRatingDialog() {
-        if (rootDir != null && getConference() != null) {
+        if (rootDir != null) {
             File rating = new File(rootDir, "rating");
             LOG.log(Level.INFO, "Rating requested? " + rating.exists());
             if (rating.exists()) {

@@ -148,13 +148,7 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
             // check if a reload was requested, each time the sessions view is opened
             service.checkIfReloadRequested();
             service.refreshFavorites();
-
-            if (service.showRatingDialog()) {
-                final GridPane reviewGrid = createReviewGrid();
-                sessions.setTop(reviewGrid);
-            } else {
-                sessions.setTop(null);
-            }
+            showRatingDialog();
         });
 
         // Filter
@@ -180,6 +174,15 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
             sessions.setBottom(createBottomNavigation());
         } else {
             sessions.setCenter(createSessionsList(ContentDisplayMode.ALL));
+        }
+    }
+
+    private void showRatingDialog() {
+        if (service.showRatingDialog()) {
+            final GridPane reviewGrid = createReviewGrid();
+            sessions.setTop(reviewGrid);
+        } else {
+            sessions.setTop(null);
         }
     }
 

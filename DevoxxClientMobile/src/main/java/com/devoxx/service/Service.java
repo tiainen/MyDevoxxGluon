@@ -208,10 +208,11 @@ public interface Service {
     /**
      * Returns a list of badges that the authenticated sponsor has scanned. 
      *
-     * @return
+     * @return An observable list of badges scanned and stored by the sponsor.
      * @throws IllegalStateException when no user is currently authenticated
+     * @param sponsor The sponsor for which badges are to be retrieved
      */
-    ObservableList<SponsorBadge> retrieveSponsorBadges();
+    ObservableList<SponsorBadge> retrieveSponsorBadges(Sponsor sponsor);
 
     /**
      * Returns a list of favored or scheduled sessions from the cloud.

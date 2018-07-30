@@ -61,7 +61,7 @@ public class SponsorsPresenter extends GluonPresenter<DevoxxApplication> {
     public void initialize() {
         sponsors.setOnShowing(event -> {
             AppBar appBar = getApp().getAppBar();
-            appBar.setNavIcon(getApp().getNavMenuButton());
+            appBar.setNavIcon(getApp().getNavBackButton());
             appBar.setTitleText(DevoxxView.SPONSORS.getTitle());
             appBar.getActionItems().add(MaterialDesignIcon.REFRESH.button(e -> {
                 sponsorListView.setItems(service.retrieveSponsors());

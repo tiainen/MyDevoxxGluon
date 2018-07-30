@@ -25,22 +25,24 @@
  */
 package com.devoxx.views.helper;
 
+import com.devoxx.model.Speaker;
+import com.devoxx.util.DevoxxBundle;
+import com.devoxx.util.ImageCache;
+import com.devoxx.views.ExhibitionMapPresenter;
 import com.gluonhq.charm.down.Services;
 import com.gluonhq.charm.down.plugins.BrowserService;
+import com.gluonhq.charm.down.plugins.SettingsService;
 import com.gluonhq.charm.glisten.control.Avatar;
 import com.gluonhq.charm.glisten.control.FloatingActionButton;
 import com.gluonhq.charm.glisten.control.Toast;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
-import com.devoxx.model.Speaker;
-import com.devoxx.util.ImageCache;
-import com.devoxx.util.DevoxxBundle;
-import com.devoxx.views.ExhibitionMapPresenter;
 import com.gluonhq.cloudlink.client.media.MediaClient;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Region;
+import javafx.util.Duration;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -157,5 +159,22 @@ public class Util {
             imageView.setTranslateY(0);
         }
     }
+    
+    public static void removeKeysFromSettings(String... toRemove) {
+        Services.get(SettingsService.class).ifPresent(service -> {
+            for (String s : toRemove) {
+                service.remove(s);
+            }
+        });
+    }
+    
+    public static void showToast(String message, Duration duration)  {
+        final Toast toast = new Toast(message);
+        toast.setDuration(duration);
+        toast.show();
+    }
 
+    public static String safeStr(String s) {
+        return s == null? "": s.trim();
+    }
 }

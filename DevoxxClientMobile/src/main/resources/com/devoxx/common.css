@@ -524,6 +524,12 @@
     -fx-translate-y: -1.0;
 }
 
+/* AppBar MenuItem */
+/* temp fix for  GST-521 */
+.popup-view .menu-item {
+    -fx-wrap-text: false;
+}
+
 /** Sponsor View **/
 .sponsor-view > .content {
     -fx-alignment: CENTER;
@@ -1094,6 +1100,10 @@
 }
 
 /** DataLabel **/
+.sponsor-view .data-label {
+    -fx-min-height: 32;
+}
+
 .data-label > .progress-indicator {
     -fx-color: -primary-swatch-500;
 }

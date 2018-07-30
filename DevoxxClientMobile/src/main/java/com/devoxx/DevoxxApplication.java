@@ -27,6 +27,8 @@ package com.devoxx;
 
 import com.airhacks.afterburner.injection.Injector;
 import com.devoxx.model.Badge;
+import com.devoxx.model.BadgeType;
+import com.devoxx.model.Sponsor;
 import com.devoxx.model.SponsorBadge;
 import com.devoxx.service.DevoxxService;
 import com.devoxx.service.Service;
@@ -37,12 +39,7 @@ import com.devoxx.views.helper.ConnectivityUtils;
 import com.devoxx.views.helper.SessionVisuals;
 import com.gluonhq.charm.down.Platform;
 import com.gluonhq.charm.down.Services;
-import com.gluonhq.charm.down.plugins.ConnectivityService;
-import com.gluonhq.charm.down.plugins.DeviceService;
-import com.gluonhq.charm.down.plugins.DisplayService;
-import com.gluonhq.charm.down.plugins.SettingsService;
-import com.gluonhq.charm.down.plugins.ShareService;
-import com.gluonhq.charm.down.plugins.StorageService;
+import com.gluonhq.charm.down.plugins.*;
 import com.gluonhq.charm.glisten.afterburner.AppView;
 import com.gluonhq.charm.glisten.afterburner.GluonInstanceProvider;
 import com.gluonhq.charm.glisten.application.MobileApplication;
@@ -221,7 +218,7 @@ public class DevoxxApplication extends MobileApplication {
         return navSearchButton;
     }
     
-    public Button getShareButton(String badgeType) {
+    public Button getShareButton(BadgeType badgeType, Sponsor sponsor) {
         return MaterialDesignIcon.SHARE.button(e -> {
             Services.get(ShareService.class).ifPresent(s -> {
                 File root = Services.get(StorageService.class).flatMap(storage -> storage.getPublicStorage("Documents")).orElse(null);
@@ -231,17 +228,17 @@ public class DevoxxApplication extends MobileApplication {
                         file.delete();
                     }
                     try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-                        if (DevoxxSettings.BADGE_TYPE_ATTENDEE.equals(badgeType)) {
+                        if (BadgeType.ATTENDEE == badgeType) {
                             writer.write("ID,First Name,Last Name,Company,Email,Details");
                             writer.newLine();
                             for (Badge badge : service.retrieveBadges()) {
                                 writer.write(badge.toCSV());
                                 writer.newLine();
                             }
-                        } else if (DevoxxSettings.BADGE_TYPE_SPONSOR.equals(badgeType)) {
+                        } else if (BadgeType.SPONSOR == badgeType) {
                             writer.write("ID,First Name,Last Name,Company,Email,Details,Slug");
                             writer.newLine();
-                            for (SponsorBadge badge : service.retrieveSponsorBadges()) {
+                            for (SponsorBadge badge : service.retrieveSponsorBadges(sponsor)) {
                                 writer.write(badge.toCSV());
                                 writer.newLine();
                             }

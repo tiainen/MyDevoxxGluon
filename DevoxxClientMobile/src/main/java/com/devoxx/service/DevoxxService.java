@@ -81,6 +81,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static com.devoxx.views.helper.Util.safeStr;
+
 public class DevoxxService implements Service {
 
     private static final Logger LOG = Logger.getLogger(DevoxxService.class.getName());
@@ -129,6 +131,7 @@ public class DevoxxService implements Service {
     private final PushClient pushClient;
     private final DataClient localDataClient;
     private final DataClient cloudDataClient;
+    private final DataClient nonAuthenticatedCloudDataClient;
 
     private final StringProperty cfpUserUuid = new SimpleStringProperty(this, "cfpUserUuid", "");
 
@@ -151,16 +154,13 @@ public class DevoxxService implements Service {
 
     // user specific data
     private ObservableList<Session> favoredSessions;
-    private ObservableList<Session> scheduledSessions;
     private ObservableList<Note> notes;
     private ObservableList<Badge> badges;
     private ObservableList<SponsorBadge> sponsorBadges;
 
     private GluonObservableObject<Favorites> allFavorites;
     private ListChangeListener<Session> internalFavoredSessionsListener = null;
-    private ListChangeListener<Session> internalScheduledSessionsListener = null;
     private ObservableList<Session> internalFavoredSessions = FXCollections.observableArrayList();
-    private ObservableList<Session> internalScheduledSessions = FXCollections.observableArrayList();
     private ObservableList<Favorite> favorites = FXCollections.observableArrayList();
     private ObservableList<Sponsor> sponsors = FXCollections.observableArrayList();
 
@@ -182,6 +182,10 @@ public class DevoxxService implements Service {
                 .operationMode(OperationMode.CLOUD_FIRST)
                 .build();
 
+        nonAuthenticatedCloudDataClient = DataClientBuilder.create()
+                .operationMode(OperationMode.CLOUD_FIRST)
+                .build();
+
         // enable push notifications and subscribe to the possibly selected conference
         pushClient = new PushClient();
         pushClient.enable(DevoxxNotifications.GCM_SENDER_ID);
@@ -198,9 +202,6 @@ public class DevoxxService implements Service {
             if ("".equals(nv)) {
                 if (internalFavoredSessions != null && internalFavoredSessionsListener != null) {
                     internalFavoredSessions.removeListener(internalFavoredSessionsListener);
-                }
-                if (internalScheduledSessions != null && internalScheduledSessionsListener != null) {
-                    internalScheduledSessions.removeListener(internalScheduledSessionsListener);
                 }
             }
         });
@@ -413,13 +414,6 @@ public class DevoxxService implements Service {
                     internalFavoredSessions.removeListener(internalFavoredSessionsListener);
                     internalFavoredSessions.clear();
                     return retrieveFavoredSessions();
-                }
-            } else if (sessionListType == SessionListType.SCHEDULED) {
-                scheduledSessions = null;
-                if (internalScheduledSessions != null && internalScheduledSessionsListener != null) {
-                    internalScheduledSessions.removeListener(internalScheduledSessionsListener);
-                    internalScheduledSessions.clear();
-                    return retrieveScheduledSessions();
                 }
             }
         }
@@ -653,34 +647,21 @@ public class DevoxxService implements Service {
         }
 
         if (favoredSessions == null) {
-            favoredSessions = internalRetrieveFavoredSessions();
-        }
-
-        return favoredSessions;
-    }
-
-    @Override
-    public ObservableList<Session> retrieveScheduledSessions() {
-        if (!isAuthenticated()) {
-            throw new IllegalStateException("An authenticated user must be available when calling this method.");
-        }
-
-        if (scheduledSessions == null) {
             try {
                 DevoxxNotifications notifications = Injector.instantiateModelOrService(DevoxxNotifications.class);
                 // stop recreating notifications, after the list of scheduled sessions is fully retrieved
-                scheduledSessions = internalRetrieveScheduledSessions(notifications::preloadingScheduledSessionsDone);
+                favoredSessions = internalRetrieveFavoredSessions(notifications::preloadingFavoriteSessionsDone);
                 // start recreating notifications as soon as the scheduled sessions are being retrieved
-                notifications.preloadScheduledSessions();
+                notifications.preloadFavoriteSessions();
             } catch (IllegalStateException ise) {
                 LOG.log(Level.WARNING, "Can't instantiate Notifications when running a background service");
             }
         }
 
-        return scheduledSessions;
+        return favoredSessions;
     }
 
-    public ObservableList<Session> internalRetrieveFavoredSessions() {
+    private ObservableList<Session> internalRetrieveFavoredSessions(Runnable onStateSucceeded) {
         if (!isAuthenticated()) {
             throw new IllegalStateException("An authenticated user that was verified at Devoxx CFP must be available when calling this method.");
         }
@@ -695,39 +676,13 @@ public class DevoxxService implements Service {
             for (SessionId sessionId : functionSessions.get().getFavored()) {
                 findSession(sessionId.getId()).ifPresent(internalFavoredSessions::add);
             }
-
             internalFavoredSessionsListener = initializeSessionsListener(internalFavoredSessions, "favored");
             ready.set(true);
+            onStateSucceeded.run();
         });
         functionSessions.setOnFailed(e -> LOG.log(Level.WARNING, String.format(REMOTE_FUNCTION_FAILED_MSG, "favored"), e.getSource().getException()));
 
         return internalFavoredSessions;
-    }
-
-    public ObservableList<Session> internalRetrieveScheduledSessions(Runnable onStateSucceeded) {
-        if (!isAuthenticated()) {
-            throw new IllegalStateException("An authenticated user that was verified at Devoxx CFP must be available when calling this method.");
-        }
-
-        RemoteFunctionObject fnScheduled = RemoteFunctionBuilder.create("scheduled")
-                .param("0", getConference().getCfpEndpoint())
-                .param("1", cfpUserUuid.get())
-                .object();
-
-        GluonObservableObject<Scheduled> functionSessions = fnScheduled.call(Scheduled.class);
-        functionSessions.setOnSucceeded(e -> {
-            for (SessionId sessionId : functionSessions.get().getScheduled()) {
-                findSession(sessionId.getId()).ifPresent(internalScheduledSessions::add);
-            }
-
-            internalScheduledSessionsListener = initializeSessionsListener(internalScheduledSessions, "scheduled");
-            if (onStateSucceeded != null) {
-                onStateSucceeded.run();
-            }
-        });
-        functionSessions.setOnFailed(e -> LOG.log(Level.WARNING, String.format(REMOTE_FUNCTION_FAILED_MSG, "scheduled"), e.getSource().getException()));
-
-        return internalScheduledSessions;
     }
 
     private ListChangeListener<Session> initializeSessionsListener(ObservableList<Session> sessions, String functionPrefix) {
@@ -790,33 +745,10 @@ public class DevoxxService implements Service {
     }
 
     @Override
-    public ObservableList<SponsorBadge> retrieveSponsorBadges() {
-        if (!isAuthenticated() && DevoxxSettings.USE_REMOTE_NOTES) {
-            throw new IllegalStateException("An authenticated user must be available when calling this method.");
-        }
+    public ObservableList<SponsorBadge> retrieveSponsorBadges(Sponsor sponsor) {
         
         if (sponsorBadges == null) {
-            final GluonObservableList<SponsorBadge> sponsorBadges = internalRetrieveSponsorBadges();
-            this.sponsorBadges = sponsorBadges;
-            
-            // every scanned sponsor badge must be posted with the remote function
-            sponsorBadges.initializedProperty().addListener(new ChangeListener<Boolean>() {
-                @Override
-                public void changed(ObservableValue<? extends Boolean> o, Boolean ov, Boolean nv) {
-                    if (nv) {
-                        sponsorBadges.addListener((ListChangeListener<SponsorBadge>) c -> {
-                            while (c.next()) {
-                                if (c.wasAdded()) {
-                                    for (SponsorBadge sponsorBadge : c.getAddedSubList()) {
-                                        saveSponsorBadge(sponsorBadge);
-                                    }
-                                }
-                            }
-                        });
-                    }
-                    sponsorBadges.initializedProperty().removeListener(this);
-                }
-            });
+            sponsorBadges = internalRetrieveSponsorBadges(sponsor);
         }
 
         return sponsorBadges;
@@ -825,13 +757,13 @@ public class DevoxxService implements Service {
     @Override
     public void saveSponsorBadge(SponsorBadge sponsorBadge) {
         RemoteFunctionObject fnSponsorBadge = RemoteFunctionBuilder.create("saveSponsorBadge")
-                .param("0", sponsorBadge.getSlug())
-                .param("1", sponsorBadge.getBadgeId())
-                .param("2", sponsorBadge.getFirstName())
-                .param("3", sponsorBadge.getLastName())
-                .param("4", sponsorBadge.getCompany())
-                .param("5", sponsorBadge.getEmail())
-                .param("6", sponsorBadge.getDetails())
+                .param("0", safeStr(sponsorBadge.getSponsor().getSlug()))
+                .param("1", safeStr(sponsorBadge.getBadgeId()))
+                .param("2", safeStr(sponsorBadge.getFirstName()))
+                .param("3", safeStr(sponsorBadge.getLastName()))
+                .param("4", safeStr(sponsorBadge.getCompany()))
+                .param("5", safeStr(sponsorBadge.getEmail()))
+                .param("6", safeStr(sponsorBadge.getDetails()))
                 .param("7", ZonedDateTime.now().format(DateTimeFormatter.ISO_INSTANT))
                 .object();
         GluonObservableObject<String> sponsorBadgeResult = fnSponsorBadge.call(String.class);
@@ -944,8 +876,8 @@ public class DevoxxService implements Service {
         }
     }
 
-    private GluonObservableList<SponsorBadge> internalRetrieveSponsorBadges() {
-        return DataProvider.retrieveList(cloudDataClient.createListDataReader(authenticationClient.getAuthenticatedUser().getKey() + "_sponsor_badges",
+    private GluonObservableList<SponsorBadge> internalRetrieveSponsorBadges(Sponsor sponsor) {
+        return DataProvider.retrieveList(nonAuthenticatedCloudDataClient.createListDataReader(getConference().getId() + "_" + sponsor.getSlug() + "_sponsor_badges",
                 SponsorBadge.class, SyncFlag.LIST_WRITE_THROUGH, SyncFlag.OBJECT_WRITE_THROUGH));
     }
 
@@ -994,11 +926,11 @@ public class DevoxxService implements Service {
             if (DevoxxSettings.conferenceHasBadgeView(getConference())) {
                 retrieveBadges();
                 retrieveSponsors();
-                retrieveSponsorBadges();
             }
             
-            retrieveFavoredSessions();
-            retrieveScheduledSessions();
+            if (DevoxxSettings.conferenceHasFavorite(getConference())) {
+                retrieveFavoredSessions();
+            }
         } else {
             ready.set(true);
         }
@@ -1010,17 +942,14 @@ public class DevoxxService implements Service {
         badges = null;
         sponsorBadges = null;
         favoredSessions = null;
-        scheduledSessions = null;
         sponsors.clear();
         internalFavoredSessions.clear();
-        internalScheduledSessions.clear();
         ready.set(false);
 
         Services.get(SettingsService.class).ifPresent(settingsService -> {
             settingsService.remove(DevoxxSettings.SAVED_ACCOUNT_ID);
             settingsService.remove(DevoxxSettings.BADGE_TYPE);
-            settingsService.remove(DevoxxSettings.SPONSOR_NAME);
-            settingsService.remove(DevoxxSettings.SPONSOR_SLUG);
+            settingsService.remove(DevoxxSettings.BADGE_SPONSOR);
         });
     }
 

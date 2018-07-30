@@ -46,7 +46,9 @@ import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
@@ -71,19 +73,25 @@ public class ScheduleCell extends CharmListCell<Session> {
     
     private final Service service;
     private final ListTile listTile;
+    private final BorderPane borderPane;
     private final SecondaryGraphic secondaryGraphic;
     private final Label trackLabel;
+    private Label startDateLabel;
+    private Label sessionTypeLabel;
+    private HBox sessionType;
     private Session session;
     private boolean showDate;
+    private boolean showSessionType;
     private PseudoClass oldPseudoClass;
 
     public ScheduleCell(Service service) {
-        this(service, false);
+        this(service, false, false);
     }
 
-    public ScheduleCell(Service service, boolean showDate) {
+    public ScheduleCell(Service service, boolean showDate, boolean showSessionType) {
         this.service = service;
         this.showDate = showDate;
+        this.showSessionType = showSessionType;
         
         trackLabel = new Label();
         secondaryGraphic = new SecondaryGraphic();
@@ -92,6 +100,13 @@ public class ScheduleCell extends CharmListCell<Session> {
         listTile.setWrapText(true);
         listTile.setPrimaryGraphic(new Group(trackLabel));
         listTile.setSecondaryGraphic(secondaryGraphic);
+
+        borderPane = new BorderPane(listTile);
+        if (showSessionType) {
+            sessionTypeLabel = new Label();
+            sessionType = new HBox(sessionTypeLabel);
+            sessionType.getStyleClass().add("session-type");
+        }
 
         setText(null);
         getStyleClass().add("schedule-cell");
@@ -103,8 +118,10 @@ public class ScheduleCell extends CharmListCell<Session> {
         session = item;
         if (item != null && !empty) {
             updateListTile();
+            updateSessionType();
+            
             secondaryGraphic.updateGraphic(session);
-            setGraphic(listTile);
+            setGraphic(borderPane);
 
             // FIX for OTN-568
             listTile.setOnMouseReleased(event -> {
@@ -113,6 +130,17 @@ public class ScheduleCell extends CharmListCell<Session> {
             });
         } else {
             setGraphic(null);
+        }
+    }
+
+    private void updateSessionType() {
+        if (showSessionType) {
+            if (session.isShowSessionType()) {
+                sessionTypeLabel.setText(session.getTalk().getTalkType());
+                borderPane.setTop(sessionType);
+            } else {
+                borderPane.setTop(null);
+            }
         }
     }
 
@@ -135,8 +163,14 @@ public class ScheduleCell extends CharmListCell<Session> {
         listTile.setTextLine(2, DevoxxBundle.getString("OTN.SCHEDULE.IN_AT",
                 session.getRoomName(),
                 DevoxxSettings.TIME_FORMATTER.format(session.getStartDate()),
-                DevoxxSettings.TIME_FORMATTER.format(session.getEndDate())) +
-                (showDate ? "\n" + DevoxxSettings.DATE_FORMATTER.format(session.getStartDate()) : ""));
+                DevoxxSettings.TIME_FORMATTER.format(session.getEndDate())));
+        
+        if (showDate) {
+            initializeStartLabel();
+            startDateLabel.setText(DevoxxSettings.DATE_FORMATTER.format(session.getStartDate()));
+            // Hacky Code as it uses internals of ListTile
+            ((VBox) listTile.getChildren().get(0)).getChildren().add(startDateLabel);
+        }
 
         Optional<Favorite> favorite = Optional.empty();
         for (Favorite fav : service.retrieveFavorites()) {
@@ -153,7 +187,8 @@ public class ScheduleCell extends CharmListCell<Session> {
         });
 
         // Hacky Code as it uses internals of ListTile
-        Label label = (Label) ((VBox) listTile.getChildren().get(0)).getChildren().get(2);
+        final VBox vBox = (VBox) listTile.getChildren().get(0);
+        Label label = (Label) vBox.getChildren().get(vBox.getChildren().size() - 1);
         Label favLabel = new Label();
         favLabel.textProperty().bind(fav.favsProperty().asString());
         favLabel.visibleProperty().bind(fav.favsProperty().greaterThanOrEqualTo(10));
@@ -161,11 +196,17 @@ public class ScheduleCell extends CharmListCell<Session> {
         Node graphic = MaterialDesignIcon.FAVORITE.graphic();
         graphic.getStyleClass().add("fav-graphic");
         favLabel.setGraphic(graphic);
-        favLabel.prefHeightProperty().bind(label.heightProperty());
         label.setGraphic(favLabel);
         label.setContentDisplay(ContentDisplay.RIGHT);
 
         pseudoClassStateChanged(PSEUDO_CLASS_COLORED, session.isDecorated());
+    }
+
+    private void initializeStartLabel() {
+        if (startDateLabel == null) {
+            startDateLabel = new Label();
+            startDateLabel.getStyleClass().add("extra-text");
+        }
     }
 
     private String convertSpeakersToString(List<TalkSpeaker> speakers) {
@@ -209,7 +250,7 @@ public class ScheduleCell extends CharmListCell<Session> {
 
         public SecondaryGraphic() {
             chevron = MaterialDesignIcon.CHEVRON_RIGHT.graphic();
-            indicator = createIndicator(SessionVisuals.SessionListType.SCHEDULED, true);
+            indicator = createIndicator(SessionVisuals.SessionListType.FAVORITES, true);
             getChildren().addAll(chevron, indicator);
             InvalidationListener il = (Observable observable) -> {
                 if (currentSession != null) {
@@ -217,7 +258,6 @@ public class ScheduleCell extends CharmListCell<Session> {
                 }
             };
             if (service.isAuthenticated()) {
-                service.retrieveScheduledSessions().addListener(il);
                 service.retrieveFavoredSessions().addListener(il);
             }
         }
@@ -241,10 +281,7 @@ public class ScheduleCell extends CharmListCell<Session> {
             currentSession = session;
             final boolean authenticated = service.isAuthenticated();
 
-            if ( authenticated && service.retrieveScheduledSessions().contains(session)) {
-                resetIndicator( indicator, SessionVisuals.SessionListType.SCHEDULED);
-                indicator.setVisible(true);
-            } else if ( authenticated && service.retrieveFavoredSessions().contains(session)) {
+            if ( authenticated && service.retrieveFavoredSessions().contains(session)) {
                 resetIndicator( indicator, SessionVisuals.SessionListType.FAVORITES);
                 indicator.setVisible(true);
             } else {
@@ -257,9 +294,6 @@ public class ScheduleCell extends CharmListCell<Session> {
                 final Node graphic = style.getOnGraphic();
                 StackPane.setAlignment(graphic, Pos.TOP_RIGHT);
                 indicator.getChildren().set(0, graphic);
-
-                indicator.getStyleClass().remove( style.other().getStyleClass());
-                indicator.getStyleClass().add( style.getStyleClass());
             }
         }
 

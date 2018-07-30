@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, 2017, Gluon Software
+ * Copyright (c) 2016, 2018 Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -31,7 +31,6 @@ import com.devoxx.service.Service;
 import com.devoxx.util.DevoxxBundle;
 import com.devoxx.util.DevoxxNotifications;
 import com.devoxx.util.DevoxxSettings;
-import com.devoxx.views.dialog.SessionConflictDialog;
 import com.gluonhq.charm.down.Services;
 import com.gluonhq.charm.down.plugins.SettingsService;
 import com.gluonhq.charm.glisten.control.Dialog;
@@ -57,23 +56,18 @@ import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.devoxx.util.DevoxxLogging.LOGGING_ENABLED;
-import static com.gluonhq.charm.glisten.visual.MaterialDesignIcon.*;
+import static com.gluonhq.charm.glisten.visual.MaterialDesignIcon.FAVORITE;
+import static com.gluonhq.charm.glisten.visual.MaterialDesignIcon.FAVORITE_BORDER;
 
 @Singleton
 public class SessionVisuals {
 
     private static final Logger LOG = Logger.getLogger(SessionVisuals.class.getName());
-    private static final String SCH_FAV_DIALOG_MSG_1 = "Add a session to your schedule with ";
-    private static final String SCH_FAV_DIALOG_MSG_2 = "Add a session to your favorites with ";
-    private static final String SCH_FAV_DIALOG_MSG_INTRO = "You can favorite multiple sessions but can only schedule one in the same time slot.";
 
     public enum SessionListType {
-        FAVORITES("favorites",  "favorite",  FAVORITE_BORDER, FAVORITE),
-        SCHEDULED("scheduled",  "scheduled", STAR_BORDER,     STAR);
+        FAVORITES("favorites",  "favorite",  FAVORITE_BORDER, FAVORITE);
 
         private final String id;
         private final MaterialDesignIcon offIcon;
@@ -102,10 +96,6 @@ public class SessionVisuals {
         public MaterialDesignIcon getOnIcon() {
             return onIcon;
         }
-
-        public SessionListType other() {
-            return this == FAVORITES? SCHEDULED: FAVORITES;
-        }
     }
 
     @Inject
@@ -132,25 +122,23 @@ public class SessionVisuals {
     public String formatMultilineInfo(Session session) {
         ZonedDateTime startDate = session.getStartDate();
         ZonedDateTime endDate = session.getEndDate();
-        return String.format(DevoxxBundle.getString("OTN.VISUALS.FORMAT.MULTILINE",
+        return DevoxxBundle.getString("OTN.VISUALS.FORMAT.MULTILINE",
                 session.getTalk().getTrack(),
                 service.getConference().getConferenceDayIndex(startDate),
                 startDate.format(DevoxxSettings.TIME_FORMATTER),
                 endDate.format(DevoxxSettings.TIME_FORMATTER),
-                session.getRoomName())
-        );
+                session.getRoomName());
     }
 
 
     public String formatOneLineInfo(Session session) {
         ZonedDateTime startDate = session.getStartDate();
         ZonedDateTime endDate = session.getEndDate();
-        return String.format(DevoxxBundle.getString("OTN.VISUALS.FORMAT.ONELINE",
+        return DevoxxBundle.getString("OTN.VISUALS.FORMAT.ONELINE",
                 service.getConference().getConferenceDayIndex(startDate),
                 startDate.format(DevoxxSettings.TIME_FORMATTER),
                 endDate.format(DevoxxSettings.TIME_FORMATTER),
-                session.getLocation())
-        );
+                session.getLocation());
 
     }
 
@@ -177,10 +165,6 @@ public class SessionVisuals {
         HBox favBox = new HBox(favButton, favCounter);
         favBox.getStyleClass().add("fav-box");
         return favBox;
-    }
-
-    public ToggleButton getSelectedButton(Session session) {
-        return buildButton(SessionListType.SCHEDULED, session);
     }
 
     private ToggleButton buildButton(SessionListType listType, Session session) {
@@ -220,32 +204,7 @@ public class SessionVisuals {
         Session actualSession = (Session) button.getProperties().get(SESSION_KEY);
 
         if (selected) {
-            // Resolve scheduling conflicts
-            if (listType == SessionListType.SCHEDULED) {
-                Optional<Session> conflictOption = findConflictingSession(actualSession);
-                if (conflictOption.isPresent()) {
-                    Session conflict = conflictOption.get();
-                    Optional<Session> dialogResult = new SessionConflictDialog(conflict, actualSession, this).showAndWait();
-                    if (dialogResult.isPresent()) {
-                        Session selectedSession = dialogResult.get();
-                        if (selectedSession.equals(actualSession)) {
-                            // It is important to preserve this order: first remove and then add because of the
-                            // toast messages. This way "session scheduled" will be displayed.
-                            listRemove(conflict, listType);
-                            listAdd(actualSession, listType);
-                            updateButton(button, true, actualSession);
-                        } else {
-                            button.setSelected(false);
-                        }
-                    } else {
-                        button.setSelected(false);
-                    }
-                } else {
-                    listAdd(actualSession, listType);
-                }
-            } else {
-                listAdd(actualSession, listType);
-            }
+            listAdd(actualSession, listType);
         } else {
             listRemove(actualSession, listType);
         }
@@ -260,7 +219,7 @@ public class SessionVisuals {
     private ObservableList<Session> getList(SessionListType listType) {
         if (usingOfflineEmptyLists && service.isAuthenticated()) {
             // OTN-513 - First time user logs in: stop the listener
-            devoxxNotifications.preloadingScheduledSessionsDone();
+            devoxxNotifications.preloadingFavoriteSessionsDone();
             
             retrieveLists();
         }
@@ -291,24 +250,22 @@ public class SessionVisuals {
             retrieveLists();
 
             if (!listContains(session, listType)) {
-                if (listType == SessionListType.FAVORITES || listType == SessionListType.SCHEDULED) {
-                    if (listType == SessionListType.SCHEDULED) {
-                        devoxxNotifications.addScheduledSessionNotifications(session);
-                    }
-                    Services.get(SettingsService.class).ifPresent(settings -> {
-                        String skip = settings.retrieve(DevoxxSettings.SKIP_SCH_FAV_DIALOG);
-                        if (skip == null || skip.isEmpty() || !Boolean.parseBoolean(skip)) {
-                            final Dialog<TextFlow> information = createSchFavDialog();
-                            information.showAndWait();
-                            settings.store(DevoxxSettings.SKIP_SCH_FAV_DIALOG, Boolean.TRUE.toString());
-                        }
-                    });
+                if (listType == SessionListType.FAVORITES) {
+                    devoxxNotifications.addFavoriteSessionNotifications(session); 
                 }
-
-                getList(listType).add(session);
-                showToast(listType, true);
+                Services.get(SettingsService.class).ifPresent(settings -> {
+                    String skip = settings.retrieve(DevoxxSettings.SKIP_FAV_DIALOG);
+                    if (skip == null || skip.isEmpty() || !Boolean.parseBoolean(skip)) {
+                        final Dialog<TextFlow> information = createFavoriteDialog();
+                        information.showAndWait();
+                        settings.store(DevoxxSettings.SKIP_FAV_DIALOG, Boolean.TRUE.toString());
+                    }
+                }); 
             }
-        }
+
+            getList(listType).add(session);
+            showToast(listType, true); 
+        } 
     }
 
     /**
@@ -323,8 +280,8 @@ public class SessionVisuals {
         } else {
             retrieveLists();
 
-            if (listType == SessionListType.SCHEDULED) {
-                devoxxNotifications.removeScheduledSessionNotifications(session);
+            if (listType == SessionListType.FAVORITES) {
+                devoxxNotifications.removeFavoriteSessionNotifications(session);
             }
 
             getList(listType).remove(session);
@@ -335,42 +292,11 @@ public class SessionVisuals {
     private void retrieveLists() {
         if (service.isAuthenticated()) {
             cloudLists.put(SessionListType.FAVORITES, service.retrieveFavoredSessions());
-            cloudLists.put(SessionListType.SCHEDULED, service.retrieveScheduledSessions());
             usingOfflineEmptyLists = false;
         } else {
             cloudLists.put(SessionListType.FAVORITES, FXCollections.emptyObservableList());
-            cloudLists.put(SessionListType.SCHEDULED, FXCollections.emptyObservableList());
             usingOfflineEmptyLists = true;
         }
-    }
-
-    private Optional<Session> findConflictingSession(Session session) {
-        if (session != null) {
-            for (Session s : getList(SessionListType.SCHEDULED)) {
-                if (session.equals(s)) continue;
-
-                if (s == null) {
-                    if (LOGGING_ENABLED) {
-                        LOG.log(Level.WARNING, String.format("Session %s is not found in the session index!", session.getSlotId()));
-                    }
-                } else {
-                    if (isSessionOverlapping(s, session)) {
-                        return Optional.of(s);
-                    }
-                }
-            }
-        }
-        return Optional.empty();
-    }
-
-    private boolean isSessionOverlapping(Session session, Session other) {
-        return dateInRange(other.getEndDate(), session.getStartDate(), session.getEndDate()) ||
-                dateInRange(other.getStartDate(), session.getStartDate(), session.getEndDate());
-    }
-
-    private static boolean dateInRange( ZonedDateTime dateTime, ZonedDateTime rangeStart, ZonedDateTime rangeEnd ) {
-        // DEVOXX-131: Allow overlapping if one session starts right at the same time the other one ends
-        return dateTime.compareTo(rangeStart) >= 0 && dateTime.compareTo(rangeEnd) < 0;
     }
 
     private void updateButton(ToggleButton button, boolean selected, Session session) {
@@ -391,45 +317,34 @@ public class SessionVisuals {
         if (added) {
             if (listType.equals(SessionListType.FAVORITES)) {
                 toast.setMessage(DevoxxBundle.getString("OTN.VISUALS.SESSION_MARKED_AS_FAVORITE"));
-            } else {
-                toast.setMessage(DevoxxBundle.getString("OTN.VISUALS.SESSION_SCHEDULED"));
             }
         } else {
             if (listType.equals(SessionListType.FAVORITES)) {
                 toast.setMessage(DevoxxBundle.getString("OTN.VISUALS.SESSION_UNFAVORITED"));
-            } else {
-                toast.setMessage(DevoxxBundle.getString("OTN.VISUALS.SESSION_UNSCHEDULED"));
             }
         }
         toast.show();
     }
 
-    private Dialog<TextFlow> createSchFavDialog() {
+    private Dialog<TextFlow> createFavoriteDialog() {
         final Dialog<TextFlow> information = new Dialog<>();
-        final Node graphicSch = MaterialDesignIcon.STAR.graphic();
         final Node graphicFav = MaterialDesignIcon.FAVORITE.graphic();
-        final Text schText = new Text(SCH_FAV_DIALOG_MSG_1);
-        final Text favText = new Text(SCH_FAV_DIALOG_MSG_2);
-        graphicSch.getStyleClass().add("sch-dialog-icon");
+        final Text favText = new Text(DevoxxBundle.getString("OTN.VISUALS.SESSION.FAVORITE_DIALOG.MSG") + " ");
         graphicFav.getStyleClass().add("fav-dialog-icon");
-        schText.getStyleClass().add("text");
         favText.getStyleClass().add("text");
 
-        final TextFlow textFlowSch = new TextFlow(schText, graphicSch);
         final TextFlow textFlowFav = new TextFlow(favText, graphicFav);
-        final Label schFavText = new Label(SCH_FAV_DIALOG_MSG_INTRO);
+        final Label schFavText = new Label(DevoxxBundle.getString("OTN.VISUALS.SESSION.FAVORITE_DIALOG.MSG_INTRO"));
         schFavText.setWrapText(true);
 
         Button okButton = new Button("OK");
-        okButton.setOnAction(e -> {
-            information.hide();
-        });
+        okButton.setOnAction(e -> information.hide());
         information.getButtons().add(okButton);
 
-        final VBox content = new VBox(10, schFavText, textFlowSch, textFlowFav);
+        final VBox content = new VBox(10, schFavText, textFlowFav);
         content.getStyleClass().add("sch-fav-dialog");
         information.setContent(content);
-        information.setTitleText("Scheduling and Favorites");
+        information.setTitleText(DevoxxBundle.getString("OTN.BUTTON.MY_FAVORITES"));
         return information;
     }
 }

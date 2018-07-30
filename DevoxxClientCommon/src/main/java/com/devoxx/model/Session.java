@@ -44,6 +44,7 @@ public class Session extends Searchable {
     private Break aBreak;
     private Talk talk;
     private boolean decorated;
+    private boolean showSessionType;
 
     public Session() {}
 
@@ -164,6 +165,14 @@ public class Session extends Searchable {
 
     public void setDecorated(boolean decorated) {
         this.decorated = decorated;
+    }
+
+    public boolean isShowSessionType() {
+        return showSessionType;
+    }
+
+    public void setShowSessionType(boolean showSessionType) {
+        this.showSessionType = showSessionType;
     }
 
     @Override

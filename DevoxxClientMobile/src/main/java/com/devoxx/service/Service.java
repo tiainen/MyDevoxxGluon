@@ -197,14 +197,6 @@ public interface Service {
     ObservableList<Session> retrieveFavoredSessions();
 
     /**
-     * Returns a list of sessions that the authenticated user has scheduled.
-     *
-     * @return
-     * @throws IllegalStateException when no user is currently authenticated
-     */
-    ObservableList<Session> retrieveScheduledSessions();
-
-    /**
      * Returns a list of notes that the authenticated user has written. Each note belongs to a specific session.
      *
      * @return
@@ -223,10 +215,11 @@ public interface Service {
     /**
      * Returns a list of badges that the authenticated sponsor has scanned. 
      *
-     * @return
+     * @return An observable list of badges scanned and stored by the sponsor.
      * @throws IllegalStateException when no user is currently authenticated
+     * @param sponsor The sponsor for which badges are to be retrieved
      */
-    ObservableList<SponsorBadge> retrieveSponsorBadges();
+    ObservableList<SponsorBadge> retrieveSponsorBadges(Sponsor sponsor);
 
     /**
      * Returns a list of favored or scheduled sessions from the cloud.

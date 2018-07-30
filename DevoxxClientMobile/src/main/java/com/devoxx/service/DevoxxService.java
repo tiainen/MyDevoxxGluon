@@ -376,7 +376,7 @@ public class DevoxxService implements Service {
     @Override
     public void checkIfReloadRequested() {
         if (rootDir != null && getConference() != null) {
-            File reload = new File(rootDir, "reload");
+            File reload = new File(rootDir, DevoxxSettings.RELOAD);
             LOG.log(Level.INFO, "Reload requested? " + reload.exists());
             if (reload.exists()) {
                 String conferenceIdForReload = readConferenceIdFromFile(reload);
@@ -395,7 +395,7 @@ public class DevoxxService implements Service {
     @Override
     public boolean showRatingDialog() {
         if (rootDir != null) {
-            File rating = new File(rootDir, "rating");
+            File rating = new File(rootDir, DevoxxSettings.RATING);
             LOG.log(Level.INFO, "Rating requested? " + rating.exists());
             if (rating.exists()) {
                 rating.delete();

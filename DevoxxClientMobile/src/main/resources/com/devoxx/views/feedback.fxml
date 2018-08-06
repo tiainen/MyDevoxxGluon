@@ -5,11 +5,9 @@
 <?import com.gluonhq.charm.glisten.mvc.View?>
 <?import javafx.scene.layout.VBox?>
 <View fx:id="feedback" styleClass="feedback" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="com.devoxx.views.FeedbackPresenter">
-    <center>
-        <VBox styleClass="content">
-            <TextField fx:id="name" floatText="Name"/>
-            <TextField fx:id="email" floatText="Email"/>
-            <TextArea  fx:id="message" floatText="Write your feedback"/>
-        </VBox>
-    </center>
+    <VBox styleClass="content">
+        <TextField fx:id="name" floatText="Name"/>
+        <TextField fx:id="email" floatText="Email"/>
+        <TextArea fx:id="message" floatText="Write your feedback"/>
+    </VBox>
 </View>

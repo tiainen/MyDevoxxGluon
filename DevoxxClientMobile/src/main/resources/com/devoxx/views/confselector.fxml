@@ -16,8 +16,7 @@
                 <Label fx:id="description" styleClass="description" text="%OTN.CONFERENCE_SELECTOR.DESCRIPTION"/>
             </VBox>
             <Region HBox.hgrow="ALWAYS"/>
-            <StackPane fx:id="filterPane">
-            </StackPane>
+            <StackPane fx:id="filterPane"/>
         </HBox>
     </top>
     <center>

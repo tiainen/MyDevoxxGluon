@@ -190,7 +190,7 @@ public class DevoxxService implements Service {
             if (nv) {
                 Conference conference = getConference();
                 if (conference != null) {
-                    pushClient.subscribe(String.valueOf(conference.getId()));
+                    pushClient.subscribe(conference.getId());
                 }
             }
         });
@@ -215,7 +215,7 @@ public class DevoxxService implements Service {
 
                     // unsubscribe from previous push notification topic
                     if (pushClient.isEnabled()) {
-                        pushClient.unsubscribe(String.valueOf(ov.getId()));
+                        pushClient.unsubscribe(ov.getId());
                     }
                 } else {
                     if (authenticationClient.isAuthenticated()) {
@@ -226,7 +226,7 @@ public class DevoxxService implements Service {
 
                 // subscribe to push notification topic, named after the conference id
                 if (pushClient.isEnabled()) {
-                    pushClient.subscribe(String.valueOf(nv.getId()));
+                    pushClient.subscribe(nv.getId());
                 }
 
                 retrieveSessionsInternal();
@@ -244,7 +244,7 @@ public class DevoxxService implements Service {
             String configuredConferenceId = settingsService.retrieve(DevoxxSettings.SAVED_CONFERENCE_ID);
             if (configuredConferenceId != null) {
                 try {
-                    retrieveConference(Long.parseLong(configuredConferenceId));
+                    retrieveConference(configuredConferenceId);
                 } catch (NumberFormatException e) {
                     LOG.log(Level.WARNING, "Found old conference id format, removing it");
                     settingsService.remove(DevoxxSettings.SAVED_CONFERENCE_ID);
@@ -326,7 +326,7 @@ public class DevoxxService implements Service {
     public ReadOnlyObjectProperty<Conference> conferenceProperty() {
         return conference.getReadOnlyProperty();
     }
-    
+
     @Override
     public GluonObservableList<Conference> retrieveConferences(Conference.Type type) {
         RemoteFunctionList fnConferences = RemoteFunctionBuilder.create("conferences")
@@ -339,9 +339,9 @@ public class DevoxxService implements Service {
     }
 
     @Override
-    public GluonObservableObject<Conference> retrieveConference(long conferenceId) {
+    public GluonObservableObject<Conference> retrieveConference(String conferenceId) {
         RemoteFunctionObject fnConference = RemoteFunctionBuilder.create("conference")
-                .param("id", String.valueOf(conferenceId))
+                .param("id", conferenceId)
                 .object();
         GluonObservableObject<Conference> conference = fnConference.call(Conference.class);
         conference.exceptionProperty().addListener(o -> conference.getException().printStackTrace());
@@ -367,10 +367,10 @@ public class DevoxxService implements Service {
             File reload = new File(rootDir, DevoxxSettings.RELOAD);
             LOG.log(Level.INFO, "Reload requested? " + reload.exists());
             if (reload.exists()) {
-                long conferenceIdForReload = readConferenceIdFromFile(reload);
+                String conferenceIdForReload = readConferenceIdFromFile(reload);
                 LOG.log(Level.INFO, "Reload requested for conference: " + conferenceIdForReload + ", current conference: " + getConference().getId());
                 LOG.log(Level.INFO, "[DBB] reload exists for conference: '" + conferenceIdForReload + "', current conference: '" + getConference().getId()+"'");
-                if (conferenceIdForReload != 0 && conferenceIdForReload == getConference().getId()) {
+                if (!conferenceIdForReload.isEmpty() && conferenceIdForReload.equalsIgnoreCase(getConference().getId())) {
                     reload.delete();
                     retrieveSessionsInternal();
                     retrieveSpeakersInternal();
@@ -950,7 +950,7 @@ public class DevoxxService implements Service {
         });
     }
 
-    private long readConferenceIdFromFile(File reload) {
+    private String readConferenceIdFromFile(File reload) {
         StringBuilder fileContent = new StringBuilder((int) reload.length());
         try (Scanner scanner = new Scanner(reload)) {
             String lineSeparator = System.getProperty("line.separator");
@@ -964,7 +964,7 @@ public class DevoxxService implements Service {
         return findConferenceIdFromString(fileContent.toString());
     }
 
-    private long findConferenceIdFromString(String fileContent) {
+    private String findConferenceIdFromString(String fileContent) {
         try {
             String trimmedContent = fileContent.replaceAll("\"", "")
                     .replaceAll(" ", "")
@@ -972,13 +972,13 @@ public class DevoxxService implements Service {
             String[] keyValue = trimmedContent.split(",");
             for (String aKeyValue : keyValue) {
                 if (aKeyValue.contains("body")) {
-                    return Long.parseLong(aKeyValue.split(":")[1]);
+                    return aKeyValue.split(":")[1];
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return 0;
+        return "";
     }
     
     private static boolean isReloadNotification(String fileContent) {

@@ -72,7 +72,7 @@ public interface Service {
      *
      * @return A conference object
      */
-    GluonObservableObject<Conference> retrieveConference(long conferenceId);
+    GluonObservableObject<Conference> retrieveConference(String conferenceId);
 
     /**
      * Sets the selected conference.

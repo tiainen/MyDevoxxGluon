@@ -35,7 +35,6 @@ import com.gluonhq.charm.glisten.afterburner.AppView;
 import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
 import com.gluonhq.charm.glisten.control.NavigationDrawer;
 import com.gluonhq.charm.glisten.control.Toast;
-import com.gluonhq.charm.glisten.control.Toast;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
@@ -46,9 +45,6 @@ import javafx.scene.layout.Region;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.Optional;
-
-import static com.gluonhq.charm.glisten.application.MobileApplication.HOME_VIEW;
 
 import static com.gluonhq.charm.glisten.application.MobileApplication.HOME_VIEW;
 

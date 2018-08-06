@@ -44,7 +44,7 @@ public class Conference {
 
     private static final ZoneId DEFAULT_CONFERENCE_ZONE_ID = ZoneId.of("Europe/Brussels");
 
-    private long id;
+    private String id;
     private String name;
     private String website;
     private String description;
@@ -92,11 +92,11 @@ public class Conference {
 
     private ZoneId timezoneId;
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
     }
 

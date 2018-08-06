@@ -198,7 +198,7 @@ public class DevoxxSettings {
         if (conference == null) {
             return false;
         }
-        return DevoxxCountry.fromCountry(conference.getName().split(" ")[1])
+        return DevoxxCountry.fromCountry(conference.getCountry())
                 .map(set::contains)
                 .orElse(false);
     }

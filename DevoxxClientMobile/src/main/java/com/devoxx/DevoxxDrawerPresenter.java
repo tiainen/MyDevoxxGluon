@@ -101,7 +101,7 @@ public class DevoxxDrawerPresenter extends GluonPresenter<DevoxxApplication> {
 
     private String getConferenceShortName(Conference conference) {
         if (conference != null) {
-            String conferenceShortName = DevoxxCountry.getConfShortName(conference.getName().split(" ")[1]);
+            String conferenceShortName = DevoxxCountry.getConfShortName(conference.getCountry());
             if (!conferenceShortName.isEmpty()) {
                 if (DevoxxSettings.conferenceHasBadgeView(conference)) {
                     for (Node item : drawer.getItems()) {

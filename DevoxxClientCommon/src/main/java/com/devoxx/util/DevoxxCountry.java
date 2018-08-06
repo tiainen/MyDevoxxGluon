@@ -48,7 +48,7 @@ public enum DevoxxCountry {
 
     public static Optional<DevoxxCountry> fromCountry(String country) {
         for (DevoxxCountry n : values()) {
-            if (n.getCountry().equals(country)) {
+            if (n.getCountry().equalsIgnoreCase(country)) {
                 return Optional.of(n);
             }
         }

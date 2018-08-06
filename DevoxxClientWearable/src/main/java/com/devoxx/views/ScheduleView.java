@@ -25,7 +25,8 @@
  */
 package com.devoxx.views;
 
-import com.devoxx.model.Conference1;
+import static com.devoxx.GluonWearable.SESSIONS_VIEW;
+import com.devoxx.model.Conference;
 import com.devoxx.model.WearableModel;
 import com.devoxx.util.DevoxxSettings;
 import com.devoxx.views.helper.WearUtils;
@@ -33,6 +34,9 @@ import com.gluonhq.charm.glisten.animation.FadeInRightBigTransition;
 import com.gluonhq.charm.glisten.application.MobileApplication;
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.mvc.View;
+import java.time.ZonedDateTime;
+import java.time.format.TextStyle;
+import java.util.Locale;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -41,12 +45,6 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-
-import java.time.ZonedDateTime;
-import java.time.format.TextStyle;
-import java.util.Locale;
-
-import static com.devoxx.GluonWearable.SESSIONS_VIEW;
 
 public class ScheduleView extends View {
 
@@ -109,7 +107,7 @@ public class ScheduleView extends View {
         }
         
         setOnShowing(e -> {
-            final Conference1 selectedConference = WearableModel.getInstance().getSelectedConference();
+            final Conference selectedConference = WearableModel.getInstance().getSelectedConference();
             if (selectedConference != null && selectedConference.getDays() != null) {
                 title.setText(selectedConference.getCountry());
                 listView.setItems(FXCollections.observableArrayList(selectedConference.getDays()));

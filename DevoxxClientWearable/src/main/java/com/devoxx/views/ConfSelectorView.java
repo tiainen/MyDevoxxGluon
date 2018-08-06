@@ -26,8 +26,12 @@
 package com.devoxx.views;
 
 import com.devoxx.GluonWearable;
+import static com.devoxx.GluonWearable.SCHEDULE_VIEW;
+import com.gluonhq.charm.glisten.animation.BounceInRightTransition;
+import com.gluonhq.charm.glisten.control.AppBar;
+import com.gluonhq.charm.glisten.mvc.View;
 import com.devoxx.control.CircularSelector;
-import com.devoxx.model.Conference1;
+import com.devoxx.model.Conference;
 import com.devoxx.model.WearableModel;
 import com.devoxx.util.DevoxxCountry;
 import com.devoxx.util.WearableConstants;
@@ -35,10 +39,10 @@ import com.devoxx.views.helper.WearUtils;
 import com.gluonhq.charm.down.Platform;
 import com.gluonhq.charm.down.Services;
 import com.gluonhq.charm.down.plugins.WearableService;
-import com.gluonhq.charm.glisten.animation.BounceInRightTransition;
 import com.gluonhq.charm.glisten.application.MobileApplication;
-import com.gluonhq.charm.glisten.control.AppBar;
-import com.gluonhq.charm.glisten.mvc.View;
+import java.net.URL;
+import java.util.List;
+import java.util.Locale;
 import javafx.animation.PauseTransition;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -47,17 +51,11 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
 
-import java.net.URL;
-import java.util.List;
-import java.util.Locale;
-
-import static com.devoxx.GluonWearable.SCHEDULE_VIEW;
-
 public class ConfSelectorView extends View {
 
     private final double watchFactor = 0.6;
     
-    private final CircularSelector<Conference1> selector = new CircularSelector<>(item -> {
+    private final CircularSelector<Conference> selector = new CircularSelector<>(item -> {
 
         Image image;
         if (item == null) {
@@ -80,7 +78,7 @@ public class ConfSelectorView extends View {
         return iv;
     });
     
-    private final ObjectProperty<Conference1> conference = new SimpleObjectProperty<>();
+    private final ObjectProperty<Conference> conference = new SimpleObjectProperty<>();
     private final int max = 5;
     private int count = 0;
     
@@ -137,11 +135,11 @@ public class ConfSelectorView extends View {
         Services.get(WearableService.class).ifPresent(service -> {
             service.sendMessage(WearableConstants.CHANNEL_ID + WearableConstants.CONFERENCES_PATH, 
                     "retrieve conferences", 
-                    (List<Conference1> p) -> {
+                    (List<Conference> p) -> {
                         WearableModel.getInstance().setConferences(p);
                         selector.getItems().setAll(p);
                         boolean found = false;
-                        for (Conference1 c : p) {
+                        for (Conference c : p) {
                             if (c.isSelected()) {
                                 conference.set(c);
                                 found = true;
@@ -161,7 +159,7 @@ public class ConfSelectorView extends View {
                     });
             });
     }
-    private void accessConference(Conference1 conference) {
+    private void accessConference(Conference conference) {
         PauseTransition pause = new PauseTransition(selector.getTransitionDuration());
         pause.setOnFinished(e -> {
             WearableModel.getInstance().setSelectedConference(conference);

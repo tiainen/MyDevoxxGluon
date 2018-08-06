@@ -29,11 +29,28 @@ import android.os.Bundle;
 import android.util.Base64;
 import android.view.Window;
 import android.view.WindowManager;
-import com.devoxx.model.*;
+import com.devoxx.model.Conference;
+import com.devoxx.model.Session;
+import com.devoxx.model.Speaker;
+import com.devoxx.model.Talk;
+import com.devoxx.model.WearSpeaker;
 import com.devoxx.util.WearableConstants;
 import com.gluonhq.charm.down.plugins.WearableService;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.wearable.*;
+import com.google.android.gms.wearable.DataApi;
+import com.google.android.gms.wearable.DataEvent;
+import com.google.android.gms.wearable.DataEventBuffer;
+import com.google.android.gms.wearable.DataMap;
+import com.google.android.gms.wearable.DataMapItem;
+import com.google.android.gms.wearable.Node;
+import com.google.android.gms.wearable.NodeApi;
+import com.google.android.gms.wearable.Wearable;
+import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
@@ -41,13 +58,6 @@ import javafx.scene.image.Image;
 import javafxports.android.AmbientHandler;
 import javafxports.android.FXDalvikEntity;
 import javafxports.android.FXWearableActivity;
-
-import java.io.ByteArrayInputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class AndroidWearableService implements WearableService, GoogleApiClient.ConnectionCallbacks, DataApi.DataListener {
 
@@ -135,17 +145,17 @@ public class AndroidWearableService implements WearableService, GoogleApiClient.
                     }
 
                     // fetch the conferences
-                    List<Conference1> conferencesList = new ArrayList<>();
+                    List<Conference> conferencesList = new ArrayList<>();
 
                     for (DataMap conferenceDataMap : conferencesDataMap) {
-                        Conference1 conference = new Conference1();
-                        // conference.setCountry(conferenceDataMap.getString(WearableConstants.DATAMAP_COUNTRY, ""));
-                        conference.setId(Long.parseLong(conferenceDataMap.getString(WearableConstants.DATAMAP_COUNTRY_ID, "")));
+                        Conference conference = new Conference();
+                        conference.setCountry(conferenceDataMap.getString(WearableConstants.DATAMAP_COUNTRY, ""));
+                        conference.setId(conferenceDataMap.getString(WearableConstants.DATAMAP_COUNTRY_ID, ""));
                         conference.setSelected(conferenceDataMap.getBoolean(WearableConstants.DATAMAP_COUNTRY_SELECTED, false));
 
                         conference.setTimezone(conferenceDataMap.getString(WearableConstants.DATAMAP_COUNTRY_TIMEZONE, ""));
                         conference.setFromDate(conferenceDataMap.getString(WearableConstants.DATAMAP_COUNTRY_FROM_DAY, ""));
-                        conference.setEndDate(conferenceDataMap.getString(WearableConstants.DATAMAP_COUNTRY_TO_DAY, ""));
+                        conference.setToDate(conferenceDataMap.getString(WearableConstants.DATAMAP_COUNTRY_TO_DAY, ""));
 
                         conferencesList.add(conference);
                     }

@@ -25,19 +25,18 @@
  */
 package com.gluonhq.charm.down.plugins.desktop;
 
-import com.devoxx.model.*;
+import com.devoxx.model.Conference;
+import com.devoxx.model.Link;
+import com.devoxx.model.Session;
+import com.devoxx.model.Speaker;
+import com.devoxx.model.Talk;
+import com.devoxx.model.TalkSpeaker;
+import com.devoxx.model.WearSpeaker;
 import com.devoxx.service.DevoxxService;
 import com.devoxx.service.Service;
 import com.devoxx.util.WearableConstants;
 import com.devoxx.views.helper.Util;
 import com.gluonhq.charm.down.plugins.WearableService;
-import javafx.application.Platform;
-import javafx.beans.property.ReadOnlyBooleanProperty;
-import javafx.beans.property.ReadOnlyObjectProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.collections.ObservableList;
-import javafx.scene.image.Image;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -49,6 +48,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.application.Platform;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.collections.ObservableList;
+import javafx.scene.image.Image;
 
 /**
  * This service implementation allows testing the wearable service on desktop
@@ -88,7 +93,7 @@ public class DesktopWearableService implements WearableService {
         
         if (path.startsWith(WearableConstants.CHANNEL_ID + WearableConstants.CONFERENCES_PATH)) {
             // send conferences to the Wearable
-            sendConferences((Consumer<List<Conference1>>) dataHandler);
+            sendConferences((Consumer<List<Conference>>) dataHandler);
         } else if (path.startsWith(WearableConstants.CHANNEL_ID + WearableConstants.SESSIONS_PATH)) {
             // send sessions to the Wearable
             if (service.retrieveSessions().size() > 0) {
@@ -126,7 +131,7 @@ public class DesktopWearableService implements WearableService {
     public void disconnect() {
     }
 
-    private void sendConferences(Consumer<List<Conference1>> dataHandler) {
+    private void sendConferences(Consumer<List<Conference>> dataHandler) {
         if (service.readyProperty().get()) {
             // store the list schedules
             doGetConferences(dataHandler);
@@ -138,18 +143,18 @@ public class DesktopWearableService implements WearableService {
         }
         
     }
-    private void doGetConferences(Consumer<List<Conference1>> dataHandler) {
-        List<Conference1> conferencesList = new ArrayList<>();
-        for (Conference1 conference : service.retrieveConferences()) {
-            Conference1 c = new Conference1();
-            // c.setCountry(conference.getCountry());
+    private void doGetConferences(Consumer<List<Conference>> dataHandler) {
+        List<Conference> conferencesList = new ArrayList<>();
+        for (Conference conference : service.retrieveConferences()) {
+            Conference c = new Conference();
+            c.setCountry(conference.getCountry());
             c.setId(conference.getId());
             c.setSelected(service.getConference() != null ?
                             conference.getCountry().equals(service.getConference().getCountry()) : false);
 
             c.setTimezone(conference.getTimezone());
             c.setFromDate(conference.getFromDate());
-            // c.setToDate(conference.getEndDate());
+            c.setToDate(conference.getToDate());
 
             conferencesList.add(c);
         }
@@ -159,7 +164,7 @@ public class DesktopWearableService implements WearableService {
     }
 
     private void sendSessions(int day, Consumer<List<Session>> dataHandler) {
-        Conference1 conference = service.getConference();
+        Conference conference = service.getConference();
         List<Session> sessionsList = new ArrayList<>();
         for (Session session : service.retrieveSessions()) {
             if (conference.getConferenceDayIndex(session.getStartDate()) == day) {

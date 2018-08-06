@@ -48,14 +48,16 @@ public class DevoxxView {
     public static final AppView EXHIBITOR       = view( ExhibitorPresenter.class,      MaterialDesignIcon.PLACE);
     public static final AppView EXHIBITION_MAPS = view( ExhibitionMapsPresenter.class, MaterialDesignIcon.MAP,                SHOW_IN_DRAWER);
     public static final AppView EXHIBITION_MAP  = view( ExhibitionMapPresenter.class,  MaterialDesignIcon.MAP);
-    public static final AppView SPONSORS        = view( SponsorsPresenter.class,       MaterialDesignIcon.CARD_MEMBERSHIP,   SKIP_VIEW_STACK);
-    public static final AppView SPONSOR         = view( SponsorPresenter.class,        MaterialDesignIcon.CARD_MEMBERSHIP);
+    public static final AppView SPONSORS        = view( SponsorsPresenter.class,       MaterialDesignIcon.CARD_MEMBERSHIP);
+    public static final AppView ATTENDEE_BADGE  = view( AttendeeBadgePresenter.class,  MaterialDesignIcon.CARD_MEMBERSHIP);
+    public static final AppView SPONSOR_BADGE   = view( SponsorBadgePresenter.class,   MaterialDesignIcon.CARD_MEMBERSHIP);
     public static final AppView VENUE           = view( VenuePresenter.class,          MaterialDesignIcon.ACCESSIBILITY,      SHOW_IN_DRAWER);
     public static final AppView NOTES           = view( NotesPresenter.class,          MaterialDesignIcon.EVENT_NOTE,         SHOW_IN_DRAWER);
     public static final AppView BADGES          = view( BadgesPresenter.class,         MaterialDesignIcon.CONTACTS,           SHOW_IN_DRAWER);
     public static final AppView BADGE           = view( BadgePresenter.class,          MaterialDesignIcon.CONTACTS);
     public static final AppView SEARCH          = view( SearchPresenter.class,         MaterialDesignIcon.SEARCH);
     public static final AppView ABOUT           = view( AboutPresenter.class,          MaterialDesignIcon.AC_UNIT,            SHOW_IN_DRAWER);
+    public static final AppView FEEDBACK        = view( FeedbackPresenter.class,       MaterialDesignIcon.CREATE,             SKIP_VIEW_STACK);
     public static final AppView CONF_SELECTOR   = view( ConfSelectorPresenter.class,   MaterialDesignIcon.ANNOUNCEMENT,       SHOW_IN_DRAWER, HOME_VIEW, SKIP_VIEW_STACK);
 
     private static AppView view(Class<? extends GluonPresenter<?>> presenterClass, MaterialDesignIcon menuIcon, AppView.Flag... flags ) {

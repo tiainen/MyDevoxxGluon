@@ -28,6 +28,7 @@ package com.devoxx.views;
 import com.devoxx.DevoxxApplication;
 import com.devoxx.DevoxxView;
 import com.devoxx.model.Badge;
+import com.devoxx.model.BadgeType;
 import com.devoxx.model.SponsorBadge;
 import com.devoxx.service.Service;
 import com.devoxx.util.DevoxxBundle;
@@ -41,6 +42,7 @@ import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
@@ -77,7 +79,7 @@ public class BadgePresenter extends GluonPresenter<DevoxxApplication> {
     private Badge badge;
     private Timeline timer;
     private boolean textChanged;
-    private String sponsorSlug;
+    private BadgeType badgeType;
 
     public void initialize() {
         badgeView.setOnShowing(event -> {
@@ -104,11 +106,7 @@ public class BadgePresenter extends GluonPresenter<DevoxxApplication> {
             timer.playFromStart();
         });
         
-        badgeView.setOnHiding(event -> {
-            if (service.isAuthenticated()) {
-                saveBadge();
-            }
-        });
+        badgeView.setOnHiding(event -> saveBadge());
         
         // Fix for keyboard not showing on Android.
         // As TextArea is the only focusable control, 
@@ -140,34 +138,35 @@ public class BadgePresenter extends GluonPresenter<DevoxxApplication> {
     }
 
     private void removeBadge() {
-        if (sponsorSlug == null || sponsorSlug.isEmpty()) {
+        if (badgeType == BadgeType.ATTENDEE) {
             service.retrieveBadges().remove(badge);
         } else {
-            service.retrieveSponsorBadges().remove(badge);
+            service.retrieveSponsorBadges(((SponsorBadge)badge).getSponsor()).remove(badge);
         }
     }
 
-    public void setBadgeId(String badgeId, String sponsorSlug) {
-        Objects.requireNonNull(badgeId);
-        if (sponsorSlug == null || sponsorSlug.isEmpty()) {
+    public void setBadge(Badge badge, BadgeType badgeType) {
+        Objects.requireNonNull(badge);
+        Objects.requireNonNull(badge.getBadgeId());
+
+        this.badge = badge;
+        this.badgeType = badgeType;
+        
+        if (badgeType == BadgeType.ATTENDEE) {
             if (service.isAuthenticated() || !DevoxxSettings.USE_REMOTE_NOTES) {
-                for (Badge b : service.retrieveBadges()) {
-                    if (b != null && b.getBadgeId() != null && b.getBadgeId().equals(badgeId)) {
-                        this.badge = b;
-                        break;
-                    }
+                final ObservableList<Badge> badges = service.retrieveBadges();
+                if (badges.contains(badge)) {
+                    this.badge = badge;
                 }
             }
         } else {
-            this.sponsorSlug = sponsorSlug;
-            for (Badge b : service.retrieveSponsorBadges()) {
-                if (b != null && b.getBadgeId() != null && b.getBadgeId().equals(badgeId)) {
-                    this.badge = b;
-                    break;
-                }
+            final SponsorBadge sponsorBadge = (SponsorBadge) badge;
+            final ObservableList<SponsorBadge> badges = service.retrieveSponsorBadges(sponsorBadge.getSponsor());
+            if (badges.contains(badge)) {
+                this.badge = badge;
             }
         }
-        if (badge != null) {
+        if (this.badge != null) {
             firstName.setText(badge.getFirstName());
             lastName.setText(badge.getLastName());
             company.setText(badge.getCompany());
@@ -188,6 +187,7 @@ public class BadgePresenter extends GluonPresenter<DevoxxApplication> {
         badge.setDetails(details.getText());
         
         if (badge instanceof SponsorBadge) {
+            // every scanned sponsor badge must be posted with the remote function
             service.saveSponsorBadge((SponsorBadge) badge);
         }
 

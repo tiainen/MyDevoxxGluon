@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, 2017, Gluon Software
+ * Copyright (c) 2016, 2018 Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -27,6 +27,7 @@ package com.devoxx.views;
 
 import com.devoxx.DevoxxApplication;
 import com.devoxx.DevoxxView;
+import com.devoxx.control.DataLabel;
 import com.devoxx.model.Link;
 import com.devoxx.model.Session;
 import com.devoxx.model.Speaker;
@@ -45,8 +46,10 @@ import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.control.AvatarPane;
 import com.gluonhq.charm.glisten.control.BottomNavigation;
+import com.gluonhq.charm.glisten.control.BottomNavigationButton;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
+import javafx.beans.property.ReadOnlyListProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -56,7 +59,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Toggle;
-import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
@@ -80,7 +82,6 @@ public class SessionPresenter extends GluonPresenter<DevoxxApplication> {
     private AvatarPane<Speaker> speakerAvatarPane;
     private SessionNotesEditor sessionNotesEditor;
 
-    private Node scheduleBtn;
     private Node favoriteBtn;
     private Toggle lastSelectedButton;
 
@@ -95,9 +96,6 @@ public class SessionPresenter extends GluonPresenter<DevoxxApplication> {
             // Fix for DEVOXX-54
             // This will not hamper the flow since both the buttons are
             // updated whenever a new session is chosen
-            if(scheduleBtn != null) {
-                appBar.getActionItems().add(scheduleBtn);
-            }
             if(favoriteBtn != null) {
                 appBar.getActionItems().add(favoriteBtn);
             }
@@ -124,21 +122,18 @@ public class SessionPresenter extends GluonPresenter<DevoxxApplication> {
         final BottomNavigation bottomNavigation = createBottomNavigation(activeSession);
         sessionView.setBottom(bottomNavigation);
 
-        for (Node node : bottomNavigation.getActionItems()) {
-            ToggleButton toggleButton = (ToggleButton) node;
-            if (toggleButton.getUserData().equals(visiblePane)) {
-                toggleButton.setSelected(true);
-                lastSelectedButton = toggleButton;
+        for (BottomNavigationButton button : bottomNavigation.getActionItems()) {
+            if (button.getUserData().equals(visiblePane)) {
+                button.fire();
             }
         }
 
         // update app bar
         final AppBar appBar = sessionView.getApplication().getAppBar();
-        appBar.getActionItems().removeAll(scheduleBtn, favoriteBtn);
-        if (DevoxxSettings.FAV_AND_SCHEDULE_ENABLED && DevoxxSettings.conferenceHasSchFav(service.getConference())) {
-            scheduleBtn = sessionVisuals.getSelectedButton(activeSession);
+        appBar.getActionItems().remove(favoriteBtn);
+        if (DevoxxSettings.conferenceHasFavorite(service.getConference())) {
             favoriteBtn = sessionVisuals.getFavoriteButton(activeSession);
-            appBar.getActionItems().addAll(scheduleBtn, favoriteBtn);
+            appBar.getActionItems().add(favoriteBtn);
         }
     }
 
@@ -146,7 +141,7 @@ public class SessionPresenter extends GluonPresenter<DevoxxApplication> {
 
         BottomNavigation bottomNavigation = new BottomNavigation();
 
-        final ToggleButton infoButton = bottomNavigation.createButton(DevoxxBundle.getString("OTN.BUTTON.INFO"), MaterialDesignIcon.INFO.graphic(), e -> {
+        final BottomNavigationButton infoButton = new BottomNavigationButton(DevoxxBundle.getString("OTN.BUTTON.INFO"), MaterialDesignIcon.INFO.graphic(), e -> {
             // when clicked create a label in a scrollpane. Label will contain
             // session summary for this session.
             Label sessionSummary = new Label(session.getSummary());
@@ -170,7 +165,7 @@ public class SessionPresenter extends GluonPresenter<DevoxxApplication> {
         });
         infoButton.setUserData(Pane.INFO);
 
-        final ToggleButton speakerButton = bottomNavigation.createButton(DevoxxBundle.getString("OTN.BUTTON.SPEAKERS"), MaterialDesignIcon.ACCOUNT_CIRCLE.graphic(), e -> {
+        final BottomNavigationButton speakerButton = new BottomNavigationButton(DevoxxBundle.getString("OTN.BUTTON.SPEAKERS"), MaterialDesignIcon.ACCOUNT_CIRCLE.graphic(), e -> {
             // when clicked we create an avatar pane containing all speakers.
             // The entire avatar pane is not scrollable, as we want the speaker
             // avatars to remain fixed. Instead, we make the avatar content area
@@ -183,7 +178,7 @@ public class SessionPresenter extends GluonPresenter<DevoxxApplication> {
         });
         speakerButton.setUserData(Pane.SPEAKER);
 
-        final ToggleButton noteButton = bottomNavigation.createButton(DevoxxBundle.getString("OTN.BUTTON.NOTES"), MaterialDesignIcon.MESSAGE.graphic(), e -> {
+        final BottomNavigationButton noteButton = new BottomNavigationButton(DevoxxBundle.getString("OTN.BUTTON.NOTES"), MaterialDesignIcon.MESSAGE.graphic(), e -> {
             if (service.isAuthenticated() || !DevoxxSettings.USE_REMOTE_NOTES) {
                 loadAuthenticatedNotesView(session);
             } else {
@@ -197,7 +192,7 @@ public class SessionPresenter extends GluonPresenter<DevoxxApplication> {
         });
         noteButton.setUserData(Pane.NOTE);
 
-        final ToggleButton voteButton = bottomNavigation.createButton(DevoxxBundle.getString("OTN.BUTTON.VOTE"), MaterialDesignIcon.THUMBS_UP_DOWN.graphic(), e -> {
+        final BottomNavigationButton voteButton = new BottomNavigationButton(DevoxxBundle.getString("OTN.BUTTON.VOTE"), MaterialDesignIcon.THUMBS_UP_DOWN.graphic(), e -> {
             if (service.isAuthenticated()) {
                 if (isVotingPossible(session)) {
                     sessionView.setCenter(createVotePane(session));
@@ -224,8 +219,7 @@ public class SessionPresenter extends GluonPresenter<DevoxxApplication> {
         if (DevoxxSettings.conferenceHasVoting(service.getConference())) {
             bottomNavigation.getActionItems().add(voteButton);
         }
-
-        infoButton.setSelected(true);
+        infoButton.fire();
 
         return bottomNavigation;
     }
@@ -237,29 +231,25 @@ public class SessionPresenter extends GluonPresenter<DevoxxApplication> {
     
     private ObservableList<Speaker> fetchSpeakers(Session activeSession) {
         ObservableList<Speaker> speakers = FXCollections.observableArrayList();
+        final ReadOnlyListProperty<Speaker> speakersList = service.retrieveSpeakers();
         if (activeSession.getTalk().getSpeakers() != null) {
             for (TalkSpeaker talkSpeaker : activeSession.getTalk().getSpeakers()) {
                 Link link = talkSpeaker.getLink();
                 if (link != null && link.getHref() != null && !link.getHref().isEmpty()) {
                     String speakerUUID = link.getHref().substring(link.getHref().lastIndexOf('/') + 1);
-                    ReadOnlyObjectProperty<Speaker> speaker = service.retrieveSpeaker(speakerUUID);
-                    if (speaker.get() != null) {
-                        speakers.add(speaker.get());
-                    } else {
-                        speaker.addListener((observable, oldValue, newValue) -> {
-                            if (newValue != null) {
-                                speakers.add(newValue);
-                                // select the first speaker when one becomes available
-                                if (speakers.size() == 1) {
-                                    speakerAvatarPane.setValue(newValue);
-                                }
-                            }
-                        });
+                    for (Speaker speaker : speakersList) {
+                        if (speaker.getUuid().equals(speakerUUID)) {
+                            speakers.add(speaker);
+                        }
                     }
                 }
             }
         }
         return speakers;
+    }
+    
+    private ReadOnlyObjectProperty<Speaker> fetchSpeakerDetail(String speakerUUID) {
+        return service.retrieveSpeaker(speakerUUID);
     }
 
     private AvatarPane<Speaker> createSpeakerAvatarPane(ObservableList<Speaker> speakers) {
@@ -271,6 +261,8 @@ public class SessionPresenter extends GluonPresenter<DevoxxApplication> {
             if (speaker == null) {
                 return new Placeholder(DevoxxBundle.getString("OTN.SESSION.NO_SPEAKERS"), MaterialDesignIcon.SPEAKER);
             }
+            fetchSpeakerDetail(speaker.getUuid());
+            
             Label name = new Label(speaker.getFullName());
             name.getStyleClass().add("name");
             name.setWrapText(true);
@@ -286,7 +278,13 @@ public class SessionPresenter extends GluonPresenter<DevoxxApplication> {
             company.setWrapText(true);
             GridPane.setHgrow(company, Priority.ALWAYS);
 
-            Label summary = new Label(speaker.getSummary());
+            Label summary;
+            if (speaker.isDetailsRetrieved()) {
+                summary = new Label(speaker.getSummary());
+            } else {
+                summary = new DataLabel();
+                speaker.detailsRetrievedProperty().addListener(o ->  summary.setText(speaker.getSummary()));
+            }
             summary.getStyleClass().add("summary");
             summary.setWrapText(true);
             GridPane.setHgrow(summary, Priority.ALWAYS);

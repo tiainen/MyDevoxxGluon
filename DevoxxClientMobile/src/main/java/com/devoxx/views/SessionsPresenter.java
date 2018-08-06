@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, 2017, 2018, Gluon Software
+ * Copyright (c) 2016, 2018 Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -37,15 +37,18 @@ import com.devoxx.views.helper.FilterSessionsPresenter;
 import com.devoxx.views.helper.LoginPrompter;
 import com.devoxx.views.helper.Placeholder;
 import com.devoxx.views.helper.SessionVisuals.SessionListType;
+import com.devoxx.views.helper.Util;
 import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
 import com.gluonhq.charm.glisten.afterburner.GluonView;
 import com.gluonhq.charm.glisten.application.MobileApplication;
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.control.BottomNavigation;
+import com.gluonhq.charm.glisten.control.BottomNavigationButton;
 import com.gluonhq.charm.glisten.control.CharmListView;
 import com.gluonhq.charm.glisten.control.Toast;
 import com.gluonhq.charm.glisten.layout.layer.SidePopupView;
 import com.gluonhq.charm.glisten.mvc.View;
+import com.gluonhq.charm.glisten.visual.GlistenStyleClasses;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Bindings;
@@ -59,8 +62,11 @@ import javafx.fxml.FXML;
 import javafx.geometry.Side;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.Toggle;
-import javafx.scene.control.ToggleButton;
+import javafx.scene.control.Label;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 
 import javax.inject.Inject;
 import java.time.LocalDate;
@@ -77,20 +83,16 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
     private static final String SESSIONS_PLACEHOLDER_MESSAGE = DevoxxBundle.getString("OTN.CONTENT_CATALOG.ALL_SESSIONS.PLACEHOLDER_MESSAGE");
     private static final String SESSIONS_PLACEHOLDER_FILTER_MESSAGE = DevoxxBundle.getString("OTN.CONTENT_CATALOG.ALL_SESSIONS.PLACEHOLDER_FILTER_MESSAGE");
 
-    private static final String SCHEDULE_LOGIN_PROMPT_MESSAGE = DevoxxBundle.getString("OTN.CONTENT_CATALOG.SCHEDULED_SESSIONS.LOGIN_PROMPT");
-    private static final String SCHEDULE_EMPTY_LIST_MESSAGE = DevoxxBundle.getString("OTN.CONTENT_CATALOG.SCHEDULED_SESSIONS.EMPTY_LIST_MESSAGE");
-
     private static final String FAVORITE_LOGIN_PROMPT_MESSAGE = DevoxxBundle.getString("OTN.CONTENT_CATALOG.FAVORITE_SESSIONS.LOGIN_PROMPT");
     private static final String FAVORITE_EMPTY_LIST_MESSAGE = DevoxxBundle.getString("OTN.CONTENT_CATALOG.FAVORITE_SESSIONS.EMPTY_LIST_MESSAGE");
 
     private static final MaterialDesignIcon SESSIONS_ICON = MaterialDesignIcon.DASHBOARD;
-    private static final MaterialDesignIcon SCHEDULER_ICON = MaterialDesignIcon.STAR;
     private static final MaterialDesignIcon FAVORITE_ICON = SessionListType.FAVORITES.getOnIcon();
 
     private static final PseudoClass PSEUDO_FILTER_ENABLED = PseudoClass.getPseudoClass("filter-enabled");
 
     private enum ContentDisplayMode {
-        ALL, SCHEDULED, FAVORITE
+        ALL, FAVORITE
     }
 
     @FXML
@@ -107,13 +109,12 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
     private SidePopupView filterPopup;
     private FilteredList<Session> filteredSessions;
 
-    private Toggle lastSelectedButton;
     private EventHandler<ActionEvent> currentHandler;
 
     private GluonView filterSessionsView;
     private FilterSessionsPresenter filterPresenter;
     
-    private ToggleButton favoriteButton;
+    private BottomNavigationButton favoriteButton;
 
     public void initialize() {
         createView();
@@ -131,8 +132,7 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
             appBar.getActionItems().addAll(getApp().getSearchButton(), filterButton);
 
             // Will never be null
-            if (DevoxxSettings.FAV_AND_SCHEDULE_ENABLED && DevoxxSettings.conferenceHasSchFav(service.getConference())) {
-                lastSelectedButton.setSelected(true);
+            if (DevoxxSettings.conferenceHasFavorite(service.getConference())) {
                 if (currentHandler != null) {
                     currentHandler.handle(null);
                 }
@@ -145,6 +145,7 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
             // check if a reload was requested, each time the sessions view is opened
             service.checkIfReloadRequested();
             service.refreshFavorites();
+            showRatingDialog();
         });
 
         // Filter
@@ -165,11 +166,20 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
     }
 
     private void createView() {
-        // navigation between all sessions and the users scheduled sesssions
-        if (DevoxxSettings.FAV_AND_SCHEDULE_ENABLED && DevoxxSettings.conferenceHasSchFav(service.getConference())) {
+        // If favorite sessions are disabled, hide bottom navigation
+        if (DevoxxSettings.conferenceHasFavorite(service.getConference())) {
             sessions.setBottom(createBottomNavigation());
         } else {
             sessions.setCenter(createSessionsList(ContentDisplayMode.ALL));
+        }
+    }
+
+    private void showRatingDialog() {
+        if (service.showRatingDialog()) {
+            final GridPane reviewGrid = createReviewGrid();
+            sessions.setTop(reviewGrid);
+        } else {
+            sessions.setTop(null);
         }
     }
 
@@ -182,21 +192,8 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
             sessions.setCenter(createSessionsList(ContentDisplayMode.ALL));
             appBar.getActionItems().remove(refreshButton);
         };
-        ToggleButton sessionsButton = bottomNavigation.createButton(DevoxxBundle.getString("OTN.BUTTON.SESSIONS"), SESSIONS_ICON.graphic(), allHandler);
-
-        // show scheduled sessions
-        EventHandler<ActionEvent> scheduleHandler = e -> {
-            if (!service.isAuthenticated()) {
-                sessions.setCenter(new LoginPrompter(service, SCHEDULE_LOGIN_PROMPT_MESSAGE, SCHEDULER_ICON, () -> sessions.setCenter(createSessionsList(ContentDisplayMode.SCHEDULED))));
-            } else {
-                sessions.setCenter(createSessionsList(ContentDisplayMode.SCHEDULED));
-                if (!appBar.getActionItems().contains(refreshButton)) {
-                    appBar.getActionItems().add(0, refreshButton);
-                }
-            }
-        };
-        ToggleButton scheduleButton = bottomNavigation.createButton(DevoxxBundle.getString("OTN.BUTTON.MY_SCHEDULE"), SCHEDULER_ICON.graphic(), scheduleHandler);
-
+        BottomNavigationButton sessionsButton = new BottomNavigationButton(DevoxxBundle.getString("OTN.BUTTON.SESSIONS"), SESSIONS_ICON.graphic(), allHandler);
+        
         // show favorite sessions
         EventHandler<ActionEvent> favoriteHandler = e -> {
             if (!service.isAuthenticated()) {
@@ -208,18 +205,18 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
                 }
             }
         };
-        favoriteButton = bottomNavigation.createButton(DevoxxBundle.getString("OTN.BUTTON.MY_FAVORITES"), FAVORITE_ICON.graphic(), favoriteHandler);
+        favoriteButton = new BottomNavigationButton(DevoxxBundle.getString("OTN.BUTTON.MY_FAVORITES"), FAVORITE_ICON.graphic(), favoriteHandler);
 
-        bottomNavigation.getActionItems().addAll(sessionsButton, scheduleButton, favoriteButton);
+        bottomNavigation.getActionItems().addAll(sessionsButton, favoriteButton);
 
         // listen to the selected toggle so we ensure it is selected when the view is returned to
-        favoriteButton.getToggleGroup().selectedToggleProperty().addListener((o,ov,nv) -> {
-            lastSelectedButton = nv;
-            if (nv == sessionsButton) {
+        sessionsButton.selectedProperty().addListener((o,ov,nv) -> {
+            if (nv) {
                 currentHandler = allHandler;
-            } else if (nv == scheduleButton) {
-                currentHandler = scheduleHandler;
-            } else if (nv == favoriteButton) {
+            }
+        });
+        favoriteButton.selectedProperty().addListener((o,ov,nv) -> {
+            if (nv) {
                 currentHandler = favoriteHandler;
             }
         });
@@ -241,7 +238,7 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
             scheduleListView.getStyleClass().add("schedule-view");
             scheduleListView.setHeadersFunction(s -> s.getStartDate().toLocalDate());
             scheduleListView.setHeaderCellFactory(c -> new ScheduleHeaderCell());
-            scheduleListView.setCellFactory(p -> new ScheduleCell(service));
+            scheduleListView.setCellFactory(p -> new ScheduleCell(service, false, true));
             Comparator<Session> sessionComparator = (s1, s2) -> {
                 int compareStartDate = s1.getStartDate().compareTo(s2.getStartDate());
                 if (compareStartDate == 0) {
@@ -278,22 +275,6 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
                 filteredSessions = new FilteredList<>(service.retrieveSessions());
                 break;
             }
-            case SCHEDULED: {
-                scheduleListView.placeholderProperty().bind(Bindings.createObjectBinding(() -> {
-                    if (filterPresenter.isFilterApplied()) {
-                        return new Placeholder(SESSIONS_PLACEHOLDER_FILTER_MESSAGE, SCHEDULER_ICON);
-                    }
-                    return new Placeholder(SCHEDULE_EMPTY_LIST_MESSAGE, SCHEDULER_ICON);
-                }, filterPresenter.filterAppliedProperty()));
-                filteredSessions = new FilteredList<>(service.retrieveScheduledSessions());
-                refreshButton.setOnAction(e -> {
-                    new Toast(DevoxxBundle.getString("OTN.CONTENT_CATALOG.SCHEDULED_SESSIONS.REFRESH")).show();
-                    filteredSessions = new FilteredList<>(service.reloadSessionsFromCFP(SessionListType.SCHEDULED));
-                    filteredSessions.predicateProperty().bind(filterPredicateProperty);
-                    scheduleListView.setItems(filteredSessions);
-                });
-                break;
-            }
             case FAVORITE: {
                 scheduleListView.placeholderProperty().bind(Bindings.createObjectBinding(() -> {
                     if (filterPresenter.isFilterApplied()) {
@@ -327,6 +308,7 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
      */
     private void updateSessionsDecoration(List<Session> sessions) {
         TimeSlot previousTimeSlot = null;
+        Session previousSessionWithType = null;
         boolean colorFlag = true;
         for (Session session : sessions) {
             ZonedDateTime sessionStartDateTime = session.getStartDate();
@@ -337,7 +319,66 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
                 colorFlag = !colorFlag;
             }
             session.setDecorated(colorFlag);
+
+            session.setShowSessionType(false);
+            if (previousSessionWithType == null ||
+                    session.getStartDate().toLocalDate().toEpochDay() > previousSessionWithType.getStartDate().toLocalDate().toEpochDay() ||
+                    !session.getTalk().getTalkType().equals(previousSessionWithType.getTalk().getTalkType())) {
+                previousSessionWithType = session;
+                session.setShowSessionType(true);
+            }
         }
+    }
+    
+    private GridPane createReviewGrid() {
+        final GridPane gridPane = new GridPane();
+        final HBox buttons = new HBox();
+        final Label header = new Label(DevoxxBundle.getString("OTN.FEEDBACK.QUESTION.DEVOXX"));
+        final Button no = createFlatButton(DevoxxBundle.getString("OTN.FEEDBACK.NO"));
+        final Button yes = createFlatButton(DevoxxBundle.getString("OTN.FEEDBACK.YES"));
+        final Button later = createFlatButton(DevoxxBundle.getString("OTN.FEEDBACK.LATER"));
+        final ImageView devoxxLogo = new ImageView();
+        devoxxLogo.getStyleClass().add("logo");
+        devoxxLogo.setPreserveRatio(true);
+        devoxxLogo.setFitWidth(64);
+        
+        buttons.getChildren().addAll(no, yes);
+        header.getStyleClass().add("heading");
+        gridPane.getStyleClass().add("review-grid");
+        buttons.getStyleClass().add("buttons");
+        no.getStyleClass().add("no");
+        yes.getStyleClass().add("yes");
+        later.setOnAction(e -> sessions.setTop(null));
+        no.setOnAction(e -> {
+            header.setText(DevoxxBundle.getString("OTN.FEEDBACK.QUESTION.IMPROVE"));
+            final Button feedback = createFlatButton(DevoxxBundle.getString("OTN.FEEDBACK.BUTTON.FEEDBACK"));
+            feedback.setOnAction(fe -> {
+                later.fire();
+                DevoxxView.FEEDBACK.switchView();
+            });
+            buttons.getChildren().setAll(later, feedback);
+        });
+        yes.setOnAction(e -> {
+            header.setText(DevoxxBundle.getString("OTN.FEEDBACK.QUESTION.RATE"));
+            final Button review = createFlatButton(DevoxxBundle.getString("OTN.FEEDBACK.BUTTON.RATE"));
+            review.setOnAction(re -> {
+                later.fire();
+                Util.requestRating();
+            });
+            buttons.getChildren().setAll(later, review);
+        });
+        
+        gridPane.add(devoxxLogo, 0, 0, 1, 2);
+        gridPane.add(header, 1, 0);
+        gridPane.add(buttons, 1, 1);
+        GridPane.setHgrow(buttons, Priority.ALWAYS);
+        return gridPane;
+    }
+    
+    private Button createFlatButton(String text) {
+        final Button button = new Button(text);
+        GlistenStyleClasses.applyStyleClass(button, GlistenStyleClasses.BUTTON_FLAT);
+        return button;
     }
 
     /**

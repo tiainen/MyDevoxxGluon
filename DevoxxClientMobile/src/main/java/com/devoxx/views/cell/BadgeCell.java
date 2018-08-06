@@ -26,6 +26,7 @@
 package com.devoxx.views.cell;
 
 import com.devoxx.DevoxxView;
+import com.devoxx.model.BadgeType;
 import com.devoxx.model.SponsorBadge;
 import com.gluonhq.charm.glisten.control.CharmListCell;
 import com.gluonhq.charm.glisten.control.ListTile;
@@ -59,9 +60,9 @@ public class BadgeCell<T extends Badge> extends CharmListCell<T> {
             tile.setOnMouseReleased(event -> {
                 DevoxxView.BADGE.switchView().ifPresent(presenter -> {
                     if (badge instanceof SponsorBadge) {
-                        ((BadgePresenter) presenter).setBadgeId(badge.getBadgeId(), ((SponsorBadge)badge).getSlug());
+                        ((BadgePresenter) presenter).setBadge(badge, BadgeType.SPONSOR);
                     } else {
-                        ((BadgePresenter) presenter).setBadgeId(badge.getBadgeId(), null);
+                        ((BadgePresenter) presenter).setBadge(badge, BadgeType.ATTENDEE);
                     }
                 });
             });

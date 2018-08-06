@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016, 2017, Gluon Software
+ * Copyright (c) 2016, 2018 Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -149,7 +149,7 @@
 .speaker-cell > .list-tile > .text-box > .primary-text,
 .sponsor-cell > .list-tile > .text-box > .primary-text,
 .exhibitor-cell > .list-tile > .text-box > .primary-text,
-.schedule-cell > .list-tile > .text-box > .primary-text,
+.schedule-cell .list-tile > .text-box > .primary-text,
 .note-cell > .list-tile > .text-box > .primary-text,
 .badge-cell > .list-tile > .text-box > .primary-text {
     -fx-text-fill: -primary-swatch-500;
@@ -161,7 +161,7 @@
 .speaker-cell > .list-tile > .icon-text,
 .sponsor-cell > .list-tile > .icon-text,
 .exhibitor-cell > .list-tile > .icon-text,
-.schedule-cell > .list-tile > * > .icon-text,
+.schedule-cell .list-tile > * > .icon-text,
 .note-cell > .list-tile > .icon-text,
 .badge-cell > .list-tile > .icon-text {
     -fx-text-fill: -alternate-color;
@@ -288,48 +288,72 @@
     -fx-background-color: -track-color9, derive(-fx-control-inner-background,-7%);
 }
 
+.schedule-cell .session-type {
+    -fx-padding: 0.333333em 0em 0.333333em 1.5em;
+    -fx-background-color: -alternate-color;
+}
+
+.schedule-cell .session-type > .label {
+    -fx-text-fill: white;
+    -fx-font-size: 1.1em;
+    -fx-font-weight: 700;
+}
+
 /* Center the primary-graphic in the background color */
-.list-cell.schedule-cell > .list-tile > .primary-graphic {
+.schedule-cell .list-tile > .primary-graphic {
     -fx-translate-x: 1px;
 }
 
-.list-cell.schedule-cell > .list-tile > .primary-graphic  > .label {
+.schedule-cell .list-tile > .primary-graphic  > .label {
     -fx-rotate: -90;
     -fx-font-size: 0.35em;
     -fx-text-fill: white;
     -fx-font-weight: 600;
 }
 
-.schedule-cell > .list-tile > .text-box {
+.schedule-cell .list-tile > .text-box {
     -fx-padding: 0.833333em 0em 0.833333em 0.833333em;
 }
 
-.schedule-cell > .list-tile > .text-box > .secondary-text {
+.schedule-cell .list-tile > .text-box > .secondary-text {
     -fx-text-fill: dimgray;
     -fx-font-size: 1.05em;
     -fx-wrap-text: false;
 }
-.schedule-cell > .list-tile > .text-box > .tertiary-text {
+
+.schedule-cell .list-tile > .text-box > .tertiary-text {
     -fx-text-fill: dimgray;
     -fx-font-size: 0.95em;
 }
 
-.schedule-cell > .list-tile > .text-box > .tertiary-text > .fav-label,
-.schedule-cell > .list-tile > .text-box > .tertiary-text > .fav-label > .fav-graphic {
-    -fx-text-fill: derive(crimson, 50%);
-    -fx-font-size: 0.95em;
+.schedule-cell .list-tile > .text-box > .extra-text {
+    -fx-text-fill: derive(dimgray, 20%);
+    -fx-font-size: 0.90em;
 }
 
-.schedule-cell > .list-tile > .text-box > .tertiary-text > .fav-label {
+.schedule-cell .list-tile > .text-box > .extra-text > .fav-label,
+.schedule-cell .list-tile > .text-box > .tertiary-text > .fav-label {
     -fx-alignment: bottom-left;
     -fx-graphic-text-gap: 1.0;
 }
 
-.schedule-cell > .list-tile > .secondary-graphic {
+.schedule-cell .list-tile > .text-box > .tertiary-text > .fav-label,
+.schedule-cell .list-tile > .text-box > .tertiary-text > .fav-label > .fav-graphic {
+    -fx-text-fill: derive(crimson, 50%);
+    -fx-font-size: 0.95em;
+}
+
+.schedule-cell .list-tile > .text-box > .extra-text > .fav-label,
+.schedule-cell .list-tile > .text-box > .extra-text > .fav-label > .fav-graphic {
+    -fx-text-fill: derive(crimson, 50%);
+    -fx-font-size: 0.90em;
+}
+
+.schedule-cell .list-tile > .secondary-graphic {
     -fx-padding: 0em;
 }
 
-.schedule-cell > .list-tile > .secondary-graphic > .indicator {
+.schedule-cell .list-tile > .secondary-graphic > .indicator {
     -fx-background-color: derive(crimson, 50%);
     -fx-pref-width: 2.5em;
     -fx-pref-height: 2.5em;
@@ -337,14 +361,14 @@
     -fx-scale-shape: true;
 }
 
-.schedule-cell > .list-tile > .secondary-graphic > .indicator > .icon-text {
+.schedule-cell .list-tile > .secondary-graphic > .indicator > .icon-text {
     -fx-text-fill: white;
     -fx-font-size: 1em;
 }
-.schedule-cell > .list-tile > .secondary-graphic > .schedule.indicator > .icon-text {
+.schedule-cell .list-tile > .secondary-graphic > .schedule.indicator > .icon-text {
     -fx-padding: 0.166667em 0.083333em 0.083333em 0.166667em;
 }
-.schedule-cell > .list-tile > .secondary-graphic > .favorite.indicator > .icon-text {
+.schedule-cell .list-tile > .secondary-graphic > .favorite.indicator > .icon-text {
     -fx-padding: 0.166667em 0.166667em 0.083333em 0.166667em;
     -fx-font-size: 0.9em;
 }
@@ -548,6 +572,22 @@
 
 .badge-view {
     -fx-padding: 0.910488em;
+}
+
+.badge-scanner.fab {
+    -fx-graphic: url(images/qrcode-scan.png);
+    -fx-content-display: graphic-only;
+}
+
+.badge-scanner.fab > .image-view {
+    -fx-translate-x: -1.0;
+    -fx-translate-y: -1.0;
+}
+
+/* AppBar MenuItem */
+/* temp fix for  GST-521 */
+.popup-view .menu-item {
+    -fx-wrap-text: false;
 }
 
 /** Sponsor View **/
@@ -1117,4 +1157,71 @@
 .sch-fav-dialog > .label,
 .sch-fav-dialog > * > .icon-text {
     -fx-text-fill: #333333;
+}
+
+/** DataLabel **/
+.sponsor-view .data-label {
+    -fx-min-height: 32;
+}
+
+.data-label > .progress-indicator {
+    -fx-color: -primary-swatch-500;
+}
+/* Rating Box */
+.review-grid {
+    -fx-padding: 0.2em 0.4em 0.2em 0.4em; 
+    -fx-background-color: #353C5C;
+}
+
+.review-grid > .heading {
+    -fx-text-fill: white;
+    -fx-padding: 0.5em 0 0 0.5em;
+    -fx-font-size: 1.1em;
+    -fx-font-weight: bold;
+}
+
+.review-grid > .logo.image-view {
+    -fx-image: url("images/devoxx-logo.png");
+}
+
+.review-grid > .buttons {
+    -fx-alignment: bottom-right;
+}
+
+.review-grid > .buttons > .button {
+    -fx-text-fill: white;
+    -fx-font-size:1.05em;
+    -fx-padding: 1.5mm 1.5mm 1.92mm 1.92mm;
+}
+
+.review-grid > .buttons > .button.no {
+    -fx-padding: 1.5mm 1.5mm 1.92mm 1.92mm;
+}
+
+/** Feedback View **/
+.feedback {
+    -fx-padding: 1em;
+}
+
+.feedback > .content {
+    -fx-spacing: 0.5em;
+}
+
+.feedback > .content > .charm-text-area {
+    -fx-border-insets: 0.25em 0 0 0;
+}
+
+/* TODO: Remove when GM has TextArea validator styling support */
+.feedback > .content > .charm-text-area > .error {
+    -fx-font-size: 0.75em;
+    -fx-text-fill: #f44336;
+    -fx-padding: 0 0 0 0.65em;
+}
+
+.feedback > .content > .charm-text-area:error {
+    -fx-border-color: #f44336;
+}
+
+.feedback > .content > .charm-text-area:error > .float {
+    -fx-text-fill: #f44336;
 }

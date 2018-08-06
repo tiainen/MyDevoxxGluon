@@ -70,12 +70,13 @@ public class DevoxxSettings {
      * Offset in seconds:
      *  12 days from Tue 6th Sep to 18th
      * 
-     * A session scheduled for Sun 18th, 11:45 AM - 12:30PM will be notified:
-     * - US (Florida) +3h: Tue 6th, at 2:30 PM (start) and 3.28 PM (vote)
-     * - Portugal +8h: Tue 6th, at 7:30 PM (start) and 8.28 PM (vote)
-     * - Belgium, Spain +9h: Tue 6th, at 8:30 PM (start) and 9.28 PM (vote)
-     * - India +12 hours 30 minutes: Wed 7th, at 00:00 AM (start) and 00.58 AM (vote)
-     * - New Zealand +19h: Wed 7th, at 6:30 AM (start) and 7.28 AM (vote)
+     * A session scheduled for Sun 18th, 11:45 AM - 12:30PM in PST will be notified:
+     * 
+     * - US (Florida)   +3h:      Tue 6th, at 02:30 PM (start) and 03.28 PM (vote)
+     * - Portugal       +8h:      Tue 6th, at 07:30 PM (start) and 08.28 PM (vote)
+     * - Belgium, Spain +9h:      Tue 6th, at 08:30 PM (start) and 09.28 PM (vote)
+     * - India          +12h 30m: Wed 7th, at 00:00 AM (start) and 00.58 AM (vote)
+     * - New Zealand    +19h:     Wed 7th, at 06:30 AM (start) and 07.28 AM (vote)
      * 
      * Window for testing: between Tuesday 6th and Saturday 10th
      */
@@ -87,19 +88,28 @@ public class DevoxxSettings {
      */
     public final static int PROCESSING_TIME_OUT = 15; // seconds
 
+    /**
+     * URL to submit review on App Store
+     */
+    public static final String IOS_REVIEW_URL = "itms-apps://itunes.apple.com/app/itunes-u/id1094805620?action=write-review";
+
+    /**
+     * URL to submit review on Play Store
+     */
+    public static final String ANDROID_REVIEW_URL = "market://details?id=com.devoxx";
+    
+
     public final static Locale LOCALE = Locale.getDefault();
-    public static final boolean FAV_AND_SCHEDULE_ENABLED = true;
     public static final String SKIP_VIDEO = "SKIP_VIDEO";
-    public static final String SKIP_SCH_FAV_DIALOG = "SKIP_SCH_FAV_DIALOG";
+    public static final String SKIP_FAV_DIALOG = "SKIP_FAV_DIALOG";
     public static final String SIGN_UP = "sign_up";
     public static final String SAVED_CONFERENCE_ID = "devoxx_cfp_id";
     public static final String SAVED_CONFERENCE_TYPE = "devoxx_cfp_type";
     public static final String SAVED_ACCOUNT_ID = "devoxx_cfp_account";
     public static final String BADGE_TYPE = "badge-type";
-    public static final String BADGE_TYPE_SPONSOR = "sponsor";
-    public static final String BADGE_TYPE_ATTENDEE = "attendee";
-    public static final String SPONSOR_NAME = "sponsor-name";
-    public static final String SPONSOR_SLUG = "sponsor-slug";
+    public static final String BADGE_SPONSOR = "badge-sponsor";
+    public static final String RELOAD = "reload";
+    public static final String RATING = "rating";
 
     private static final String WEARABLE_DAY_PATTERN  = "MMMM dd, uuuu";
     private static final String TIME_PATTERN = "h:mma";
@@ -135,7 +145,7 @@ public class DevoxxSettings {
     /**
      * List of conferences contries that don't support favorite and schedule
      */
-    private static final EnumSet<DevoxxCountry> CONFERENCE_COUNTRIES_WITHOUT_SCH_FAV = EnumSet.of(DevoxxCountry.MA);
+    private static final EnumSet<DevoxxCountry> CONFERENCE_COUNTRIES_WITHOUT_FAVORITE = EnumSet.of(DevoxxCountry.MA);
 
     private static String uuid;
     public static String getUserUUID() {
@@ -180,8 +190,8 @@ public class DevoxxSettings {
         return ! conferenceInSet(CONFERENCE_COUNTRIES_WITHOUT_FAVORITE_COUNT, conference);
     }
     
-    public static boolean conferenceHasSchFav(Conference conference) {
-        return ! conferenceInSet(CONFERENCE_COUNTRIES_WITHOUT_SCH_FAV, conference);
+    public static boolean conferenceHasFavorite(Conference conference) {
+        return ! conferenceInSet(CONFERENCE_COUNTRIES_WITHOUT_FAVORITE, conference);
     }
     
     private static boolean conferenceInSet(EnumSet set, Conference conference) {

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016, Gluon Software
+ * Copyright (c) 2016, 2018 Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -33,8 +33,7 @@ import com.devoxx.service.Service;
 import com.devoxx.views.helper.Util;
 import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
 import com.gluonhq.charm.glisten.control.AppBar;
-import com.gluonhq.charm.glisten.layout.Layer;
-import com.gluonhq.charm.glisten.layout.layer.FloatingActionButton;
+import com.gluonhq.charm.glisten.control.FloatingActionButton;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import com.gluonhq.connect.GluonObservableObject;
@@ -120,6 +119,7 @@ public class VenuePresenter extends GluonPresenter<DevoxxApplication> {
     }
 
     private void fetchLocationAndUpdateVenue(Conference conference) {
+        createFloatingActionButtons(conference);
         final GluonObservableObject<Location> location = service.retrieveLocation();
         if (location.isInitialized()) {
             updateVenueInformation(conference, location.get());
@@ -132,7 +132,6 @@ public class VenuePresenter extends GluonPresenter<DevoxxApplication> {
     }
 
     private void updateVenueInformation(Conference conference, Location location) {
-        venue.getLayers().add(createFloatingActionButtons(conference));
         name.setText(location.getName());
         address.setText(getLocationAddress(location));
 
@@ -147,7 +146,9 @@ public class VenuePresenter extends GluonPresenter<DevoxxApplication> {
         mapView.addLayer(venueMarker);
 
         String url = conference.getWebsite();
-        webActionButton.setVisible(url != null && !url.isEmpty());
+        if (url == null || url.isEmpty()) {
+            webActionButton.hide();
+        }
 
         resizeImages();
     }
@@ -182,14 +183,10 @@ public class VenuePresenter extends GluonPresenter<DevoxxApplication> {
         return address.toString();
     }
 
-    private Conference getVenue() {
-        return service.getConference();
-    }
-
-    private Layer createFloatingActionButtons(Conference conference) {
+    private void createFloatingActionButtons(Conference conference) {
         webActionButton = Util.createWebLaunchFAB(() -> conference.getWebsite());
         webActionButton.getStyleClass().add("secondary");
-        return webActionButton.getLayer();
+        webActionButton.showOn(venue);
     }
 
     private MapLayer createVenueMarker(MapPoint venue) {

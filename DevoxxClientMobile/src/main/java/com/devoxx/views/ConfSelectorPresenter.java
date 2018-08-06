@@ -56,6 +56,8 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
+import static com.gluonhq.charm.glisten.layout.layer.PopupView.PopupSide.RIGHT;
+
 public class ConfSelectorPresenter extends GluonPresenter<DevoxxApplication> {
 
     private static final StatusBar STATUS_BAR = MobileApplication.getInstance().getStatusBar();
@@ -130,7 +132,9 @@ public class ConfSelectorPresenter extends GluonPresenter<DevoxxApplication> {
             Bindings.bindContent(conferences, service.retrieveConferences(Conference.Type.VOXXED));
             STATUS_BAR.pseudoClassStateChanged(PSEUDO_CLASS_STATUS_CONF, true);
         });
-        
-        return new MenuPopupView(filter, menu);
+
+        final MenuPopupView menuPopupView = new MenuPopupView(filter, menu);
+        menuPopupView.setSide(RIGHT);
+        return menuPopupView;
     }
 }

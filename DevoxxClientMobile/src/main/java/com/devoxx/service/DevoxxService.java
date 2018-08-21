@@ -581,16 +581,11 @@ public class DevoxxService implements Service {
     private void retrieveExhibitionMapsInternal() {
         Task<List<Floor>> task = new Task<List<Floor>>() {
             @Override
-            protected List<Floor> call() throws Exception {
-                boolean isTablet = Services.get(DisplayService.class).map(DisplayService::isTablet).orElse(false);
-                boolean isPhone = Services.get(DisplayService.class).map(DisplayService::isPhone).orElse(false);
-                boolean isDesktop = Services.get(DisplayService.class).map(DisplayService::isDesktop).orElse(true);
+            protected List<Floor> call() {
 
                 List<Floor> floors = new ArrayList<>();
-                for (Floor floor : getConference().getFloors()) {
-                    if (floor.getImg().startsWith("http") &&
-                            (("phone".equals(floor.getTarget()) && isPhone) ||
-                                    ("tablet".equals(floor.getTarget()) && (isDesktop || isTablet)))) {
+                for (Floor floor : getConference().getFloorPlans()) {
+                    if (floor.getImageURL().startsWith("https")) {
                         floors.add(floor);
                     }
                 }

@@ -85,7 +85,7 @@ public class Conference {
     List<Track> tracks;
     List<SessionType> sessionTypes;
     List<String> languages;
-    List<Floor> floors;
+    List<Floor> floorPlans;
     
     // TODO: Needed for WearService
     private boolean selected;
@@ -417,12 +417,12 @@ public class Conference {
         this.languages = languages;
     }
 
-    public List<Floor> getFloors() {
-        return floors;
+    public List<Floor> getFloorPlans() {
+        return floorPlans;
     }
 
-    public void setFloors(List<Floor> floors) {
-        this.floors = floors;
+    public void setFloorPlans(List<Floor> floorPlans) {
+        this.floorPlans = floorPlans;
     }
 
     public ZonedDateTime getFromDateTime() {

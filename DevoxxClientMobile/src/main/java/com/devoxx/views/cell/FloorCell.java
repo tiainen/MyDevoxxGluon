@@ -48,7 +48,7 @@ public class FloorCell extends CharmListCell<Floor> {
     public void updateItem(Floor floor, boolean empty) {
         super.updateItem(floor, empty);
         if (floor != null && !empty) {
-            tile.textProperty().setAll(floor.getTitle());
+            tile.textProperty().setAll(floor.getName());
             setGraphic(tile);
 
             // FIX for OTN-568

@@ -26,40 +26,32 @@
 package com.devoxx.model;
 
 public class Floor {
-    private String img;
-    private String title;
-    private String tabpos;
-    private String target;
 
-    public String getImg() {
-        return img;
+    private String id;
+    private String name;
+    private String imageURL;
+
+    public String getId() {
+        return id;
     }
 
-    public void setImg(String img) {
-        this.img = img;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public String getTitle() {
-        return title;
+    public String getName() {
+        return name;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public String getTabpos() {
-        return tabpos;
+    public String getImageURL() {
+        return imageURL;
     }
 
-    public void setTabpos(String tabpos) {
-        this.tabpos = tabpos;
-    }
-
-    public String getTarget() {
-        return target;
-    }
-
-    public void setTarget(String target) {
-        this.target = target;
+    public void setImageURL(String imageURL) {
+        this.imageURL = imageURL;
     }
 }

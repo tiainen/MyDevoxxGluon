@@ -24,6 +24,8 @@ import java.io.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -33,6 +35,8 @@ public class ConferenceCell extends CharmListCell<Conference> {
 
     private static final PseudoClass PSEUDO_CLASS_VOXXED = PseudoClass.getPseudoClass("voxxed");
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("MMMM dd, yyyy");
+    
+    private static final ExecutorService executor = Executors.newCachedThreadPool();
     
     private final Service service;
     private final Label name;
@@ -55,16 +59,22 @@ public class ConferenceCell extends CharmListCell<Conference> {
         
         eventType = new Label();
         eventType.getStyleClass().add("type");
+        eventType.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue.equals(Conference.Type.VOXXED.name())) {
+                pseudoClassStateChanged(PSEUDO_CLASS_VOXXED, true);
+            } else {
+                pseudoClassStateChanged(PSEUDO_CLASS_VOXXED, false);
+            }
+        });
         
         dateLabel = new Label();
         dateLabel.getStyleClass().add("date");
         
         background = new ImageView();
-        background.setPreserveRatio(true);
+        background.setFitHeight(222);
         
         top = new VBox(eventType, name);
         top.getStyleClass().add("top");
-        
 
         content = new BorderPane();
         content.getStyleClass().add("content");
@@ -81,11 +91,6 @@ public class ConferenceCell extends CharmListCell<Conference> {
         
         if (item != null && !empty) {
             eventType.setText(item.getEventType().name());
-            if (item.getEventType() == Conference.Type.VOXXED) {
-                pseudoClassStateChanged(PSEUDO_CLASS_VOXXED, true);
-            } else {
-                pseudoClassStateChanged(PSEUDO_CLASS_VOXXED, false);
-            }
             
             name.setText(item.getName());
             dateLabel.setText(LocalDate.parse(item.getFromDate()).getDayOfMonth() + " - " + 
@@ -99,7 +104,7 @@ public class ConferenceCell extends CharmListCell<Conference> {
             inputStreamTask.exceptionProperty().addListener((o, ov, nv) -> {
                 LOG.log(Level.SEVERE, nv.getMessage());
             });
-            new Thread(inputStreamTask).start();
+            executor.submit(inputStreamTask);
             
             background.fitWidthProperty().bind(widthProperty.subtract(2));
             
@@ -113,7 +118,6 @@ public class ConferenceCell extends CharmListCell<Conference> {
                 }
                 DevoxxView.SESSIONS.switchView();
             });
-            
             setGraphic(root);
         } else {
             setGraphic(null);

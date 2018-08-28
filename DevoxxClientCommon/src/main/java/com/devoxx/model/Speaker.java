@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016, Gluon Software
+/*
+ * Copyright (c) 2016, 2018 Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -25,6 +25,9 @@
  */
 package com.devoxx.model;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+
 import java.util.List;
 import java.util.Locale;
 
@@ -40,7 +43,7 @@ public class Speaker extends Searchable {
     private String twitter;
     private String lang;
     private List<Talk> acceptedTalks;
-    private boolean detailsRetrieved;
+    private BooleanProperty detailsRetrieved = new SimpleBooleanProperty();
 
     public Speaker() {
     }
@@ -83,10 +86,6 @@ public class Speaker extends Searchable {
         return avatarURL;
     }
     
-    public String getPicture() {
-        return getAvatarURL();
-    }
-
     public String getCompany() {
         return company;
     }
@@ -152,11 +151,15 @@ public class Speaker extends Searchable {
     }
 
     public boolean isDetailsRetrieved() {
+        return detailsRetrieved.get();
+    }
+
+    public BooleanProperty detailsRetrievedProperty() {
         return detailsRetrieved;
     }
 
     public void setDetailsRetrieved(boolean detailsRetrieved) {
-        this.detailsRetrieved = detailsRetrieved;
+        this.detailsRetrieved.set(detailsRetrieved);
     }
 
     @Override

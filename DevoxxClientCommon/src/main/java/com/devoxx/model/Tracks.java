@@ -25,12 +25,13 @@
  */
 package com.devoxx.model;
 
+import java.util.LinkedList;
 import java.util.List;
 
 public class Tracks {
 
     private String content;
-    private List<Track> tracks;
+    private List<Track> tracks = new LinkedList<>();
 
     public String getContent() {
         return content;

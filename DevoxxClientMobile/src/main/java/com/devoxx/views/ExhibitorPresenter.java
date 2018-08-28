@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016, Gluon Software
+ * Copyright (c) 2016, 2018 Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -27,7 +27,7 @@ package com.devoxx.views;
 
 import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
 import com.gluonhq.charm.glisten.control.AppBar;
-import com.gluonhq.charm.glisten.layout.layer.FloatingActionButton;
+import com.gluonhq.charm.glisten.control.FloatingActionButton;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.devoxx.DevoxxApplication;
 import com.devoxx.DevoxxView;
@@ -85,7 +85,9 @@ public class ExhibitorPresenter extends GluonPresenter<DevoxxApplication> {
             }
 
             String url = exhibitor.getUrl();
-            webLaunchFAB.setVisible(url != null && !url.isEmpty());
+            if (url == null || url.isEmpty()) {
+                webLaunchFAB.hide();
+            }
 
             details.setText(exhibitor.getSummary());
             resizeImages();
@@ -104,7 +106,7 @@ public class ExhibitorPresenter extends GluonPresenter<DevoxxApplication> {
 
     public void initialize() {
         webLaunchFAB = Util.createWebLaunchFAB(() -> getExhibitor().getUrl());
-        exhibitor.getLayers().add(webLaunchFAB.getLayer());
+        webLaunchFAB.showOn(exhibitor);
 
         exhibitor.setOnShowing( event -> {
             AppBar appBar = getApp().getAppBar();

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016, Gluon Software
+ * Copyright (c) 2018, Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -23,25 +23,36 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.devoxx.model;
+@import "devoxx.css";
 
-import java.util.List;
+/** AppBar **/
+.app-bar > .title-box > .label {
+    -fx-font-size: 1.25em;
+}
 
-public class SchedulesOfDay {
+/** StatusBar **/
+.status-bar,
+.status-bar:conf,
+.status-bar:error,
+.status-bar:conf:error {
+    -fx-background-color: transparent;
+}
 
-    public SchedulesOfDay() {}
+/** Views **/
+.conf-selector {
+    -fx-padding: 17mm 0 17mm 0;
+}
 
-    private List<Session> slots;
+.exhibitor-detail .details,
+.sponsor-detail .details {
+    -fx-padding: 0em 0em 0em 0.8em;
+}
 
-    public SchedulesOfDay(List<Session> slots) {
-        this.slots = slots;
-    }
+.venue-detail .address {
+    -fx-padding: 0em 0em 0.8em 0.8em;
+}
 
-    public List<Session> getSlots() {
-        return slots;
-    }
-
-    public void setSlots(List<Session> slots) {
-        this.slots = slots;
-    }
+/* Filter view inside session view */
+.sessions-filter {
+    -fx-padding: 11.52mm 0 0 0;
 }

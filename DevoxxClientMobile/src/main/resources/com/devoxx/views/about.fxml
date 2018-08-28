@@ -7,17 +7,15 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Separator?>
 <View fx:id="aboutView" styleClass="about-view" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.devoxx.views.AboutPresenter">
-    <center>
-        <ScrollPane hbarPolicy="NEVER" styleClass="edge-to-edge" fitToWidth="true">
-            <VBox fx:id="imageContainer" styleClass="container">
-                <ImageView fx:id="devoxxImage" preserveRatio="true" styleClass="devoxx-image"/>
-                <Label fx:id="devoxxLabel"/>
-                <Separator fx:id="separator"/>
-                <VBox styleClass="gluon-logo-container">
-                    <ImageView fx:id="gluonLogo" preserveRatio="true" styleClass="gluon-logo"/>
-                    <Label fx:id="gluonLabel"/>
-                </VBox>
+    <ScrollPane hbarPolicy="NEVER" styleClass="edge-to-edge" fitToWidth="true">
+        <VBox fx:id="imageContainer" styleClass="container">
+            <ImageView fx:id="devoxxImage" preserveRatio="true" styleClass="devoxx-image"/>
+            <Label fx:id="devoxxLabel"/>
+            <Separator fx:id="separator"/>
+            <VBox styleClass="gluon-logo-container">
+                <ImageView fx:id="gluonLogo" preserveRatio="true" styleClass="gluon-logo"/>
+                <Label fx:id="gluonLabel"/>
             </VBox>
-        </ScrollPane>
-    </center>
+        </VBox>
+    </ScrollPane>
 </View>

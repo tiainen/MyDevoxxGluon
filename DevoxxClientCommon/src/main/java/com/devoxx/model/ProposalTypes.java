@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2017, Gluon Software
+/*
+ * Copyright (c) 2017, 2018 Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -25,12 +25,13 @@
  */
 package com.devoxx.model;
 
+import java.util.LinkedList;
 import java.util.List;
 
 public class ProposalTypes {
 
     private String content;
-    private List<ProposalType> proposalTypes;
+    private List<ProposalType> proposalTypes = new LinkedList<>();
 
     public String getContent() {
         return content;

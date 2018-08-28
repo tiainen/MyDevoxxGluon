@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016, Gluon Software
+/*
+ * Copyright (c) 2016, 2018 Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -25,22 +25,26 @@
  */
 package com.devoxx.views.helper;
 
+import com.devoxx.model.Speaker;
+import com.devoxx.util.DevoxxBundle;
+import com.devoxx.util.ImageCache;
+import com.devoxx.views.ExhibitionMapPresenter;
+import com.devoxx.util.DevoxxSettings;
+import com.gluonhq.charm.down.Platform;
 import com.gluonhq.charm.down.Services;
 import com.gluonhq.charm.down.plugins.BrowserService;
+import com.gluonhq.charm.down.plugins.SettingsService;
 import com.gluonhq.charm.glisten.control.Avatar;
+import com.gluonhq.charm.glisten.control.FloatingActionButton;
 import com.gluonhq.charm.glisten.control.Toast;
-import com.gluonhq.charm.glisten.layout.layer.FloatingActionButton;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
-import com.devoxx.model.Speaker;
-import com.devoxx.util.ImageCache;
-import com.devoxx.util.DevoxxBundle;
-import com.devoxx.views.ExhibitionMapPresenter;
 import com.gluonhq.cloudlink.client.media.MediaClient;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Region;
+import javafx.util.Duration;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -84,7 +88,7 @@ public class Util {
         Avatar avatar = new Avatar();
         avatar.getStyleClass().addAll(newStyleClasses);
 
-        Image image = ImageCache.get(speaker.getPicture(), () -> DEFAULT_IMAGE, downloadedImage -> avatar.setImage(downloadedImage));
+        Image image = ImageCache.get(speaker.getAvatarURL(), () -> DEFAULT_IMAGE, downloadedImage -> avatar.setImage(downloadedImage));
         avatar.setImage(image);
 
         avatar.setCache(true);
@@ -112,6 +116,26 @@ public class Util {
                     toast.show();
                 }
             });
+        });
+    }
+    
+    public static void requestRating() {
+        String url = null;
+        if(Platform.isAndroid()) {
+            url = DevoxxSettings.ANDROID_REVIEW_URL;
+        } else if (Platform.isIOS()) {
+            url = DevoxxSettings.IOS_REVIEW_URL;
+        }
+        String finalUrl = url;
+        Services.get(BrowserService.class).ifPresent(b -> {
+            try {
+                if (finalUrl != null) {
+                    b.launchExternalBrowser(finalUrl);
+                }
+            } catch (IOException | URISyntaxException e1) {
+                Toast toast = new Toast("Failed to launch Store");
+                toast.show();
+            }
         });
     }
 
@@ -157,5 +181,22 @@ public class Util {
             imageView.setTranslateY(0);
         }
     }
+    
+    public static void removeKeysFromSettings(String... toRemove) {
+        Services.get(SettingsService.class).ifPresent(service -> {
+            for (String s : toRemove) {
+                service.remove(s);
+            }
+        });
+    }
+    
+    public static void showToast(String message, Duration duration)  {
+        final Toast toast = new Toast(message);
+        toast.setDuration(duration);
+        toast.show();
+    }
 
+    public static String safeStr(String s) {
+        return s == null? "": s.trim();
+    }
 }

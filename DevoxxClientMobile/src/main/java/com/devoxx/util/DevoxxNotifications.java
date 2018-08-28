@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016, 2017 Gluon Software
+/*
+ * Copyright (c) 2016, 2018 Gluon Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -63,10 +63,10 @@ public class DevoxxNotifications {
     private final static int SHOW_VOTE_NOTIFICATION = -2; // show vote notification two minutes before session ends
     private final static int SHOW_SESSION_START_NOTIFICATION = -15; // show session start warning 15 minutes before posted start time
     
-    private final Map<String, Notification> scheduledSessionNotificationMap = new HashMap<>();
+    private final Map<String, Notification> startSessionNotificationMap = new HashMap<>();
     private final Map<String, Notification> voteSessionNotificationMap = new HashMap<>();
 
-    private ListChangeListener<Session> scheduledSessionslistener;
+    private ListChangeListener<Session> favoriteSessionsListener;
     
     @Inject
     private Service service;
@@ -78,20 +78,20 @@ public class DevoxxNotifications {
     }
 
     /**
-     * For a new Scheduled Session, we create two local notifications:
+     * For a new Favorite Session, we create two local notifications:
      * - One notification will be triggered by the device before the session starts
      * - One notification will be triggered by the device right before the session ends
      * 
      * We create the notifications and schedule them on the device, but only for future events. 
      * 
-     * @param session The new scheduled session
+     * @param session The new favored session
      */
-    public final void addScheduledSessionNotifications(Session session) {
+    public final void addFavoriteSessionNotifications(Session session) {
         final String sessionId = session.getTalk().getId();
         
-        if (!scheduledSessionNotificationMap.containsKey(sessionId)) {
+        if (!startSessionNotificationMap.containsKey(sessionId)) {
             createStartNotification(session).ifPresent(notification -> {
-                scheduledSessionNotificationMap.put(sessionId, notification);
+                startSessionNotificationMap.put(sessionId, notification);
                 notificationsService.ifPresent(n -> n.getNotifications().add(notification));
             });
         }
@@ -105,12 +105,12 @@ public class DevoxxNotifications {
     }
     
     /**
-     * For a given Scheduled session, if the user unschedules it, its two notifications
-     * will be cancelled on the device
-     * @param session the scheduled session to unschedule
+     * If a favorite session is removed as favorite, both start and vote notifications
+     * should be cancelled on the device
+     * @param session session removed as favorite 
      */
-    public final void removeScheduledSessionNotifications(Session session) {
-        final Notification startNotification = scheduledSessionNotificationMap.remove(session.getTalk().getId());
+    public final void removeFavoriteSessionNotifications(Session session) {
+        final Notification startNotification = startSessionNotificationMap.remove(session.getTalk().getId());
         if (startNotification != null) { 
             notificationsService.ifPresent(n -> n.getNotifications().remove(startNotification));
         }
@@ -121,52 +121,45 @@ public class DevoxxNotifications {
     }
     
     /**
-     * Called when the application starts, allows retrieving the scheduled
+     * Called when the application starts, allows retrieving the favorite
      * notifications, and restoring the notifications map
      */
-    public void preloadScheduledSessions() {
+    public void preloadFavoriteSessions() {
         if (service.isAuthenticated()) { 
-            scheduledSessionslistener = (ListChangeListener.Change<? extends Session> c) -> {
+            favoriteSessionsListener = (ListChangeListener.Change<? extends Session> c) -> {
                 while (c.next()) {
                     if (c.wasAdded()) {
                         for (Session session : c.getAddedSubList()) {
                             if (LOGGING_ENABLED) {
                                 LOG.log(Level.INFO, "Adding notification #" + session.getTalk().getId());
                             }
-                            addAlreadyScheduledSessionNotifications(session);
+                            addAlreadyFavoredSessionNotifications(session);
                         }
                     }
                 }
             };
-            service.retrieveScheduledSessions().addListener(scheduledSessionslistener);
+            service.retrieveFavoredSessions().addListener(favoriteSessionsListener);
         }
     }
     
     /**
-     * Called after the application has started and preloading the scheduled sessions
+     * Called after the application has started and pre-loading the favored sessions
      * ends. At this point, we have all the notifications available, and we can remove
      * the listener (so new notifications are not treated as already scheduled) and 
      * send them to the Local Notifications service at once
      */
-    public void preloadingScheduledSessionsDone() {
-        if (scheduledSessionslistener != null) {
-            service.retrieveScheduledSessions().removeListener(scheduledSessionslistener);
-            scheduledSessionslistener = null;
+    public void preloadingFavoriteSessionsDone() {
+        if (favoriteSessionsListener != null) {
+            service.retrieveFavoredSessions().removeListener(favoriteSessionsListener);
+            favoriteSessionsListener = null;
         
             // process notifications at once
             List<Notification> notificationList = new ArrayList<>();
-            for (Notification n : scheduledSessionNotificationMap.values()) {
-                if (n.getDateTime() == null) {
-                    notificationList.add(n);
-                }
-            }
-            for (Notification n : voteSessionNotificationMap.values()) {
-                if (n.getDateTime() == null) {
-                    notificationList.add(n);
-                }
-            }
+            notificationList.addAll(startSessionNotificationMap.values());
+            notificationList.addAll(voteSessionNotificationMap.values());
+            
             if (notificationList.size() > 0) {
-                LOG.log(Level.INFO, String.format("Adding %d notifications already scheduled", notificationList.size()));
+                LOG.log(Level.INFO, String.format("Adding %d notifications already favored", notificationList.size()));
                 notificationsService.ifPresent(n -> n.getNotifications().addAll(notificationList));
             }
         }
@@ -174,7 +167,7 @@ public class DevoxxNotifications {
     
     /**
      * Creates a notification that will be triggered by the device before the session starts
-     * @param session the scheduled session
+     * @param session the favored session
      * @return a notification if the event is in the future
      */
     private Optional<Notification> createStartNotification(Session session) {
@@ -195,7 +188,7 @@ public class DevoxxNotifications {
     
     /**
      * Creates a notification that will be triggered by the device right before the session ends
-     * @param session the scheduled session
+     * @param session the favored session
      * @return a notification if the session wasn't added yet and it was already scheduled or 
      * the event is in the future
      */
@@ -216,34 +209,71 @@ public class DevoxxNotifications {
     }
     
     /**
-     * For an already scheduled session, we create two local notifications.
+     * For an already favored session, we create two local notifications.
      * 
      * These notifications are not sent to the Local Notification service yet: 
-     * this will be done when calling {@link #preloadingScheduledSessionsDone()}.
+     * this will be done when calling {@link #preloadingFavoriteSessionsDone()}.
      * 
      * We don't schedule them again on the device, but we add these notifications to the 
      * notifications map, so in case they are delivered, their runnable is available.
      * 
-     * @param session The already scheduled session
+     * @param session The already favored session
      */
-    private void addAlreadyScheduledSessionNotifications(Session session) {
+    private void addAlreadyFavoredSessionNotifications(Session session) {
         final String sessionId = session.getTalk().getId();
         
-        if (!scheduledSessionNotificationMap.containsKey(sessionId)) {
-            // the use of null will prevent notification from being scheduled again on the device
-            scheduledSessionNotificationMap.put(sessionId, getStartNotification(session, null));
+        final ZonedDateTime now = ZonedDateTime.now(service.getConference().getConferenceZoneId());
+        // Add notification 15 min before session starts
+        ZonedDateTime dateTimeStart = session.getStartDate().plusMinutes(SHOW_SESSION_START_NOTIFICATION);
+        if (DevoxxSettings.NOTIFICATION_TESTS) {
+            dateTimeStart = dateTimeStart.minus(DevoxxSettings.NOTIFICATION_OFFSET, SECONDS);
         }
         
-        if (!voteSessionNotificationMap.containsKey(sessionId)) {
-            // the use of null will prevent notification from being scheduled again on the device
-            voteSessionNotificationMap.put(sessionId, getVoteNotification(session, null));
+        if (dateTimeStart.isAfter(now)) {
+            if (!startSessionNotificationMap.containsKey(sessionId)) {
+                final Notification dummyStartNotification = getStartNotification(session, null);
+                // Remove notification to avoid duplicate notification
+                notificationsService.ifPresent(ns -> {
+                    // we need to add the notification first so because no direct method
+                    // exists on LocalNotificationsService to un-schedule a notification.
+                    // and un-scheduling is done via the listener attached to notifications observable list
+                    ns.getNotifications().add(dummyStartNotification);
+                    ns.getNotifications().remove(dummyStartNotification);
+                });
+
+                // Add notification
+                createStartNotification(session).ifPresent(n -> {
+                    LOG.log(Level.INFO, "Adding final start notification");
+                    startSessionNotificationMap.put(sessionId, n);
+                });
+            }
+        }
+        
+        // Add notification 2 min before session ends
+        ZonedDateTime dateTimeVote = session.getEndDate().plusMinutes(SHOW_VOTE_NOTIFICATION);
+        if (DevoxxSettings.NOTIFICATION_TESTS) {
+            dateTimeVote = dateTimeVote.minus(DevoxxSettings.NOTIFICATION_OFFSET, SECONDS);
+        }
+        if (dateTimeVote.isAfter(now)) {
+            if (!voteSessionNotificationMap.containsKey(sessionId)) {
+                final Notification dummyVoteNotification = getVoteNotification(session, null);
+                notificationsService.ifPresent(ns -> {
+                    ns.getNotifications().add(dummyVoteNotification);
+                    ns.getNotifications().remove(dummyVoteNotification);
+                });
+
+                createVoteNotification(session).ifPresent(n -> {
+                    LOG.log(Level.INFO, "Adding final vote notification");
+                    voteSessionNotificationMap.put(sessionId, n);
+                });
+            }
         }
     }
     
     /**
      * Creates a notification that will be triggered by the device before the session starts
      * 
-     * @param session the scheduled session
+     * @param session the favored session
      * @param dateTimeStart the session's start zoned date time. If null, this notification won't be 
      * scheduled on the device
      * @return a local notification
@@ -265,7 +295,7 @@ public class DevoxxNotifications {
     
     /**
      * Creates a notification that will be triggered by the device right before the session ends
-     * @param session the scheduled session
+     * @param session the favored session
      * @param dateTimeVote the session's end zoned date time. If null, this notification won't be 
      * scheduled on the device
      * @return a local notification

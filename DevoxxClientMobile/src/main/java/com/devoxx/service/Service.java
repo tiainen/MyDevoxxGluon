@@ -29,6 +29,7 @@ import com.devoxx.model.Badge;
 import com.devoxx.model.Conference;
 import com.devoxx.model.Exhibitor;
 import com.devoxx.model.Favorite;
+import com.devoxx.model.Feedback;
 import com.devoxx.model.Floor;
 import com.devoxx.model.Note;
 import com.devoxx.model.ProposalType;
@@ -39,6 +40,7 @@ import com.devoxx.model.SponsorBadge;
 import com.devoxx.model.Track;
 import com.devoxx.model.Vote;
 import com.devoxx.views.helper.SessionVisuals.SessionListType;
+import com.gluonhq.cloudlink.client.user.User;
 import com.gluonhq.connect.GluonObservableList;
 import com.gluonhq.connect.GluonObservableObject;
 import javafx.beans.property.BooleanProperty;
@@ -81,6 +83,11 @@ public interface Service {
      * Execute a reload of sessions and speakers when a reload is requested.
      */
     void checkIfReloadRequested();
+
+    /**
+     * Returns true if a rating dialog has been requested from the GCL.
+     */
+    boolean showRatingDialog();
 
     /**
      * Returns a list of sessions at the conference.
@@ -190,14 +197,6 @@ public interface Service {
     ObservableList<Session> retrieveFavoredSessions();
 
     /**
-     * Returns a list of sessions that the authenticated user has scheduled.
-     *
-     * @return
-     * @throws IllegalStateException when no user is currently authenticated
-     */
-    ObservableList<Session> retrieveScheduledSessions();
-
-    /**
      * Returns a list of notes that the authenticated user has written. Each note belongs to a specific session.
      *
      * @return
@@ -216,10 +215,11 @@ public interface Service {
     /**
      * Returns a list of badges that the authenticated sponsor has scanned. 
      *
-     * @return
+     * @return An observable list of badges scanned and stored by the sponsor.
      * @throws IllegalStateException when no user is currently authenticated
+     * @param sponsor The sponsor for which badges are to be retrieved
      */
-    ObservableList<SponsorBadge> retrieveSponsorBadges();
+    ObservableList<SponsorBadge> retrieveSponsorBadges(Sponsor sponsor);
 
     /**
      * Returns a list of favored or scheduled sessions from the cloud.
@@ -259,4 +259,15 @@ public interface Service {
      * @param sponsorBadge The sponsor badge to be send to the GCL remote function.
      */
     void saveSponsorBadge(SponsorBadge sponsorBadge);
+
+    /**
+     * Returns the authenticated user, if present. Otherwise, returns null.
+     * @return The authenticated user, if present.
+     */
+    User getAuthenticatedUser();
+
+    /**
+     * Submits the user feedback
+     */
+    void sendFeedback(Feedback feedback);
 }

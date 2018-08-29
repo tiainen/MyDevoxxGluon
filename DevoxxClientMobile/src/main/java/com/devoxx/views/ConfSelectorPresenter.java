@@ -40,9 +40,6 @@ import com.gluonhq.charm.glisten.control.ProgressIndicator;
 import com.gluonhq.charm.glisten.layout.layer.MenuPopupView;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
-import javafx.beans.binding.Bindings;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -77,7 +74,6 @@ public class ConfSelectorPresenter extends GluonPresenter<DevoxxApplication> {
 
     @Inject
     private Service service;
-    private ObservableList<Conference> conferences = FXCollections.observableArrayList();
 
     public void initialize() {
         final Optional<SettingsService> settingsService = Services.get(SettingsService.class);
@@ -85,15 +81,14 @@ public class ConfSelectorPresenter extends GluonPresenter<DevoxxApplication> {
             final SettingsService settings = settingsService.get();
             final String eventType = settings.retrieve(DevoxxSettings.SAVED_CONFERENCE_TYPE);
             if (eventType == null || eventType.equals("")) {
-                Bindings.bindContent(conferences, service.retrieveConferences(Conference.Type.DEVOXX));
+                selector.setItems(service.retrieveConferences(Conference.Type.DEVOXX));
             } else {
-                Bindings.bindContent(conferences, service.retrieveConferences(Conference.Type.valueOf(eventType)));
+                selector.setItems(service.retrieveConferences(Conference.Type.valueOf(eventType)));
             }
         } else {
-            Bindings.bindContent(conferences, service.retrieveConferences(Conference.Type.DEVOXX));
+            selector.setItems(service.retrieveConferences(Conference.Type.DEVOXX));
         }
 
-        Bindings.bindContent(selector.itemsProperty(), conferences);
         selector.setPlaceholder(new ProgressIndicator());
         selector.setCellFactory(p -> new ConferenceCell(service));
         selector.setComparator((s1, s2) -> LocalDate.parse(s1.getFromDate()).compareTo(LocalDate.parse(s2.getFromDate())));
@@ -125,11 +120,11 @@ public class ConfSelectorPresenter extends GluonPresenter<DevoxxApplication> {
         menu.getItems().addAll(devoxx, voxxed);
         
         devoxx.setOnAction(e -> {
-            Bindings.bindContent(conferences, service.retrieveConferences(Conference.Type.DEVOXX));
+            selector.setItems(service.retrieveConferences(Conference.Type.DEVOXX));
             STATUS_BAR.pseudoClassStateChanged(PSEUDO_CLASS_STATUS_CONF, false);
         });
         voxxed.setOnAction(e -> {
-            Bindings.bindContent(conferences, service.retrieveConferences(Conference.Type.VOXXED));
+            selector.setItems(service.retrieveConferences(Conference.Type.VOXXED));
             STATUS_BAR.pseudoClassStateChanged(PSEUDO_CLASS_STATUS_CONF, true);
         });
 

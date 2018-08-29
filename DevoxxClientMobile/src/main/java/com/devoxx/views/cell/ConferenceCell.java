@@ -93,8 +93,12 @@ public class ConferenceCell extends CharmListCell<Conference> {
             eventType.setText(item.getEventType().name());
             
             name.setText(item.getName());
-            dateLabel.setText(LocalDate.parse(item.getFromDate()).getDayOfMonth() + " - " + 
-                    LocalDate.parse(item.getEndDate()).format(DATE_TIME_FORMATTER));
+            if (item.getFromDate().equals(item.getEndDate())) {
+                dateLabel.setText(LocalDate.parse(item.getFromDate()).format(DATE_TIME_FORMATTER));
+            } else {
+                dateLabel.setText(LocalDate.parse(item.getFromDate()).getDayOfMonth() + " - " +
+                        LocalDate.parse(item.getEndDate()).format(DATE_TIME_FORMATTER));
+            }
 
             final Task<InputStream> inputStreamTask = loadBackgroundImage(item);
             inputStreamTask.setOnSucceeded(e -> {

@@ -58,7 +58,7 @@ import static com.gluonhq.charm.glisten.layout.layer.PopupView.PopupSide.RIGHT;
 public class ConfSelectorPresenter extends GluonPresenter<DevoxxApplication> {
 
     private static final StatusBar STATUS_BAR = MobileApplication.getInstance().getStatusBar();
-    private static final PseudoClass PSEUDO_CLASS_STATUS_CONF = PseudoClass.getPseudoClass("voxxed");
+    private static final PseudoClass PSEUDO_CLASS_STATUS_VOXXED = PseudoClass.getPseudoClass("voxxed");
 
     @FXML
     private ResourceBundle bundle = ResourceBundle.getBundle("com/devoxx/views/confselector");
@@ -121,11 +121,11 @@ public class ConfSelectorPresenter extends GluonPresenter<DevoxxApplication> {
         
         devoxx.setOnAction(e -> {
             selector.setItems(service.retrieveConferences(Conference.Type.DEVOXX));
-            STATUS_BAR.pseudoClassStateChanged(PSEUDO_CLASS_STATUS_CONF, false);
+            STATUS_BAR.pseudoClassStateChanged(PSEUDO_CLASS_STATUS_VOXXED, false);
         });
         voxxed.setOnAction(e -> {
             selector.setItems(service.retrieveConferences(Conference.Type.VOXXED));
-            STATUS_BAR.pseudoClassStateChanged(PSEUDO_CLASS_STATUS_CONF, true);
+            STATUS_BAR.pseudoClassStateChanged(PSEUDO_CLASS_STATUS_VOXXED, true);
         });
 
         final MenuPopupView menuPopupView = new MenuPopupView(filter, menu);

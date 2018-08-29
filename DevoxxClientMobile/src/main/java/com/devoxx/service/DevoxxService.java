@@ -548,7 +548,7 @@ public class DevoxxService implements Service {
 
     private void retrieveTracksInternal() {
         if (getConference() != null && getConference().getTracks() != null) {
-            tracks.addAll(getConference().getTracks());
+            tracks.setAll(getConference().getTracks());
         }
     }
 

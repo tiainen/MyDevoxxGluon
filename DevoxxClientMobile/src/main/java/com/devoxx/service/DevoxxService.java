@@ -623,20 +623,12 @@ public class DevoxxService implements Service {
 
     @Override
     public ObservableList<Sponsor> retrieveSponsors() {
-        // TODO: pass the CfpEndpoint
-        RemoteFunctionObject fnSponsors = RemoteFunctionBuilder.create("sponsors").object();
-        GluonObservableObject<EventSponsor> badgeSponsorsObject = fnSponsors.call(EventSponsor.class);
-        badgeSponsorsObject.initializedProperty().addListener((obs, ov, nv) -> {
-            if (nv) {
-                for (Event event : badgeSponsorsObject.get().getEvents()) {
-                    //TODO: Uncomment this once everything is fixed
-                    //if (event.getSlug().equalsIgnoreCase(getConference().getId())) {
-                        sponsors.setAll(event.getSponsors());
-                    //}
-                }
-            } 
-        });
-        badgeSponsorsObject.setOnFailed(e -> LOG.log(Level.WARNING, String.format(REMOTE_FUNCTION_FAILED_MSG, "sponsors"), e.getSource().getException()));
+        RemoteFunctionList fnSponsors = RemoteFunctionBuilder.create("sponsors")
+                .param("conferenceId", getConference().getId())
+                .list();
+        GluonObservableList<Sponsor> badgeSponsorsList = fnSponsors.call(Sponsor.class);
+        badgeSponsorsList.setOnSucceeded(e -> sponsors.setAll(badgeSponsorsList));
+        badgeSponsorsList.setOnFailed(e -> LOG.log(Level.WARNING, String.format(REMOTE_FUNCTION_FAILED_MSG, "sponsors"), e.getSource().getException()));
         return sponsors;
     }
 

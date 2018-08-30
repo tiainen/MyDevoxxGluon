@@ -37,7 +37,9 @@ public enum SponsorCategory {
     SPEAKERDINER ("OTN.SPONSOR.SPEAKERDINER", "speakerdiner", 7),
     UNIVERSITY   ("OTN.SPONSOR.UNIVERSITY",   "university",   8),
     LAB          ("OTN.SPONSOR.LAB",          "lab",          9),
-    NA           ("OTN.SPONSOR.NA",           "na",           10);
+    MEETGREET    ("OTN.SPONSOR.MEETGREET",    "MeetGreet",    10),
+    HACKERGARTEN ("OTN.SPONSOR.HACKERGARTEN", "Hackergarten", 11),
+    NA           ("OTN.SPONSOR.NA",           "na",           12);
  
     private final String name;
     private final String category;

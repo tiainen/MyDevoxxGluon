@@ -32,18 +32,30 @@ import java.util.Objects;
 
 public class Sponsor extends Searchable implements Mergeable<Sponsor> {
     
+    private String id;
     private String name;
     private String slug;
+    private String imageURL;
     private SponsorCategory level;
 
     public Sponsor() {
 
     }
 
-    public Sponsor(String name, String slug, String level) {
+    public Sponsor(String id, String name, String slug, String imageURL, String level) {
+        this.id = id;
         this.name = name;
         this.slug = slug;
+        this.imageURL = imageURL;
         setLevel(level);
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -62,13 +74,21 @@ public class Sponsor extends Searchable implements Mergeable<Sponsor> {
         this.slug = slug;
     }
 
+    public String getImageURL() {
+        return imageURL;
+    }
+
+    public void setImageURL(String imageURL) {
+        this.imageURL = imageURL;
+    }
+
     public SponsorCategory getLevel() {
         return level;
     }
 
     public void setLevel(String level) {
         for (SponsorCategory category : SponsorCategory.values()) {
-            if (category.getShortName().equals(level)) {
+            if (category.getShortName().equalsIgnoreCase(level)) {
                 this.level = category;
                 break;
             }
@@ -77,9 +97,11 @@ public class Sponsor extends Searchable implements Mergeable<Sponsor> {
 
     public String toCSV() {
         StringBuilder csv = new StringBuilder();
-        csv.append(safeStr(getName()))
-           .append(",").append(safeStr(getSlug()))
-           .append(",").append(safeStr(getLevel().getShortName()));
+        csv.append(safeStr(getId()))
+            .append(",").append(safeStr(getName()))
+            .append(",").append(safeStr(getSlug()))
+            .append(",").append(safeStr(getImageURL()))
+            .append(",").append(safeStr(getLevel().getShortName()));
         return csv.toString();
     }
 
@@ -87,11 +109,13 @@ public class Sponsor extends Searchable implements Mergeable<Sponsor> {
         Sponsor sponsor = null;
         if (csv == null || csv.isEmpty()) return null;
         final String[] split = csv.split(",");
-        if (split.length == 3) {
+        if (split.length == 5) {
             sponsor = new Sponsor();
-            sponsor.setName(split[0]);
-            sponsor.setSlug(split[1]);
-            sponsor.setLevel(split[2]);
+            sponsor.setId(split[0]);
+            sponsor.setName(split[1]);
+            sponsor.setSlug(split[2]);
+            sponsor.setImageURL(split[3]);
+            sponsor.setLevel(split[4]);
         }
         return sponsor;
     }
@@ -103,6 +127,10 @@ public class Sponsor extends Searchable implements Mergeable<Sponsor> {
     @Override
     public boolean merge(Sponsor other) {
         boolean changed = false;
+        if (!Objects.equals(other.id, this.id)) {
+            changed = true;
+            this.id = other.id;
+        }
         if (!Objects.equals(other.name, this.name)) {
             changed = true;
             this.name = other.name;
@@ -110,6 +138,10 @@ public class Sponsor extends Searchable implements Mergeable<Sponsor> {
         if (!Objects.equals(other.slug, this.slug)) {
             changed = true;
             this.slug = other.slug;
+        }
+        if (!Objects.equals(other.imageURL, this.imageURL)) {
+            changed = true;
+            this.imageURL = other.imageURL;
         }
         if (!Objects.equals(other.level, this.level)) {
             changed = true;
@@ -134,13 +166,15 @@ public class Sponsor extends Searchable implements Mergeable<Sponsor> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Sponsor sponsor = (Sponsor) o;
-        return Objects.equals(name, sponsor.name) &&
+        return Objects.equals(id, sponsor.id) &&
+                Objects.equals(name, sponsor.name) &&
                 Objects.equals(slug, sponsor.slug) &&
+                Objects.equals(imageURL, sponsor.imageURL) &&
                 level == sponsor.level;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, slug, level);
+        return Objects.hash(id, name, slug, imageURL, level);
     }
 }

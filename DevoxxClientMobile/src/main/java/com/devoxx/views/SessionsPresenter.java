@@ -79,6 +79,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
+    
     private static final String SESSIONS_PLACEHOLDER_MESSAGE = DevoxxBundle.getString("OTN.CONTENT_CATALOG.ALL_SESSIONS.PLACEHOLDER_MESSAGE");
     private static final String SESSIONS_PLACEHOLDER_FILTER_MESSAGE = DevoxxBundle.getString("OTN.CONTENT_CATALOG.ALL_SESSIONS.PLACEHOLDER_FILTER_MESSAGE");
 

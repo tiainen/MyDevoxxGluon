@@ -66,7 +66,7 @@ public class ConfSelectorView extends View {
             if (imageSource != null) {
                 image = new Image(imageSource.toExternalForm());
             } else {
-                image = new Image(item.getConfIcon(), true);
+                image = new Image(item.getImageURL(), true);
             }
         }
 

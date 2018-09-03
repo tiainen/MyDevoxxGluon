@@ -40,6 +40,7 @@ import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 
 import javax.inject.Inject;
+import java.util.Comparator;
 
 public class ExhibitionMapsPresenter extends GluonPresenter<DevoxxApplication> {
     private static final String PLACEHOLDER_MESSAGE = DevoxxBundle.getString("OTN.EXHIBITIONMAPS.PLACEHOLDER_MESSAGE");
@@ -61,7 +62,7 @@ public class ExhibitionMapsPresenter extends GluonPresenter<DevoxxApplication> {
             appBar.setTitleText(DevoxxView.EXHIBITION_MAPS.getTitle());
             appBar.getActionItems().add(getApp().getSearchButton());
             exhibitionMapsListView.setSelectedItem(null);
-            exhibitionMapsListView.setComparator((f1, f2) -> Integer.compare(Integer.parseInt(f1.getTabpos()), Integer.parseInt(f2.getTabpos())));
+            exhibitionMapsListView.setComparator((f1, f2) -> Integer.compare(Integer.parseInt(f1.getId()), Integer.parseInt(f2.getId())));
 
             filteredFloors = new FilteredList<>(service.retrieveExhibitionMaps());
             exhibitionMapsListView.setItems(filteredFloors);

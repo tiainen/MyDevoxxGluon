@@ -129,7 +129,7 @@ public class ExhibitionMapPresenter extends GluonPresenter<DevoxxApplication> {
         exhibitionMap.setCenter(null);
 
         AppBar appBar = getApp().getAppBar();
-        appBar.setTitleText(floor.getTitle());
+        appBar.setTitleText(floor.getName());
 
         this.imageView = new ImageView();
         this.imageView.setPreserveRatio(true);
@@ -138,7 +138,7 @@ public class ExhibitionMapPresenter extends GluonPresenter<DevoxxApplication> {
         exhibitionMap.setCenter(container);
         
         appBar.setProgress(0);
-        final Image image = ImageCache.get(floor.getImg(), () -> Util.DEFAULT_EXHIBITION_MAP, this::updateImage, appBar.progressProperty());
+        final Image image = ImageCache.get(floor.getImageURL(), () -> Util.DEFAULT_EXHIBITION_MAP, this::updateImage, appBar.progressProperty());
         
         updateImage(image);
         

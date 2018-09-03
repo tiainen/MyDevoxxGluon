@@ -364,7 +364,7 @@ public class SessionPresenter extends GluonPresenter<DevoxxApplication> {
         ZonedDateTime now = ZonedDateTime.now(service.getConference().getConferenceZoneId());
         return DevoxxSettings.VOTING_TESTS ||
                 now.isAfter(session.getStartDate()) &&
-                        now.isBefore(service.getConference().getEndDate().plusHours(12));
+                        now.isBefore(service.getConference().getEndDateTime().plusHours(12));
     }
 
     private VotePane createVotePane(Session activeSession) {

@@ -28,9 +28,11 @@ package com.devoxx.model;
 public class Track {
 
     private String id;
-    private String imgsrc;
-    private String title;
+    private String name;
     private String description;
+    private String imageURL;
+    private String categoryId;
+    private String categoryName;
 
     public String getId() {
         return id;
@@ -40,20 +42,12 @@ public class Track {
         this.id = id;
     }
 
-    public String getImgsrc() {
-        return imgsrc;
+    public String getName() {
+        return name;
     }
 
-    public void setImgsrc(String imgsrc) {
-        this.imgsrc = imgsrc;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title != null ? title.replaceAll("&amp;", "&") : null;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getDescription() {
@@ -64,11 +58,39 @@ public class Track {
         this.description = description;
     }
 
+    public String getImageURL() {
+        return imageURL;
+    }
+
+    public void setImageURL(String imageURL) {
+        this.imageURL = imageURL;
+    }
+
+    public String getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(String categoryId) {
+        this.categoryId = categoryId;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
+    }
+
     @Override
     public String toString() {
         return "Track{" +
                 "id='" + id + '\'' +
-                ", title='" + title + '\'' +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", imageURL='" + imageURL + '\'' +
+                ", categoryId='" + categoryId + '\'' +
+                ", categoryName='" + categoryName + '\'' +
                 '}';
     }
 }

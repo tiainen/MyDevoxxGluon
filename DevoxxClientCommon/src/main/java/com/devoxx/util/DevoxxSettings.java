@@ -31,12 +31,7 @@ import com.gluonhq.charm.down.plugins.SettingsService;
 
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 public class DevoxxSettings {
 
@@ -109,6 +104,7 @@ public class DevoxxSettings {
     public static final String SKIP_FAV_DIALOG = "SKIP_FAV_DIALOG";
     public static final String SIGN_UP = "sign_up";
     public static final String SAVED_CONFERENCE_ID = "devoxx_cfp_id";
+    public static final String SAVED_CONFERENCE_TYPE = "devoxx_cfp_type";
     public static final String SAVED_ACCOUNT_ID = "devoxx_cfp_account";
     public static final String BADGE_TYPE = "badge-type";
     public static final String BADGE_SPONSOR = "badge-sponsor";

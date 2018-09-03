@@ -225,7 +225,7 @@ public class FilterSessionsPresenter extends GluonPresenter<DevoxxApplication> {
     private void updateTimePeriodSelection() {
         Conference conference = service.getConference();
         ZonedDateTime now = ZonedDateTime.now(conference.getConferenceZoneId());
-        if (conference.getStartDate().isAfter(now) || conference.getEndDate().isBefore(now)) {
+        if (conference.getFromDateTime().isAfter(now) || conference.getEndDateTime().isBefore(now)) {
             selectedTimePeriod = TimePeriod.ALL;
         } else {
             selectedTimePeriod = DEFAULT_TIME_PERIOD;
@@ -273,7 +273,7 @@ public class FilterSessionsPresenter extends GluonPresenter<DevoxxApplication> {
     }
 
     private void addTrackCheckBox(Track track) {
-        CheckBox cbTrack = new CheckBox(track.getTitle());
+        CheckBox cbTrack = new CheckBox(track.getName());
         cbTrack.setUserData(track);
         cbTrack.setOnAction(this::addToFilter);
         trackFilter.getChildren().add(cbTrack);

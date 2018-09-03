@@ -39,6 +39,7 @@ import com.devoxx.model.Sponsor;
 import com.devoxx.model.SponsorBadge;
 import com.devoxx.model.Track;
 import com.devoxx.model.Vote;
+import com.devoxx.model.*;
 import com.devoxx.views.helper.SessionVisuals.SessionListType;
 import com.gluonhq.cloudlink.client.user.User;
 import com.gluonhq.connect.GluonObservableList;
@@ -60,10 +61,18 @@ public interface Service {
 
     /**
      * Returns a list of conferences.
-     *
-     * @return
+     * 
+     * @param type whether Devoxx or Voxxed
+     * @return List of Devoxx or Voxxed conferences
      */
-    GluonObservableList<Conference> retrieveConferences();
+    GluonObservableList<Conference> retrieveConferences(Conference.Type type);
+
+    /**
+     * Returns details about a conference.
+     *
+     * @return A conference object
+     */
+    GluonObservableObject<Conference> retrieveConference(String conferenceId);
 
     /**
      * Sets the selected conference.
@@ -270,4 +279,10 @@ public interface Service {
      * Submits the user feedback
      */
     void sendFeedback(Feedback feedback);
+
+    /**
+     * Fetches the details about the venue of the conference
+     * @return Location of the selected conference
+     */
+    GluonObservableObject<Location> retrieveLocation();
 }

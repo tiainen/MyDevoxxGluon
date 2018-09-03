@@ -48,16 +48,10 @@ import com.gluonhq.cloudlink.client.user.UserClient;
 import com.gluonhq.connect.ConnectState;
 import com.gluonhq.connect.GluonObservableList;
 import com.gluonhq.connect.GluonObservableObject;
-import com.gluonhq.connect.converter.InputStreamIterableInputConverter;
 import com.gluonhq.connect.converter.JsonInputConverter;
-import com.gluonhq.connect.converter.JsonIterableInputConverter;
 import com.gluonhq.connect.provider.DataProvider;
-import com.gluonhq.connect.provider.InputStreamListDataReader;
-import com.gluonhq.connect.provider.ListDataReader;
-import com.gluonhq.connect.source.BasicInputDataSource;
 import javafx.beans.property.*;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -124,7 +118,6 @@ public class DevoxxService implements Service {
         }
     }
 
-    private GluonObservableList<Conference> conferences;
     private final ReadOnlyObjectWrapper<Conference> conference = new ReadOnlyObjectWrapper<>();
 
     private final UserClient authenticationClient;
@@ -163,11 +156,15 @@ public class DevoxxService implements Service {
     private ObservableList<Session> internalFavoredSessions = FXCollections.observableArrayList();
     private ObservableList<Favorite> favorites = FXCollections.observableArrayList();
     private ObservableList<Sponsor> sponsors = FXCollections.observableArrayList();
+    private ChangeListener<Throwable> exceptionChangeListener = (obs, ov, nv) -> {
+        if (nv != null) {
+            LOG.log(Level.SEVERE, nv.getMessage());
+        }
+    };
 
     public DevoxxService() {
         ready.set(false);
 
-        conferences = retrieveConferencesInternal();
         allFavorites = new GluonObservableObject<>();
         allFavorites.setState(ConnectState.SUCCEEDED);
 
@@ -220,6 +217,11 @@ public class DevoxxService implements Service {
                     if (pushClient.isEnabled()) {
                         pushClient.unsubscribe(ov.getId());
                     }
+                } else {
+                    if (authenticationClient.isAuthenticated()) {
+                        // Load all authenticated data once user has been authenticated
+                        loadCfpAccount(authenticationClient.getAuthenticatedUser(), null);
+                    }
                 }
 
                 // subscribe to push notification topic, named after the conference id
@@ -239,34 +241,13 @@ public class DevoxxService implements Service {
         });
 
         Services.get(SettingsService.class).ifPresent(settingsService -> {
-            String configuredConference = settingsService.retrieve(DevoxxSettings.SAVED_CONFERENCE_ID);
-            if (configuredConference != null) {
-                if (conferences.isInitialized()) {
-                    findAndSetConference(configuredConference, conferences);
-                } else {
-                    conferences.initializedProperty().addListener(new ChangeListener<Boolean>() {
-                        @Override
-                        public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-                            if (newValue) {
-                                findAndSetConference(configuredConference, conferences);
-                                conferences.initializedProperty().removeListener(this);
-                            }
-                        }
-                    });
-                }
-            } else {
-                if (conferences.isInitialized()) {
-                    ready.set(true);
-                } else {
-                    conferences.initializedProperty().addListener(new ChangeListener<Boolean>() {
-                        @Override
-                        public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-                            if (newValue) {
-                                ready.set(true);
-                                conferences.initializedProperty().removeListener(this);
-                            }
-                        }
-                    });
+            String configuredConferenceId = settingsService.retrieve(DevoxxSettings.SAVED_CONFERENCE_ID);
+            if (configuredConferenceId != null) {
+                try {
+                    retrieveConference(configuredConferenceId);
+                } catch (NumberFormatException e) {
+                    LOG.log(Level.WARNING, "Found old conference id format, removing it");
+                    settingsService.remove(DevoxxSettings.SAVED_CONFERENCE_ID);
                 }
             }
         });
@@ -347,30 +328,37 @@ public class DevoxxService implements Service {
     }
 
     @Override
-    public GluonObservableList<Conference> retrieveConferences() {
+    public GluonObservableList<Conference> retrieveConferences(Conference.Type type) {
+        RemoteFunctionList fnConferences = RemoteFunctionBuilder.create("conferences")
+                .param("type", type.name())
+                .list();
+        final GluonObservableList<Conference> conferences = fnConferences.call(Conference.class);
+        conferences.exceptionProperty().addListener(exceptionChangeListener);
+        conferences.initializedProperty().addListener(o -> conferences.exceptionProperty().removeListener(exceptionChangeListener));
         return conferences;
     }
 
-    private GluonObservableList<Conference> retrieveConferencesInternal() {
-        InputStreamIterableInputConverter<Conference> converter = new JsonIterableInputConverter<>(Conference.class);
-        ListDataReader<Conference> listDataReader = new InputStreamListDataReader<>(new BasicInputDataSource(DevoxxService.class.getResourceAsStream("cfp.json")), converter);
-
-        // todo: make it possible to refresh the enclosed json conference data with data loaded from the web??
-//        ListDataReader<Conference> listDataReader = RestClient.create()
-//                .method("GET")
-//                .host(DEVOXX_CFP_DATA_URL)
-//                .connectTimeout(30000)
-//                .readTimeout(60000)
-//                .createListDataReader(converter);
-
-        GluonObservableList<Conference> conferences = DataProvider.retrieveList(listDataReader);
-        conferences.exceptionProperty().addListener((obs, ov, nv) -> {
-            if (nv != null) {
-                nv.printStackTrace();
-            }
-        });
-
-        return conferences;
+    @Override
+    public GluonObservableObject<Conference> retrieveConference(String conferenceId) {
+        RemoteFunctionObject fnConference = RemoteFunctionBuilder.create("conference")
+                .param("id", conferenceId)
+                .object();
+        GluonObservableObject<Conference> conference = fnConference.call(Conference.class);
+        conference.exceptionProperty().addListener(o -> conference.getException().printStackTrace());
+        
+        if (conference.isInitialized()) {
+            setConference(conference.get());
+            ready.set(true);
+        } else {
+            conference.addListener((observable, oldValue, newValue) -> {
+                if (newValue != null) {
+                    setConference(conference.get());
+                    ready.set(true);
+                }
+            });
+        }
+        
+        return conference;
     }
 
     @Override
@@ -445,8 +433,8 @@ public class DevoxxService implements Service {
         sessions.clear();
 
         RemoteFunctionList fnSessions = RemoteFunctionBuilder.create("sessions")
-                .param("cfpEndpoint", getConference().getCfpEndpoint())
-                .param("conferenceId", getConference().getId())
+                .param("cfpEndpoint", getConference().getCfpURL() + "/api")
+                .param("conferenceId", getConference().getCfpVersion())
                 .list();
 
         GluonObservableList<Session> sessionsList = fnSessions.call(Session.class);
@@ -488,8 +476,8 @@ public class DevoxxService implements Service {
         speakers.clear();
 
         RemoteFunctionList fnSpeakers = RemoteFunctionBuilder.create("speakers")
-                .param("cfpEndpoint", getConference().getCfpEndpoint())
-                .param("conferenceId", getConference().getId())
+                .param("cfpEndpoint", getConference().getCfpURL() + "/api")
+                .param("conferenceId", getConference().getCfpVersion())
                 .list();
 
         GluonObservableList<Speaker> speakersList = fnSpeakers.call(Speaker.class);
@@ -518,8 +506,8 @@ public class DevoxxService implements Service {
                 return new ReadOnlyObjectWrapper<>(speakerWithUuid).getReadOnlyProperty();
             } else {
                 RemoteFunctionObject fnSpeaker = RemoteFunctionBuilder.create("speaker")
-                        .param("cfpEndpoint", getConference().getCfpEndpoint())
-                        .param("conferenceId", getConference().getId())
+                        .param("cfpEndpoint", getConference().getCfpURL() + "/api")
+                        .param("conferenceId", getConference().getCfpVersion())
                         .param("uuid", uuid)
                         .object();
 
@@ -559,13 +547,9 @@ public class DevoxxService implements Service {
     }
 
     private void retrieveTracksInternal() {
-        RemoteFunctionObject fnTracks = RemoteFunctionBuilder.create("tracks")
-                .param("cfpEndpoint", getConference().getCfpEndpoint())
-                .param("conferenceId", getConference().getId())
-                .object();
-
-        GluonObservableObject<Tracks> gluonTracks = fnTracks.call(Tracks.class);
-        gluonTracks.addListener((obs, ov, nv) -> tracks.setAll(gluonTracks.get().getTracks()));
+        if (getConference() != null && getConference().getTracks() != null) {
+            tracks.setAll(getConference().getTracks());
+        }
     }
 
     @Override
@@ -575,11 +559,12 @@ public class DevoxxService implements Service {
 
     private void retrieveProposalTypesInternal() {
         RemoteFunctionObject fnProposalTypes = RemoteFunctionBuilder.create("proposalTypes")
-                .param("cfpEndpoint", getConference().getCfpEndpoint())
-                .param("conferenceId", getConference().getId())
+                .param("cfpEndpoint", getConference().getCfpURL() + "/api")
+                .param("conferenceId", getConference().getCfpVersion())
                 .object();
 
         GluonObservableObject<ProposalTypes> gluonProposalTypes = fnProposalTypes.call(ProposalTypes.class);
+        gluonProposalTypes.exceptionProperty().addListener(o -> LOG.log(Level.SEVERE, gluonProposalTypes.getException().getMessage()));
         gluonProposalTypes.addListener((obs, ov, nv) -> proposalTypes.setAll(gluonProposalTypes.get().getProposalTypes()));
     }
 
@@ -596,16 +581,11 @@ public class DevoxxService implements Service {
     private void retrieveExhibitionMapsInternal() {
         Task<List<Floor>> task = new Task<List<Floor>>() {
             @Override
-            protected List<Floor> call() throws Exception {
-                boolean isTablet = Services.get(DisplayService.class).map(DisplayService::isTablet).orElse(false);
-                boolean isPhone = Services.get(DisplayService.class).map(DisplayService::isPhone).orElse(false);
-                boolean isDesktop = Services.get(DisplayService.class).map(DisplayService::isDesktop).orElse(true);
+            protected List<Floor> call() {
 
                 List<Floor> floors = new ArrayList<>();
-                for (Floor floor : getConference().getFloors()) {
-                    if (floor.getImg().startsWith("http") &&
-                            (("phone".equals(floor.getTarget()) && isPhone) ||
-                                    ("tablet".equals(floor.getTarget()) && (isDesktop || isTablet)))) {
+                for (Floor floor : getConference().getFloorPlans()) {
+                    if (floor.getImageURL().startsWith("https")) {
                         floors.add(floor);
                     }
                 }
@@ -659,7 +639,7 @@ public class DevoxxService implements Service {
         }
 
         RemoteFunctionObject fnFavored = RemoteFunctionBuilder.create("favored")
-                .param("0", getConference().getCfpEndpoint())
+                .param("0", getConference().getCfpURL() + "/api")
                 .param("1", cfpUserUuid.get())
                 .object();
 
@@ -684,7 +664,7 @@ public class DevoxxService implements Service {
                     for (Session session : c.getRemoved()) {
                         LOG.log(Level.INFO, "Removing Session: " + session.getTalk().getId() + " / " + session.getTitle());
                         RemoteFunctionObject fnRemove = RemoteFunctionBuilder.create(functionPrefix + "Remove")
-                                .param("0", getConference().getCfpEndpoint())
+                                .param("0", getConference().getCfpURL() + "/api")
                                 .param("1", cfpUserUuid.get())
                                 .param("2", session.getTalk().getId())
                                 .object();
@@ -696,7 +676,7 @@ public class DevoxxService implements Service {
                     for (Session session : c.getAddedSubList()) {
                         LOG.log(Level.INFO, "Adding Session: " + session.getTalk().getId() + " / " + session.getTitle());
                         RemoteFunctionObject fnAdd = RemoteFunctionBuilder.create(functionPrefix + "Add")
-                                .param("0", getConference().getCfpEndpoint())
+                                .param("0", getConference().getCfpURL() + "/api")
                                 .param("1", cfpUserUuid.get())
                                 .param("2", session.getTalk().getId())
                                 .object();
@@ -768,6 +748,18 @@ public class DevoxxService implements Service {
     }
 
     @Override
+    public GluonObservableObject<Location> retrieveLocation() {
+        // TODO: issue-56
+        // This RF uses https://api.voxxed.com/api/voxxeddays/location/$locationId
+        // instead of cfpEndpoint
+        RemoteFunctionObject fnLocation = RemoteFunctionBuilder.create("location")
+                // .param("cfpEndpoint", getConference().getCfpURL() + "/api")
+                .param("locationId", String.valueOf(getConference().getLocationId()))
+                .object();
+        return fnLocation.call(Location.class);
+    }
+
+    @Override
     public GluonObservableObject<String> authenticateSponsor() {
         RemoteFunctionObject fnValidateSponsor = RemoteFunctionBuilder.create("validateSponsor").cachingEnabled(false).object();
         return fnValidateSponsor.call(String.class);
@@ -784,7 +776,7 @@ public class DevoxxService implements Service {
             LOG.log(Level.WARNING, "Can not send vote, authenticated user doesn't have an email address.");
         } else {
             RemoteFunctionObject fnVoteTalk = RemoteFunctionBuilder.create("voteTalk")
-                    .param("0", getConference().getCfpEndpoint())
+                    .param("0", getConference().getCfpURL() + "/api")
                     .param("1", String.valueOf(vote.getValue()))
                     .param("2", authenticatedUser.getEmail())
                     .param("3", vote.getTalkId())
@@ -812,7 +804,7 @@ public class DevoxxService implements Service {
         if (getConference() != null && DevoxxSettings.conferenceHasFavoriteCount(getConference()) && 
                 (allFavorites.getState() == ConnectState.SUCCEEDED || allFavorites.getState() == ConnectState.FAILED)) {
             RemoteFunctionObject fnAllFavorites = RemoteFunctionBuilder.create("allFavorites")
-                    .param("0", getConference().getCfpEndpoint())
+                    .param("0", getConference().getCfpURL() + "/api")
                     .object();
             allFavorites = fnAllFavorites.call(new JsonInputConverter<>(Favorites.class));
             allFavorites.setOnSucceeded(e -> {
@@ -888,7 +880,7 @@ public class DevoxxService implements Service {
                         }
                     } else {
                         RemoteFunctionObject fnVerifyAccount = RemoteFunctionBuilder.create("verifyAccount")
-                                .param("0", getConference().getCfpEndpoint())
+                                .param("0", getConference().getCfpURL() + "/api")
                                 .param("1", user.getNetworkId())
                                 .param("2", user.getLoginMethod().name())
                                 .param("3", user.getEmail())
@@ -960,11 +952,16 @@ public class DevoxxService implements Service {
     }
 
     private String findConferenceIdFromString(String fileContent) {
-        // fileContent: {"aps": {"content-available":1},"body":"DevoxxUS2017","title":"My Devoxx 031607"}
         try {
-            JsonObject jsonObject = createJsonObject(fileContent);
-            JsonString body = (JsonString) jsonObject.get("body");
-            return body.getString();
+            String trimmedContent = fileContent.replaceAll("\"", "")
+                    .replaceAll(" ", "")
+                    .replaceAll("\\}", ",");
+            String[] keyValue = trimmedContent.split(",");
+            for (String aKeyValue : keyValue) {
+                if (aKeyValue.contains("body")) {
+                    return aKeyValue.split(":")[1];
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -998,40 +995,6 @@ public class DevoxxService implements Service {
     private static JsonObject createJsonObject(String fileContent) {
         JsonReader reader = Json.createReader(new StringReader(fileContent));
         return (JsonObject) reader.read();
-    }
-
-    private void findAndSetConference(String configuredConference, GluonObservableList<Conference> conferences) {
-        boolean found = false;
-        for (Conference conference : conferences) {
-            if (conference.getId().equals(configuredConference)) {
-                found = true;
-                setConferenceAndLoadAuthenticatedUser(conference);
-                break;
-            }
-        }
-        if (!found) {
-            conferences.addListener(new ListChangeListener<Conference>() {
-                @Override
-                public void onChanged(Change<? extends Conference> c) {
-                    while (c.next()) {
-                        for (Conference conference : c.getAddedSubList()) {
-                            if (conference.getId().equals(configuredConference)) {
-                                setConferenceAndLoadAuthenticatedUser(conference);
-                                retrieveConferences().removeListener(this);
-                                break;
-                            }
-                        }
-                    }
-                }
-            });
-        }
-    }
-
-    private void setConferenceAndLoadAuthenticatedUser(Conference conference) {
-        setConference(conference);
-        if (authenticationClient.isAuthenticated()) {
-            loadCfpAccount(authenticationClient.getAuthenticatedUser(), null);
-        }
     }
 
     private static ZonedDateTime timeToZonedDateTime(long time, ZoneId zoneId) {

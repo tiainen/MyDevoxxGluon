@@ -75,24 +75,18 @@ public class ETagImageTask extends Task<Image> {
         final FileDataSource eTagDataSource = createETagDataSource(imageFileName + ".etag");
         String eTag = readFromETag(eTagDataSource);
         RestClient client = createMediaRestClient(url, eTag);
-        updateProgress(0.1, 1.0);
 
         final RestDataSource restDataSource = client.createRestDataSource();
         final FileDataSource cacheImageDataSource = createCacheImageDataSource(imageFileName);
         final InputStream inputStream = restDataSource.getInputStream();
         if (inputStream == null) {
-            updateProgress(1.0, 1.0);
             return null;
         }
-
-        updateProgress(0.25, 1.0);
 
         if (cacheImageDataSource != null &&
                 cacheImageDataSource.getFile().exists() &&
                 restDataSource.getResponseCode() == 304) {
-            updateProgress(1.0, 1.0);
             return image != null ? image : new Image(cacheImageDataSource.getInputStream());
-
         }
         writeToETag(eTagDataSource, restDataSource);
         if (cacheImageDataSource != null) {
@@ -101,7 +95,6 @@ public class ETagImageTask extends Task<Image> {
                 return new Image(cis);
             }
         }
-        updateProgress(1.0, 1.0);
         return new Image(inputStream);
     }
 

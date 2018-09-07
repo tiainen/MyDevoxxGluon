@@ -54,8 +54,14 @@ import javafx.util.Duration;
 
 import javax.inject.Inject;
 import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static javafx.scene.control.ProgressIndicator.INDETERMINATE_PROGRESS;
 
 public class ExhibitionMapPresenter extends GluonPresenter<DevoxxApplication> {
+
+    private static final Logger LOG = Logger.getLogger(ExhibitionMapPresenter.class.getName());
 
     private static final int MIN_SIZE = 200;
     private static final double MARGIN = 10;
@@ -121,7 +127,10 @@ public class ExhibitionMapPresenter extends GluonPresenter<DevoxxApplication> {
             appBar.setNavIcon(getApp().getNavBackButton());
             appBar.setTitleText(DevoxxView.EXHIBITION_MAP.getTitle());
         });
-        exhibitionMap.setOnHiding(event -> removeListeners());
+        exhibitionMap.setOnHiding(event -> {
+            removeListeners();
+            getApp().getAppBar().setProgressBarVisible(false);
+        });
     }
 
     public void setFloor(Floor floor) {
@@ -129,24 +138,33 @@ public class ExhibitionMapPresenter extends GluonPresenter<DevoxxApplication> {
 
         AppBar appBar = getApp().getAppBar();
         appBar.setTitleText(floor.getName());
+        appBar.setProgress(INDETERMINATE_PROGRESS);
+        appBar.setProgressBarVisible(true);
 
         this.imageView = new ImageView();
         this.imageView.setPreserveRatio(true);
         this.imageView.setPickOnBounds(true);
         container = new StackPane(imageView);
         exhibitionMap.setCenter(container);
-        
+
         final ETagImageTask imageTask = new ETagImageTask("floor_" + floor.getId(), floor.getImageURL());
         imageTask.setOnSucceeded(e -> {
-            updateImage(imageTask.getValue());
+            final Image image = imageTask.getValue();
+            if (image != null) {
+                updateImage(image);
+            }
+            appBar.setProgressBarVisible(false);
         });
-        appBar.progressProperty().bind(imageTask.progressProperty());
+        imageTask.setOnFailed(e -> {
+            LOG.log(Level.SEVERE, imageTask.getException().getMessage());
+            appBar.setProgressBarVisible(false);
+        });
         new Thread(imageTask).start();
 
         imageTask.image().ifPresent(image -> {
             updateImage(image);
+            appBar.setProgressBarVisible(false);
         });
-
     }
 
     private void updateImage(Image image) {
@@ -190,7 +208,6 @@ public class ExhibitionMapPresenter extends GluonPresenter<DevoxxApplication> {
     }
     
     private void removeListeners() {
-        getApp().getAppBar().progressProperty().unbind();
         imageView.removeEventHandler(MouseEvent.MOUSE_PRESSED, pressedHandler);
         imageView.removeEventHandler(MouseEvent.MOUSE_DRAGGED, draggedHandler);
         imageView.removeEventHandler(MouseEvent.MOUSE_RELEASED, releasedHandler);

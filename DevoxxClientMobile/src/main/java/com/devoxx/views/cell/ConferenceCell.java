@@ -43,6 +43,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
+import java.io.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
@@ -63,7 +64,7 @@ public class ConferenceCell extends CharmListCell<Conference> {
     private static final int PHONE_HEIGHT = 222;
     private static final int TABLET_HEIGHT = 333;
     private static final String CONFERENCE_TAG = "conference_";
-    
+
     private static final ExecutorService executor = Executors.newSingleThreadExecutor(r -> {
         Thread thread = Executors.defaultThreadFactory().newThread(r);
         thread.setName("Conference Image Loader");
@@ -113,11 +114,11 @@ public class ConferenceCell extends CharmListCell<Conference> {
         
         root = new StackPane(new Group(background), content);
         getStyleClass().add("conference-cell"); 
-        
+
         final boolean isTablet = Services.get(DisplayService.class)
                 .map(DisplayService::isTablet)
                 .orElse(false);
-                
+
         maxH = isTablet ? TABLET_HEIGHT : PHONE_HEIGHT;
         padding = isTablet ? 30 : 20;
     }
@@ -136,7 +137,7 @@ public class ConferenceCell extends CharmListCell<Conference> {
             } else {
                 pseudoClassStateChanged(PSEUDO_CLASS_VOXXED, false);
             }
-            
+
             name.setText(item.getName());
             if (item.getFromDate().equals(item.getEndDate())) {
                 dateLabel.setText(LocalDate.parse(item.getFromDate()).format(DATE_TIME_FORMATTER));
@@ -148,7 +149,7 @@ public class ConferenceCell extends CharmListCell<Conference> {
             if (imageTask != null) {
                 imageTask.cancel();
             }
-            
+
             final String imageId = CONFERENCE_TAG + item.getId();
             Image image = imagesMap.get(imageId);
             if (image == null) {
@@ -191,7 +192,7 @@ public class ConferenceCell extends CharmListCell<Conference> {
             setGraphic(null);
         }
     }
-    
+
     private void fitImage() {
         Image image = background.getImage();
         if (image != null) {

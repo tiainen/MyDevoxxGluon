@@ -48,10 +48,6 @@ public class SessionsRetriever {
     private static final Client client = ClientBuilder.newClient();
 
     public String retrieve(String cfpEndpoint, String conferenceId) throws IOException {
-        if (cfpEndpoint.startsWith("http://")) {
-            cfpEndpoint = "https://" + cfpEndpoint.substring("http://".length());
-        }
-
         Response schedules = client.target(cfpEndpoint).path("conferences").path(conferenceId).path("schedules/")
                 .request().get();
         if (schedules.getStatus() == Response.Status.OK.getStatusCode()) {

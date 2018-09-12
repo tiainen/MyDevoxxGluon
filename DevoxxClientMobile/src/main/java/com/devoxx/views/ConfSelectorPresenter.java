@@ -64,9 +64,9 @@ public class ConfSelectorPresenter extends GluonPresenter<DevoxxApplication> {
 
     private static final StatusBar STATUS_BAR = MobileApplication.getInstance().getStatusBar();
     private static final PseudoClass PSEUDO_CLASS_STATUS_VOXXED = PseudoClass.getPseudoClass("voxxed");
-    
+
     private final Map<String, Image> imagesMap = new HashMap<>();
-    
+
     private final ResourceBundle bundle = ResourceBundle.getBundle("com/devoxx/views/confselector");
 
     @FXML

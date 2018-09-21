@@ -107,6 +107,9 @@ public class ConfSelectorPresenter extends GluonPresenter<DevoxxApplication> {
 
         confSelectorView.setOnShowing(event -> {
             getApp().getAppBar().setVisible(false);
+            if (! confSelectorView.getStyleClass().contains("hidden-app-bar")) {
+                confSelectorView.getStyleClass().add("hidden-app-bar");
+            }
             hidePastConferenceMessage();
         });
 

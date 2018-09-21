@@ -56,3 +56,7 @@
 .sessions-filter {
     -fx-padding: 11.52mm 0 0 0;
 }
+
+.conf-selector-view.hidden-app-bar {
+    -fx-padding: 11.52mm 0 5.44mm 0;
+}

@@ -40,6 +40,7 @@ import com.gluonhq.charm.glisten.control.ProgressIndicator;
 import com.gluonhq.charm.glisten.layout.layer.MenuPopupView;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
+import javafx.application.Platform;
 import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -51,9 +52,11 @@ import javafx.scene.layout.StackPane;
 import javax.inject.Inject;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
+import static com.devoxx.views.helper.Util.hidePastConferenceMessage;
 import static com.gluonhq.charm.glisten.layout.layer.PopupView.PopupSide.RIGHT;
 
 public class ConfSelectorPresenter extends GluonPresenter<DevoxxApplication> {
@@ -79,6 +82,9 @@ public class ConfSelectorPresenter extends GluonPresenter<DevoxxApplication> {
     @Inject
     private Service service;
 
+    private final Comparator<Conference> futureConferenceComparator = (s1, s2) -> LocalDate.parse(s1.getFromDate()).compareTo(LocalDate.parse(s2.getFromDate()));
+    private final Comparator<Conference> pastConferenceComparator = (s1, s2) -> LocalDate.parse(s2.getFromDate()).compareTo(LocalDate.parse(s1.getFromDate()));
+
     public void initialize() {
         final Optional<SettingsService> settingsService = Services.get(SettingsService.class);
         if (settingsService.isPresent()) {
@@ -93,23 +99,28 @@ public class ConfSelectorPresenter extends GluonPresenter<DevoxxApplication> {
             selector.setItems(service.retrieveConferences(Conference.Type.DEVOXX));
         }
 
-        selector.setPlaceholder(new ProgressIndicator());
+        ProgressIndicator placeholder = new ProgressIndicator();
+        placeholder.setRadius(20);
+        selector.setPlaceholder(placeholder);
         selector.setCellFactory(p -> new ConferenceCell(service));
-        selector.setComparator((s1, s2) -> LocalDate.parse(s1.getFromDate()).compareTo(LocalDate.parse(s2.getFromDate())));
+        selector.setComparator(futureConferenceComparator);
 
         confSelectorView.setOnShowing(event -> {
             getApp().getAppBar().setVisible(false);
+            hidePastConferenceMessage();
         });
 
         final Button filter = MaterialDesignIcon.FILTER_LIST.button();
         MenuPopupView popup = getMenuPopupView(filter);
         
         filter.setOnAction(e -> {
-            if (popup.isShowing()) {
-                popup.hide();
-            } else {
-                popup.show();
-            }
+            Platform.runLater(() -> {
+                if (popup.isShowing()) {
+                    popup.hide();
+                } else {
+                    popup.show();
+                }
+            });
             e.consume();
         });
 
@@ -119,22 +130,33 @@ public class ConfSelectorPresenter extends GluonPresenter<DevoxxApplication> {
 
     private MenuPopupView getMenuPopupView(Button filter) {
         Menu menu = new Menu();
-        MenuItem devoxx = new MenuItem(Conference.Type.DEVOXX.name());
-        MenuItem voxxed = new MenuItem(Conference.Type.VOXXED.name());
-        menu.getItems().addAll(devoxx, voxxed);
+        MenuItem devoxx = new MenuItem(Conference.Type.DEVOXX.toString());
+        MenuItem voxxed = new MenuItem(Conference.Type.VOXXED.toString());
+        MenuItem pastEvents = new MenuItem(bundle.getString("OTN.CONFERENCE_SELECTOR.HEADER.PAST_EVENTS"));
+        menu.getItems().addAll(devoxx, voxxed, pastEvents);
         
         devoxx.setOnAction(e -> {
+            selector.setComparator(futureConferenceComparator);
             selector.setItems(service.retrieveConferences(Conference.Type.DEVOXX));
             header.setText(bundle.getString("OTN.CONFERENCE_SELECTOR.HEADER.DEVOXX"));
             STATUS_BAR.pseudoClassStateChanged(PSEUDO_CLASS_STATUS_VOXXED, false);
         });
         voxxed.setOnAction(e -> {
+            selector.setComparator(futureConferenceComparator);
             selector.setItems(service.retrieveConferences(Conference.Type.VOXXED));
             header.setText(bundle.getString("OTN.CONFERENCE_SELECTOR.HEADER.VOXXED"));
             STATUS_BAR.pseudoClassStateChanged(PSEUDO_CLASS_STATUS_VOXXED, true);
         });
+        pastEvents.setOnAction(e -> {
+            selector.setComparator(pastConferenceComparator);
+            selector.setItems(service.retrievePastConferences());
+            header.setText(bundle.getString("OTN.CONFERENCE_SELECTOR.HEADER.PAST_EVENTS"));
+            STATUS_BAR.pseudoClassStateChanged(PSEUDO_CLASS_STATUS_VOXXED, false);
+        });
+        
 
         final MenuPopupView menuPopupView = new MenuPopupView(filter, menu);
+        menuPopupView.getStyleClass().add("conf-selector");
         menuPopupView.setSide(RIGHT);
         return menuPopupView;
     }

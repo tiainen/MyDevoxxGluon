@@ -470,7 +470,18 @@ public class Conference {
     }
 
     public String getCountry() {
-        return name.split(" ")[1];
+        String[] split = name.split(" ");
+        switch (getEventType()) {
+            case DEVOXX:
+                // Devoxx Belgium 2018
+                // Devoxx UK 2018
+                return split.length >= 1 ? split[1] : "";
+            case VOXXED:
+                // Voxxed Days Ticino 2018
+                // VoxxedDays Microservices 2018
+                return split.length >= 2 ? split[split.length - 2] : "";
+        }
+        return "";
     }
 
     public boolean isSelected() {
@@ -490,13 +501,19 @@ public class Conference {
     }
     
     public enum Type {
-        DEVOXX("Devoxx"),
-        VOXXED("Voxxed");
+        DEVOXX("Devoxx", "Devoxx"),
+        VOXXED("Voxxed", "VoxxedDays");
 
         private String name;
+        private String displayName;
 
-        Type(String name) {
+        Type(String name, String displayName) {
             this.name = name;
+            this.displayName = displayName;
+        }
+
+        public String getDisplayName() {
+            return displayName;
         }
 
         @Override

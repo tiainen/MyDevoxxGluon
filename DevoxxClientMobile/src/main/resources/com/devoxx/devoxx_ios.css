@@ -34,3 +34,7 @@
 .venue-detail .address {
     -fx-padding: 0em 0em 0.8em 0.8em;
 }
+
+.conf-selector-view.hidden-app-bar {
+    -fx-padding: 5.6mm 0 0 0;
+}

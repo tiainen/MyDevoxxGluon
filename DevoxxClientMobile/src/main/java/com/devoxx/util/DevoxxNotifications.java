@@ -137,7 +137,7 @@ public class DevoxxNotifications {
                     if (c.wasAdded()) {
                         for (Session session : c.getAddedSubList()) {
                             if (LOGGING_ENABLED) {
-                                LOG.log(Level.INFO, String.format("Adding notification #", session.getTalk().getId()));
+                                LOG.log(Level.INFO, String.format("Adding notification %s", session.getTalk().getId()));
                             }
                             addAlreadyFavoredSessionNotifications(session);
                         }
@@ -191,7 +191,9 @@ public class DevoxxNotifications {
                                 }
                                 ns.getNotifications().remove(dummyN);
                             }
-                            LOG.log(Level.INFO, String.format("Adding favored notification %s", n.getId()));
+                            if (LOGGING_ENABLED) {
+                                LOG.log(Level.INFO, String.format("Adding favored notification %s", n.getId()));
+                            }
                             ns.getNotifications().add(n);
                         }
                     }

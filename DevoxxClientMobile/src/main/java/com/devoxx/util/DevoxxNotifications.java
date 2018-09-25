@@ -65,6 +65,7 @@ public class DevoxxNotifications {
     
     private final Map<String, Notification> startSessionNotificationMap = new HashMap<>();
     private final Map<String, Notification> voteSessionNotificationMap = new HashMap<>();
+    private final Map<String, Notification> dummyNotificationMap = new HashMap<>();
 
     private ListChangeListener<Session> favoriteSessionsListener;
     
@@ -72,6 +73,7 @@ public class DevoxxNotifications {
     private Service service;
     
     private final Optional<LocalNotificationsService> notificationsService;
+    private boolean startup;
     
     public DevoxxNotifications() {
         notificationsService = Services.get(LocalNotificationsService.class);
@@ -125,13 +127,17 @@ public class DevoxxNotifications {
      * notifications, and restoring the notifications map
      */
     public void preloadFavoriteSessions() {
+        if (LOGGING_ENABLED) {
+            LOG.log(Level.INFO, "Preload of favored sessions started");
+        }
         if (service.isAuthenticated()) { 
+            startup = true;
             favoriteSessionsListener = (ListChangeListener.Change<? extends Session> c) -> {
                 while (c.next()) {
                     if (c.wasAdded()) {
                         for (Session session : c.getAddedSubList()) {
                             if (LOGGING_ENABLED) {
-                                LOG.log(Level.INFO, "Adding notification #" + session.getTalk().getId());
+                                LOG.log(Level.INFO, String.format("Adding notification %s", session.getTalk().getId()));
                             }
                             addAlreadyFavoredSessionNotifications(session);
                         }
@@ -153,15 +159,52 @@ public class DevoxxNotifications {
             service.retrieveFavoredSessions().removeListener(favoriteSessionsListener);
             favoriteSessionsListener = null;
         
+            if (! dummyNotificationMap.isEmpty()) {
+                
+                // 1. Add all dummy notifications to the notification map at once. 
+                // These need to be present all the time (as notifications will 
+                // be opened always some time after they were delivered). 
+                // Adding these dummy notifications doesn't schedule them on the
+                // device and it doesn't cause duplicate exceptions
+                notificationsService.ifPresent(ns -> 
+                        ns.getNotifications().addAll(dummyNotificationMap.values()));
+            }
+            
             // process notifications at once
             List<Notification> notificationList = new ArrayList<>();
             notificationList.addAll(startSessionNotificationMap.values());
             notificationList.addAll(voteSessionNotificationMap.values());
             
-            if (notificationList.size() > 0) {
-                LOG.log(Level.INFO, String.format("Adding %d notifications already favored", notificationList.size()));
-                notificationsService.ifPresent(n -> n.getNotifications().addAll(notificationList));
+            if (! notificationList.isEmpty()) {
+            
+                // 2. Schedule only real future notifications 
+                final ZonedDateTime now = ZonedDateTime.now(service.getConference().getConferenceZoneId());
+                notificationsService.ifPresent(ns -> {
+                    for (Notification n : notificationList) {
+                        if (n.getDateTime() != null && n.getDateTime().isAfter(now)) {
+                            // Remove notification before scheduling it again, 
+                            // to avoid duplicate exception
+                            final Notification dummyN = dummyNotificationMap.get(n.getId());
+                            if (dummyN != null) {
+                                if (LOGGING_ENABLED) {
+                                    LOG.log(Level.INFO, String.format("Removing notification %s", n.getId()));
+                                }
+                                ns.getNotifications().remove(dummyN);
+                            }
+                            if (LOGGING_ENABLED) {
+                                LOG.log(Level.INFO, String.format("Adding favored notification %s", n.getId()));
+                            }
+                            ns.getNotifications().add(n);
+                        }
+                    }
+                });
             }
+            
+            dummyNotificationMap.clear();
+        }
+        startup = false;
+        if (LOGGING_ENABLED) {
+            LOG.log(Level.INFO, "Preload of favored sessions ended");
         }
     }
     
@@ -173,14 +216,17 @@ public class DevoxxNotifications {
     private Optional<Notification> createStartNotification(Session session) {
         final ZonedDateTime now = ZonedDateTime.now(service.getConference().getConferenceZoneId());
         
-        // Add notification 15 min before session starts
+        // Add notification 15 min before session starts or during startup
         ZonedDateTime dateTimeStart = session.getStartDate().plusMinutes(SHOW_SESSION_START_NOTIFICATION);
         if (DevoxxSettings.NOTIFICATION_TESTS) {
             dateTimeStart = dateTimeStart.minus(DevoxxSettings.NOTIFICATION_OFFSET, SECONDS);
+            if (LOGGING_ENABLED) {
+                LOG.log(Level.INFO, String.format("Start notification scheduled at: %s", dateTimeStart));
+            }
         }
         
         // add the notification for new ones if they haven't started yet
-        if (dateTimeStart.isAfter(now)) {
+        if (dateTimeStart.isAfter(now) || startup) {
             return Optional.of(getStartNotification(session, dateTimeStart));
         }
         return Optional.empty();
@@ -199,10 +245,13 @@ public class DevoxxNotifications {
         ZonedDateTime dateTimeVote = session.getEndDate().plusMinutes(SHOW_VOTE_NOTIFICATION);
         if (DevoxxSettings.NOTIFICATION_TESTS) {
             dateTimeVote = dateTimeVote.minus(DevoxxSettings.NOTIFICATION_OFFSET, SECONDS);
+            if (LOGGING_ENABLED) {
+                LOG.log(Level.INFO, String.format("Vote notification scheduled at: %s", dateTimeVote));
+            }
         }
         
-        // add the notification if the session hasn't finished yet
-        if (dateTimeVote.isAfter(now)) {
+        // add the notification if the session hasn't finished yet or during startup
+        if (dateTimeVote.isAfter(now) || startup) {
             return Optional.of(getVoteNotification(session, dateTimeVote));
         }
         return Optional.empty();
@@ -229,21 +278,15 @@ public class DevoxxNotifications {
             dateTimeStart = dateTimeStart.minus(DevoxxSettings.NOTIFICATION_OFFSET, SECONDS);
         }
         
-        if (dateTimeStart.isAfter(now)) {
+        if (dateTimeStart.isAfter(now) || startup) {
             if (!startSessionNotificationMap.containsKey(sessionId)) {
-                final Notification dummyStartNotification = getStartNotification(session, null);
-                // Remove notification to avoid duplicate notification
-                notificationsService.ifPresent(ns -> {
-                    // we need to add the notification first so because no direct method
-                    // exists on LocalNotificationsService to un-schedule a notification.
-                    // and un-scheduling is done via the listener attached to notifications observable list
-                    ns.getNotifications().add(dummyStartNotification);
-                    ns.getNotifications().remove(dummyStartNotification);
-                });
+                dummyNotificationMap.put(ID_START + sessionId, getStartNotification(session, null));
 
                 // Add notification
                 createStartNotification(session).ifPresent(n -> {
-                    LOG.log(Level.INFO, "Adding final start notification");
+                    if (LOGGING_ENABLED) {
+                        LOG.log(Level.INFO, String.format("Adding start notification %s", n.getId()));
+                    }
                     startSessionNotificationMap.put(sessionId, n);
                 });
             }
@@ -254,16 +297,14 @@ public class DevoxxNotifications {
         if (DevoxxSettings.NOTIFICATION_TESTS) {
             dateTimeVote = dateTimeVote.minus(DevoxxSettings.NOTIFICATION_OFFSET, SECONDS);
         }
-        if (dateTimeVote.isAfter(now)) {
+        if (dateTimeVote.isAfter(now) || startup) {
             if (!voteSessionNotificationMap.containsKey(sessionId)) {
-                final Notification dummyVoteNotification = getVoteNotification(session, null);
-                notificationsService.ifPresent(ns -> {
-                    ns.getNotifications().add(dummyVoteNotification);
-                    ns.getNotifications().remove(dummyVoteNotification);
-                });
-
+                dummyNotificationMap.put(ID_VOTE + sessionId, getVoteNotification(session, null));
+                
                 createVoteNotification(session).ifPresent(n -> {
-                    LOG.log(Level.INFO, "Adding final vote notification");
+                    if (LOGGING_ENABLED) {
+                        LOG.log(Level.INFO, String.format("Adding vote notification %s", n.getId()));
+                    }
                     voteSessionNotificationMap.put(sessionId, n);
                 });
             }
@@ -285,12 +326,15 @@ public class DevoxxNotifications {
                 DevoxxBundle.getString("OTN.VISUALS.IS_ABOUT_TO_START", session.getTitle()),
                 DevoxxNotifications.class.getResourceAsStream("/icon.png"),
                 dateTimeStart,
-                () ->
+                () -> {
+                    if (LOGGING_ENABLED) {
+                        LOG.log(Level.INFO, String.format("Running start notification %s", session.getTalk().getId()));
+                    }
                     DevoxxView.SESSION.switchView().ifPresent(presenter -> {
                         SessionPresenter sessionPresenter = (SessionPresenter) presenter;
                         sessionPresenter.showSession(session);
-                    })
-                );
+                    });
+                });
     }
     
     /**
@@ -308,6 +352,9 @@ public class DevoxxNotifications {
                 DevoxxNotifications.class.getResourceAsStream("/icon.png"),
                 dateTimeVote,
                 () -> {
+                    if (LOGGING_ENABLED) {
+                        LOG.log(Level.INFO, String.format("Running vote notification %s", session.getTalk().getId()));
+                    }
                     // first go to the session
                     DevoxxView.SESSION.switchView().ifPresent(presenter -> {
                         SessionPresenter sessionPresenter = (SessionPresenter) presenter;

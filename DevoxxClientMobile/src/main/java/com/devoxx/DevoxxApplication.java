@@ -163,7 +163,9 @@ public class DevoxxApplication extends MobileApplication {
         String voxxedStylesheet = DevoxxApplication.class.getResource("voxxed.css").toExternalForm();
         service.conferenceProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null && newValue.getEventType() == Conference.Type.VOXXED) {
-                scene.getStylesheets().add(voxxedStylesheet);
+                if(!scene.getStylesheets().contains(voxxedStylesheet)) {
+                    scene.getStylesheets().add(voxxedStylesheet);
+                }
             } else {
                 scene.getStylesheets().remove(voxxedStylesheet);
             }

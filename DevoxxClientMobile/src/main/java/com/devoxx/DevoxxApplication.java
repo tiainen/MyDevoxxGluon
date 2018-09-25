@@ -28,6 +28,7 @@ package com.devoxx;
 import com.airhacks.afterburner.injection.Injector;
 import com.devoxx.model.Badge;
 import com.devoxx.model.BadgeType;
+import com.devoxx.model.Conference;
 import com.devoxx.model.Sponsor;
 import com.devoxx.model.SponsorBadge;
 import com.devoxx.service.DevoxxService;
@@ -158,6 +159,15 @@ public class DevoxxApplication extends MobileApplication {
                 deviceFactorSuffix,
                 formFactorSuffix);
         scene.getStylesheets().add(DevoxxApplication.class.getResource(stylesheetName).toExternalForm());
+
+        String voxxedStylesheet = DevoxxApplication.class.getResource("voxxed.css").toExternalForm();
+        service.conferenceProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null && newValue.getEventType() == Conference.Type.VOXXED) {
+                scene.getStylesheets().add(voxxedStylesheet);
+            } else {
+                scene.getStylesheets().remove(voxxedStylesheet);
+            }
+        });
         
         if (Platform.isDesktop()) {
             Window window = scene.getWindow();

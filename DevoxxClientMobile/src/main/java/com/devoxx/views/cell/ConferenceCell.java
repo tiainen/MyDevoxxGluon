@@ -30,6 +30,7 @@ import com.devoxx.model.Conference;
 import com.devoxx.service.Service;
 import com.devoxx.util.DevoxxSettings;
 import com.devoxx.views.helper.ETagImageTask;
+import com.devoxx.views.layer.ConferenceLoadingLayer;
 import com.gluonhq.charm.down.Services;
 import com.gluonhq.charm.down.plugins.SettingsService;
 import com.gluonhq.charm.glisten.application.MobileApplication;
@@ -146,6 +147,7 @@ public class ConferenceCell extends CharmListCell<Conference> {
             
             content.setOnMouseReleased(e -> {
                 if (!item.equals(service.getConference())) {
+                    ConferenceLoadingLayer.show(service, item.getName());
                     service.retrieveConference(item.getId());
                     Services.get(SettingsService.class).ifPresent(settingsService -> {
                         settingsService.store(DevoxxSettings.SAVED_CONFERENCE_TYPE, item.getEventType().name());

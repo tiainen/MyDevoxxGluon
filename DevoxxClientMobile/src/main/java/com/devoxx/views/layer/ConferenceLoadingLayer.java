@@ -1,6 +1,8 @@
 package com.devoxx.views.layer;
 
 import com.devoxx.service.Service;
+import com.gluonhq.charm.down.Services;
+import com.gluonhq.charm.down.plugins.DisplayService;
 import com.gluonhq.charm.glisten.application.GlassPane;
 import com.gluonhq.charm.glisten.application.MobileApplication;
 import com.gluonhq.charm.glisten.control.ProgressIndicator;
@@ -23,6 +25,7 @@ public class ConferenceLoadingLayer extends Layer {
     private final ProgressIndicator progressIndicator;
     private final Label conferenceLabel;
     private Region background;
+    private final DisplayService displayService;
 
     private ConferenceLoadingLayer(Service service, String conferenceName) {
 
@@ -57,6 +60,8 @@ public class ConferenceLoadingLayer extends Layer {
         });
         timeout.playFromStart();
         service.retrieveSessions().addListener(sessionsListener);
+
+        displayService = Services.get(DisplayService.class).orElse(null);
     }
     
     public static void show(Service service, String conferenceName) {
@@ -70,8 +75,11 @@ public class ConferenceLoadingLayer extends Layer {
         background.resizeRelocate(0, 0, glassPaneWidth, glassPaneHeight);
 
         double radius = Math.min(glassPaneWidth, glassPaneHeight) / 2 - 20;
+        if (displayService != null && displayService.isTablet()) {
+            radius = Math.min(glassPaneWidth, glassPaneHeight) / 4;
+        }
         progressIndicator.setRadius(radius);
-        progressIndicator.resizeRelocate(20, glassPaneHeight / 2 - radius, radius * 2, radius * 2);
+        progressIndicator.resizeRelocate(glassPaneWidth / 2 - radius, glassPaneHeight / 2 - radius, radius * 2, radius * 2);
 
         double labelWidth = Math.min(conferenceLabel.prefWidth(-1), radius - 10);
         double labelHeight = conferenceLabel.prefHeight(labelWidth);

@@ -38,6 +38,10 @@
     -fx-background-color: transparent;
 }
 
+.status-bar:voxxed {
+    -fx-background-color: transparent;
+}
+
 /** Views **/
 .conf-selector {
     -fx-padding: 17mm 0 17mm 0;

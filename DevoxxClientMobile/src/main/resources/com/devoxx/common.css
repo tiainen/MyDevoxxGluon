@@ -50,6 +50,8 @@
     -map-marker-color: #566A92;
 }
 
+/* TODO: Uncomment when StatusBar Glisten bug is fixed */
+/*
 .status-bar {
     -fx-background-color: -primary-swatch-700;
 }
@@ -65,7 +67,7 @@
 .status-bar:conf:error  {
     -fx-background-color: -primary-swatch-700;
 }
-
+*/
 .conf-selector-view {
     -fx-background-color: #202122;
 }

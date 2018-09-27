@@ -31,10 +31,10 @@ import com.devoxx.service.Service;
 import com.devoxx.util.DevoxxSettings;
 import com.devoxx.views.helper.ETagImageTask;
 import com.gluonhq.charm.down.Services;
+import com.gluonhq.charm.down.plugins.DisplayService;
 import com.gluonhq.charm.down.plugins.SettingsService;
 import com.gluonhq.charm.glisten.application.MobileApplication;
 import com.gluonhq.charm.glisten.control.CharmListCell;
-import javafx.beans.binding.DoubleBinding;
 import javafx.css.PseudoClass;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
@@ -48,6 +48,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.scene.Group;
+import javafx.scene.image.Image;
+import javafx.scene.shape.Rectangle;
 
 public class ConferenceCell extends CharmListCell<Conference> {
 
@@ -55,6 +58,8 @@ public class ConferenceCell extends CharmListCell<Conference> {
 
     private static final PseudoClass PSEUDO_CLASS_VOXXED = PseudoClass.getPseudoClass("voxxed");
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("MMMM dd, yyyy");
+    private static final int PHONE_HEIGHT = 222;
+    private static final int TABLET_HEIGHT = 333;
     
     private static final ExecutorService executor = Executors.newSingleThreadExecutor(r -> {
         Thread thread = Executors.defaultThreadFactory().newThread(r);
@@ -72,31 +77,26 @@ public class ConferenceCell extends CharmListCell<Conference> {
     private final VBox top;
     private final BorderPane content;
     private final StackPane root;
-    private final DoubleBinding widthProperty;
+    private final double maxH;
+    private final Rectangle clip;
 
     public ConferenceCell(Service service) {
         this.service = service;
-
-        widthProperty = MobileApplication.getInstance().getGlassPane().widthProperty().subtract(15);
 
         name = new Label();
         name.getStyleClass().add("name");
         
         eventType = new Label();
         eventType.getStyleClass().add("type");
-        eventType.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue.equals(Conference.Type.VOXXED.name())) {
-                pseudoClassStateChanged(PSEUDO_CLASS_VOXXED, true);
-            } else {
-                pseudoClassStateChanged(PSEUDO_CLASS_VOXXED, false);
-            }
-        });
         
         dateLabel = new Label();
         dateLabel.getStyleClass().add("date");
         
         background = new ImageView();
-        background.setFitHeight(222);
+        background.setPreserveRatio(true);
+        clip = new Rectangle();
+        background.setClip(clip);
+        MobileApplication.getInstance().getGlassPane().widthProperty().addListener((obs, ov, nv) -> fitImage());
         
         top = new VBox(eventType, name);
         top.getStyleClass().add("top");
@@ -106,8 +106,12 @@ public class ConferenceCell extends CharmListCell<Conference> {
         content.setTop(top);
         content.setBottom(dateLabel);
         
-        root = new StackPane(background, content);
+        root = new StackPane(new Group(background), content);
         getStyleClass().add("conference-cell"); 
+        
+        maxH = Services.get(DisplayService.class)
+                .map(s -> s.isTablet() ? TABLET_HEIGHT : PHONE_HEIGHT)
+                .orElse(PHONE_HEIGHT);
     }
 
     private ETagImageTask imageTask;
@@ -119,6 +123,11 @@ public class ConferenceCell extends CharmListCell<Conference> {
         background.setImage(null);
         if (item != null && !empty) {
             eventType.setText(item.getEventType().name());
+            if (item.getEventType().name().equals(Conference.Type.VOXXED.name())) {
+                pseudoClassStateChanged(PSEUDO_CLASS_VOXXED, true);
+            } else {
+                pseudoClassStateChanged(PSEUDO_CLASS_VOXXED, false);
+            }
             
             name.setText(item.getName());
             if (item.getFromDate().equals(item.getEndDate())) {
@@ -135,15 +144,17 @@ public class ConferenceCell extends CharmListCell<Conference> {
             imageTask = new ETagImageTask("conference_" + item.getId(), item.getImageURL());
             imageTask.setOnSucceeded(e -> {
                 background.setImage(imageTask.getValue());
+                fitImage();
             });
             imageTask.exceptionProperty().addListener((o, ov, nv) -> {
                 LOG.log(Level.SEVERE, nv.getMessage());
             });
             executor.submit(imageTask);
-            imageTask.image().ifPresent(background::setImage);
+            imageTask.image().ifPresent(image -> {
+                background.setImage(image);
+                fitImage();
+            });
 
-            background.fitWidthProperty().bind(widthProperty.subtract(2));
-            
             content.setOnMouseReleased(e -> {
                 if (!item.equals(service.getConference())) {
                     service.retrieveConference(item.getId());
@@ -159,4 +170,24 @@ public class ConferenceCell extends CharmListCell<Conference> {
             setGraphic(null);
         }
     }
+    
+    private void fitImage() {
+        Image image = background.getImage();
+        if (image != null) {
+            double factor = image.getHeight() / image.getWidth();
+            final double maxW = MobileApplication.getInstance().getGlassPane().getWidth() - 30;
+            if (factor < maxH / maxW) {
+                background.setFitWidth(10000);
+                background.setFitHeight(maxH);
+                clip.setY(0);
+            } else {
+                background.setFitWidth(maxW);
+                background.setFitHeight(10000);
+                clip.setY((maxW * factor - maxH) / 2);
+            }
+            clip.setWidth(maxW);
+            clip.setHeight(maxH);
+        }
+    }
+
 }

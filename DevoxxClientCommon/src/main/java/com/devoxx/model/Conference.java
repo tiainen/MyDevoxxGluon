@@ -502,7 +502,8 @@ public class Conference {
     
     public enum Type {
         DEVOXX("Devoxx", "Devoxx"),
-        VOXXED("Voxxed", "VoxxedDays");
+        VOXXED("Voxxed", "VoxxedDays"),
+        MEETUP("Meetup", "Meetup");
 
         private String name;
         private String displayName;

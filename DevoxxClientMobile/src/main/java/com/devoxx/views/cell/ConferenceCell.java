@@ -45,6 +45,7 @@ import javafx.scene.layout.VBox;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -79,6 +80,7 @@ public class ConferenceCell extends CharmListCell<Conference> {
     private final BorderPane content;
     private final StackPane root;
     private final double maxH;
+    private final Rectangle clip;
 
     public ConferenceCell(Service service) {
         this.service = service;
@@ -88,19 +90,14 @@ public class ConferenceCell extends CharmListCell<Conference> {
         
         eventType = new Label();
         eventType.getStyleClass().add("type");
-        eventType.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue.equals(Conference.Type.VOXXED.name())) {
-                pseudoClassStateChanged(PSEUDO_CLASS_VOXXED, true);
-            } else {
-                pseudoClassStateChanged(PSEUDO_CLASS_VOXXED, false);
-            }
-        });
         
         dateLabel = new Label();
         dateLabel.getStyleClass().add("date");
         
         background = new ImageView();
         background.setPreserveRatio(true);
+        clip = new Rectangle();
+        background.setClip(clip);
         MobileApplication.getInstance().getGlassPane().widthProperty().addListener((obs, ov, nv) -> fitImage());
         
         top = new VBox(eventType, name);
@@ -128,6 +125,11 @@ public class ConferenceCell extends CharmListCell<Conference> {
         background.setImage(null);
         if (item != null && !empty) {
             eventType.setText(item.getEventType().name());
+            if (item.getEventType().name().equals(Conference.Type.VOXXED.name())) {
+                pseudoClassStateChanged(PSEUDO_CLASS_VOXXED, true);
+            } else {
+                pseudoClassStateChanged(PSEUDO_CLASS_VOXXED, false);
+            }
             
             name.setText(item.getName());
             if (item.getFromDate().equals(item.getEndDate())) {
@@ -178,17 +180,18 @@ public class ConferenceCell extends CharmListCell<Conference> {
         Image image = background.getImage();
         if (image != null) {
             double factor = image.getHeight() / image.getWidth();
-            double maxW = MobileApplication.getInstance().getGlassPane().getWidth() - 30;
+            final double maxW = MobileApplication.getInstance().getGlassPane().getWidth() - 30;
             if (factor < maxH / maxW) {
                 background.setFitWidth(10000);
                 background.setFitHeight(maxH);
-                background.setClip(new Rectangle(0, 0, maxW, maxH));
+                clip.setY(0);
             } else {
                 background.setFitWidth(maxW);
                 background.setFitHeight(10000);
-                double realH = maxW * factor;
-                background.setClip(new Rectangle(0, (realH - maxH) / 2, maxW, maxH));
+                clip.setY((maxW * factor - maxH) / 2);
             }
+            clip.setWidth(maxW);
+            clip.setHeight(maxH);
         }
     }
 

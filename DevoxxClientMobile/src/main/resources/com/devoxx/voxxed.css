@@ -25,44 +25,31 @@
  */
 @import "devoxx.css";
 
-/** AppBar **/
-.app-bar > .title-box > .label {
-    -fx-font-size: 1.25em;
+.root {
+
+    -otn-base: #2493C7;
+
+    -otn-lighter1: #80A9C3;
+    -otn-lighter2: #B5D0E2;
+
+    -otn-darker1: #366A8B;
+    -otn-darker2: #205476;
+
+    -alternate-color: #C5534F;
+
+    /* http://knizia.biz/mcg/#/ */
+    -primary-swatch-100: #BBDEEE;
+    -primary-swatch-200: #91C9E3;
+    -primary-swatch-300: #65B3D8;
+    -primary-swatch-400: #45A3CF;
+    -primary-swatch-500: -otn-base;
+    -primary-swatch-600: #2186B5;
+    -primary-swatch-700: #1D77A2;
+    -primary-swatch-800: #1A688D;
+    -primary-swatch-900: #134D68;
+
+    /* background color for primary and secondary FAB */
+    -fab-primary-background-color: -alternate-color;
+    -fab-secondary-background-color: white;
 }
 
-/** StatusBar **/
-/* TODO: Uncomment when StatusBar Glisten bug is fixed */
-/*
-.status-bar,
-.status-bar:conf,
-.status-bar:error,
-.status-bar:conf:error {
-    -fx-background-color: transparent;
-}
-
-.status-bar:voxxed {
-    -fx-background-color: transparent;
-}*/
-
-/** Views **/
-.conf-selector {
-    -fx-padding: 17mm 0 17mm 0;
-}
-
-.exhibitor-detail .details,
-.sponsor-detail .details {
-    -fx-padding: 0em 0em 0em 0.8em;
-}
-
-.venue-detail .address {
-    -fx-padding: 0em 0em 0.8em 0.8em;
-}
-
-/* Filter view inside session view */
-.sessions-filter {
-    -fx-padding: 11.52mm 0 0 0;
-}
-
-.conf-selector-view.hidden-app-bar {
-    -fx-padding: 11.52mm 0 5.44mm 0;
-}

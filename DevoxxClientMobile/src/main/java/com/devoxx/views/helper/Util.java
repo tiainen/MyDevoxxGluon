@@ -25,6 +25,7 @@
  */
 package com.devoxx.views.helper;
 
+import com.devoxx.model.Conference;
 import com.devoxx.model.Speaker;
 import com.devoxx.util.DevoxxBundle;
 import com.devoxx.util.ImageCache;
@@ -56,6 +57,8 @@ import javafx.util.Duration;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.function.Supplier;
+
+import static com.devoxx.util.DevoxxSettings.DAYS_PAST_END_DATE;
 
 public class Util {
 
@@ -206,6 +209,14 @@ public class Util {
 
     public static String safeStr(String s) {
         return s == null? "": s.trim();
+    }
+
+    /**
+     * A conference is considered from past if
+     * {@link DevoxxSettings#DAYS_PAST_END_DATE} days have passed since its end date
+     */
+    public static boolean isConferenceFromPast(Conference conference) {
+        return conference.getDaysUntilEnd() < -(DAYS_PAST_END_DATE);
     }
 
     public static void hidePastConferenceMessage() {

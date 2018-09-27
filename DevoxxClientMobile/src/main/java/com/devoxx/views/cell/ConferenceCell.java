@@ -30,6 +30,7 @@ import com.devoxx.model.Conference;
 import com.devoxx.service.Service;
 import com.devoxx.util.DevoxxSettings;
 import com.devoxx.views.helper.ETagImageTask;
+import com.devoxx.views.layer.ConferenceLoadingLayer;
 import com.gluonhq.charm.down.Services;
 import com.gluonhq.charm.down.plugins.DisplayService;
 import com.gluonhq.charm.down.plugins.SettingsService;
@@ -157,13 +158,16 @@ public class ConferenceCell extends CharmListCell<Conference> {
 
             content.setOnMouseReleased(e -> {
                 if (!item.equals(service.getConference())) {
+                    ConferenceLoadingLayer.show(service, item);
                     service.retrieveConference(item.getId());
                     Services.get(SettingsService.class).ifPresent(settingsService -> {
                         settingsService.store(DevoxxSettings.SAVED_CONFERENCE_TYPE, item.getEventType().name());
                         settingsService.store(DevoxxSettings.SAVED_CONFERENCE_ID, String.valueOf(item.getId()));
+                        settingsService.store(DevoxxSettings.SAVED_CONFERENCE_NAME, String.valueOf(item.getName()));
                     });
+                } else {
+                    DevoxxView.SESSIONS.switchView();
                 }
-                DevoxxView.SESSIONS.switchView();
             });
             setGraphic(root);
         } else {

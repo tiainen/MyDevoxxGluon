@@ -32,6 +32,7 @@ import com.devoxx.util.DevoxxNotifications;
 import com.devoxx.util.DevoxxSettings;
 import com.devoxx.views.helper.Placeholder;
 import com.devoxx.views.helper.SessionVisuals.SessionListType;
+import com.devoxx.views.layer.ConferenceLoadingLayer;
 import com.gluonhq.charm.down.Services;
 import com.gluonhq.charm.down.plugins.RuntimeArgsService;
 import com.gluonhq.charm.down.plugins.SettingsService;
@@ -73,8 +74,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.devoxx.util.DevoxxSettings.DAYS_PAST_END_DATE;
-import static com.devoxx.views.helper.Util.*;
+import static com.devoxx.views.helper.Util.safeStr;
 
 public class DevoxxService implements Service {
 
@@ -230,12 +230,6 @@ public class DevoxxService implements Service {
 
                 favorites.clear();
                 refreshFavorites();
-
-                if (isConferenceFromPast(nv)) {
-                    showPastConferenceMessage();
-                } else {
-                    hidePastConferenceMessage();
-                }
             }
         });
 
@@ -250,14 +244,6 @@ public class DevoxxService implements Service {
                 }
             }
         });
-    }
-
-    /**
-     * A conference is considered from past if
-     * {@link DevoxxSettings#DAYS_PAST_END_DATE} days have passed since its end date
-     */
-    private boolean isConferenceFromPast(Conference conference) {
-        return conference.getDaysUntilEnd() < -(DAYS_PAST_END_DATE);
     }
 
     @Override
@@ -473,6 +459,7 @@ public class DevoxxService implements Service {
         sessionsList.setOnFailed(e -> {
             retrievingSessions.set(false);
             sessionsList.removeListener(sessionsListChangeListener);
+            ConferenceLoadingLayer.hide(getConference());
             LOG.log(Level.WARNING, String.format(REMOTE_FUNCTION_FAILED_MSG, "sessions"), e.getSource().getException());
         });
         sessionsList.setOnSucceeded(e -> {

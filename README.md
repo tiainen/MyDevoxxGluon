@@ -2,7 +2,7 @@
 
 **From developers, For developers**
 
-[Devoxx](https://beta.devoxx.com/) is a set of international conferences.
+[Devoxx](https://beta.devoxx.com/) and [Voxxed Days](https://beta.voxxeddays.com) are a set of international conferences.
 
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 

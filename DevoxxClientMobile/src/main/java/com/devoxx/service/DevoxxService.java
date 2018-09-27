@@ -534,7 +534,16 @@ public class DevoxxService implements Service {
     private String getCfpURL() {
         final String cfpURL = getConference().getCfpURL();
         if (cfpURL == null) return "";
-        return cfpURL.endsWith("/api") ? cfpURL : cfpURL + "/api";
+        if (cfpURL.endsWith("/api/")) {
+            return cfpURL.substring(0, cfpURL.length() - 1);
+        }
+        if (cfpURL.endsWith("/api")) {
+            return cfpURL;
+        }
+        if (cfpURL.endsWith("/")) {
+            return cfpURL + "api";
+        }
+        return cfpURL + "/api";
     }
 
     private void updateSpeakerDetails(Speaker updatedSpeaker) {

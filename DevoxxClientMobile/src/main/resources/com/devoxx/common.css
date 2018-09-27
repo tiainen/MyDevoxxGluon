@@ -50,6 +50,8 @@
     -map-marker-color: #566A92;
 }
 
+/* TODO: Uncomment when StatusBar Glisten bug is fixed */
+/*
 .status-bar {
     -fx-background-color: -primary-swatch-700;
 }
@@ -65,6 +67,7 @@
 .status-bar:conf:error  {
     -fx-background-color: -primary-swatch-700;
 }
+*/
 
 /** Conference Selector **/
 .conf-selector-view {
@@ -115,11 +118,11 @@
     -fx-text-fill: black;
     -fx-padding: 0.1em;
     -fx-font-size: 0.8em;
-    -fx-background-color: -primary-swatch-300;
+    -fx-background-color: #DF9356;
 }
 
 .conference-cell:voxxed .label.type {
-    -fx-background-color: #27B1DB;
+    -fx-background-color: #65B3D8;
 }
 
 .conference-cell .label.name {

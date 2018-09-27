@@ -166,6 +166,12 @@ public class DevoxxApplication extends MobileApplication {
                 deviceFactorSuffix,
                 formFactorSuffix);
         scene.getStylesheets().add(DevoxxApplication.class.getResource(stylesheetName).toExternalForm());
+
+        String voxxedStylesheet = DevoxxApplication.class.getResource("voxxed.css").toExternalForm();
+        addOrRemoveVoxxedStylesheet(scene, service.getConference(), voxxedStylesheet);
+        service.conferenceProperty().addListener((observable, oldValue, newValue) -> {
+            addOrRemoveVoxxedStylesheet(scene, newValue, voxxedStylesheet);
+        });
         
         if (Platform.isDesktop()) {
             Window window = scene.getWindow();
@@ -189,6 +195,16 @@ public class DevoxxApplication extends MobileApplication {
         if (signUp) {
             Services.get(SettingsService.class).ifPresent(settings -> settings.remove(DevoxxSettings.SIGN_UP));
             DevoxxView.SESSIONS.switchView().ifPresent(s -> ((SessionsPresenter) s).selectFavorite());
+        }
+    }
+
+    private void addOrRemoveVoxxedStylesheet(Scene scene, Conference conference, String voxxedStylesheet) {
+        if (conference != null && conference.getEventType() == Conference.Type.VOXXED) {
+            if(!scene.getStylesheets().contains(voxxedStylesheet)) {
+                scene.getStylesheets().add(voxxedStylesheet);
+            }
+        } else {
+            scene.getStylesheets().remove(voxxedStylesheet);
         }
     }
 

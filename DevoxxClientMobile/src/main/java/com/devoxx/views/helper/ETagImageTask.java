@@ -56,15 +56,14 @@ public class ETagImageTask extends Task<Image> {
         this.imageFileName = id + DEVOXX_IMAGE + url.substring(url.lastIndexOf("."));
         this.url = url;
 
-        // TODO: This executes on the JavaFX application thread deteriorating the performance
-        /*try {
+        try {
             final FileDataSource imageDataSource = createCacheImageDataSource(imageFileName);
             if (imageDataSource != null && imageDataSource.getFile().exists()) {
                 image = new Image(imageDataSource.getInputStream());
             }
         } catch (IOException e) {
             // do nothing
-        }*/
+        }
     }
 
     public Optional<Image> image() {

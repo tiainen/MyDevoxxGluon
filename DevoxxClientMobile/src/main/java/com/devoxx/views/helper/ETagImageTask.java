@@ -46,7 +46,7 @@ import java.util.logging.Logger;
 public class ETagImageTask extends Task<Image> {
 
     private static final String DEVOXX_IMAGE = "_devoxx_image";
-    private static Logger LOGGER = Logger.getLogger(ETagImageTask.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ETagImageTask.class.getName());
 
     private final String imageFileName;
     private final String url;
@@ -56,15 +56,14 @@ public class ETagImageTask extends Task<Image> {
         this.imageFileName = id + DEVOXX_IMAGE + url.substring(url.lastIndexOf("."));
         this.url = url;
 
-        // TODO: This executes on the JavaFX application thread deteriorating the performance
-        /*try {
+        try {
             final FileDataSource imageDataSource = createCacheImageDataSource(imageFileName);
             if (imageDataSource != null && imageDataSource.getFile().exists()) {
                 image = new Image(imageDataSource.getInputStream());
             }
         } catch (IOException e) {
             // do nothing
-        }*/
+        }
     }
 
     public Optional<Image> image() {

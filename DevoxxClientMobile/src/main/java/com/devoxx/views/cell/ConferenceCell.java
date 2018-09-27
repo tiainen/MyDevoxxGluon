@@ -150,7 +150,10 @@ public class ConferenceCell extends CharmListCell<Conference> {
                 LOG.log(Level.SEVERE, nv.getMessage());
             });
             executor.submit(imageTask);
-            imageTask.image().ifPresent(background::setImage);
+            imageTask.image().ifPresent(image -> {
+                background.setImage(image);
+                fitImage();
+            });
 
             content.setOnMouseReleased(e -> {
                 if (!item.equals(service.getConference())) {

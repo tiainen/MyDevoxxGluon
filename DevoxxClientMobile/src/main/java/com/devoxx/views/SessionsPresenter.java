@@ -117,13 +117,22 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
     private BottomNavigationButton favoriteButton;
 
     public void initialize() {
+
+        // Filter
+        final Button filterButton = createFilterButton();
+        filterSessionsView = new GluonView(FilterSessionsPresenter.class);
+        filterPresenter = (FilterSessionsPresenter) filterSessionsView.getPresenter();
+        filterPredicateProperty.bind(filterPresenter.searchPredicateProperty());
+        filterButton.pseudoClassStateChanged(PSEUDO_FILTER_ENABLED, filterPresenter.isFilterApplied());
+        filterPresenter.filterAppliedProperty().addListener((ov, oldValue, newValue) -> {
+            filterButton.pseudoClassStateChanged(PSEUDO_FILTER_ENABLED, newValue);
+        });
+
         createView();
         service.conferenceProperty().addListener((obs, ov, nv) -> {
             sessions.setBottom(null);
             createView();
         });
-
-        final Button filterButton = createFilterButton();
 
         sessions.setOnShowing(event -> {
             AppBar appBar = getApp().getAppBar();
@@ -148,14 +157,6 @@ public class SessionsPresenter  extends GluonPresenter<DevoxxApplication> {
             showRatingDialog();
         });
 
-        // Filter
-        filterSessionsView = new GluonView(FilterSessionsPresenter.class);
-        filterPresenter = (FilterSessionsPresenter) filterSessionsView.getPresenter();
-        filterPredicateProperty.bind(filterPresenter.searchPredicateProperty());
-        filterButton.pseudoClassStateChanged(PSEUDO_FILTER_ENABLED, filterPresenter.isFilterApplied());
-        filterPresenter.filterAppliedProperty().addListener((ov, oldValue, newValue) -> {
-            filterButton.pseudoClassStateChanged(PSEUDO_FILTER_ENABLED, newValue);
-        });
         MobileApplication.getInstance().addLayerFactory(DevoxxApplication.POPUP_FILTER_SESSIONS_MENU, () -> {
             if (filterPopup == null) {
                 filterPopup = new SidePopupView(filterSessionsView.getView(), Side.TOP, true);

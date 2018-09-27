@@ -31,10 +31,10 @@ import com.devoxx.service.Service;
 import com.devoxx.util.DevoxxSettings;
 import com.devoxx.views.helper.ETagImageTask;
 import com.gluonhq.charm.down.Services;
+import com.gluonhq.charm.down.plugins.DisplayService;
 import com.gluonhq.charm.down.plugins.SettingsService;
 import com.gluonhq.charm.glisten.application.MobileApplication;
 import com.gluonhq.charm.glisten.control.CharmListCell;
-import javafx.beans.binding.DoubleBinding;
 import javafx.css.PseudoClass;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
@@ -48,6 +48,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.scene.Group;
+import javafx.scene.image.Image;
+import javafx.scene.shape.Rectangle;
 
 public class ConferenceCell extends CharmListCell<Conference> {
 
@@ -55,6 +58,8 @@ public class ConferenceCell extends CharmListCell<Conference> {
 
     private static final PseudoClass PSEUDO_CLASS_VOXXED = PseudoClass.getPseudoClass("voxxed");
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("MMMM dd, yyyy");
+    private static final int PHONE_HEIGHT = 222;
+    private static final int TABLET_HEIGHT = 333;
     
     private static final ExecutorService executor = Executors.newSingleThreadExecutor(r -> {
         Thread thread = Executors.defaultThreadFactory().newThread(r);
@@ -72,12 +77,10 @@ public class ConferenceCell extends CharmListCell<Conference> {
     private final VBox top;
     private final BorderPane content;
     private final StackPane root;
-    private final DoubleBinding widthProperty;
+    private final double maxH;
 
     public ConferenceCell(Service service) {
         this.service = service;
-
-        widthProperty = MobileApplication.getInstance().getGlassPane().widthProperty().subtract(15);
 
         name = new Label();
         name.getStyleClass().add("name");
@@ -96,7 +99,8 @@ public class ConferenceCell extends CharmListCell<Conference> {
         dateLabel.getStyleClass().add("date");
         
         background = new ImageView();
-        background.setFitHeight(222);
+        background.setPreserveRatio(true);
+        MobileApplication.getInstance().getGlassPane().widthProperty().addListener((obs, ov, nv) -> fitImage());
         
         top = new VBox(eventType, name);
         top.getStyleClass().add("top");
@@ -106,8 +110,12 @@ public class ConferenceCell extends CharmListCell<Conference> {
         content.setTop(top);
         content.setBottom(dateLabel);
         
-        root = new StackPane(background, content);
+        root = new StackPane(new Group(background), content);
         getStyleClass().add("conference-cell"); 
+        
+        maxH = Services.get(DisplayService.class)
+                .map(s -> s.isTablet() ? TABLET_HEIGHT : PHONE_HEIGHT)
+                .orElse(PHONE_HEIGHT);
     }
 
     private ETagImageTask imageTask;
@@ -135,6 +143,7 @@ public class ConferenceCell extends CharmListCell<Conference> {
             imageTask = new ETagImageTask("conference_" + item.getId(), item.getImageURL());
             imageTask.setOnSucceeded(e -> {
                 background.setImage(imageTask.getValue());
+                fitImage();
             });
             imageTask.exceptionProperty().addListener((o, ov, nv) -> {
                 LOG.log(Level.SEVERE, nv.getMessage());
@@ -142,8 +151,6 @@ public class ConferenceCell extends CharmListCell<Conference> {
             executor.submit(imageTask);
             imageTask.image().ifPresent(background::setImage);
 
-            background.fitWidthProperty().bind(widthProperty.subtract(2));
-            
             content.setOnMouseReleased(e -> {
                 if (!item.equals(service.getConference())) {
                     service.retrieveConference(item.getId());
@@ -159,4 +166,23 @@ public class ConferenceCell extends CharmListCell<Conference> {
             setGraphic(null);
         }
     }
+    
+    private void fitImage() {
+        Image image = background.getImage();
+        if (image != null) {
+            double factor = image.getHeight() / image.getWidth();
+            double maxW = MobileApplication.getInstance().getGlassPane().getWidth() - 30;
+            if (factor < maxH / maxW) {
+                background.setFitWidth(10000);
+                background.setFitHeight(maxH);
+                background.setClip(new Rectangle(0, 0, maxW, maxH));
+            } else {
+                background.setFitWidth(maxW);
+                background.setFitHeight(10000);
+                double realH = maxW * factor;
+                background.setClip(new Rectangle(0, (realH - maxH) / 2, maxW, maxH));
+            }
+        }
+    }
+
 }

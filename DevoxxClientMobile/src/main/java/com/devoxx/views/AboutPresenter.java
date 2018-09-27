@@ -27,6 +27,7 @@ package com.devoxx.views;
 
 import com.devoxx.DevoxxApplication;
 import com.devoxx.util.DevoxxBundle;
+import com.devoxx.util.DevoxxSettings;
 import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.mvc.View;
@@ -88,7 +89,7 @@ public class AboutPresenter extends GluonPresenter<DevoxxApplication> {
         devoxxImage.setFitWidth(290.0);
         gluonLogo.setFitWidth(250);
 
-        devoxxLabel.setText(DevoxxBundle.getString("OTN.ABOUT.LABEL.DEVOXX"));
+        devoxxLabel.setText(DevoxxBundle.getString("OTN.ABOUT.LABEL.DEVOXX", DevoxxSettings.BUILD_NUMBER));
         gluonLabel.setText(DevoxxBundle.getString("OTN.ABOUT.LABEL.GLUON"));
 
     }

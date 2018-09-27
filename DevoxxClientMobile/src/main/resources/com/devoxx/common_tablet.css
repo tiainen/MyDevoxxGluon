@@ -31,3 +31,8 @@
 .navigation-drawer > * > .scroll-pane > .viewport > * > .container > .item > .item-content > .text-box > .label {
     -fx-font-size: 1.1em;
 }
+
+/** Conference Loader Layer **/
+.conf-layer > .label {
+    -fx-font-size: 1.3em;
+}

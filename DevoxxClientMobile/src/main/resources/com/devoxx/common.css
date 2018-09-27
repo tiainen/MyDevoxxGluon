@@ -66,6 +66,7 @@
     -fx-background-color: -primary-swatch-700;
 }
 
+/** Conference Selector **/
 .conf-selector-view {
     -fx-background-color: #202122;
 }
@@ -132,6 +133,26 @@
 .conf-selector.popup-view .label {
     -fx-font-size: 1.25em;
     -fx-padding: 1em 4em 1em 1em;
+}
+
+/** Conference Loader Layer **/
+.conf-layer > .label {
+    -fx-wrap-text: true;
+    -fx-text-alignment: center;
+    -fx-font-weight: bold;
+    -fx-font-size: 1.1em;
+}
+
+.conf-layer > .background {
+    -fx-background-color: white;
+}
+
+.conf-layer > .progress-indicator {
+    -fx-color: #DF9356;
+}
+
+.conf-layer > .progress-indicator:voxxed {
+    -fx-color: #65B3D8;
 }
 
 /** PastConference Message **/

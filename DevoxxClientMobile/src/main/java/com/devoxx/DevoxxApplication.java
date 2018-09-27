@@ -28,6 +28,7 @@ package com.devoxx;
 import com.airhacks.afterburner.injection.Injector;
 import com.devoxx.model.Badge;
 import com.devoxx.model.BadgeType;
+import com.devoxx.model.Conference;
 import com.devoxx.model.Sponsor;
 import com.devoxx.model.SponsorBadge;
 import com.devoxx.service.DevoxxService;
@@ -37,6 +38,7 @@ import com.devoxx.views.DevoxxSplash;
 import com.devoxx.views.SessionsPresenter;
 import com.devoxx.views.helper.ConnectivityUtils;
 import com.devoxx.views.helper.SessionVisuals;
+import com.devoxx.views.layer.ConferenceLoadingLayer;
 import com.gluonhq.charm.down.Platform;
 import com.gluonhq.charm.down.Services;
 import com.gluonhq.charm.down.plugins.*;
@@ -130,9 +132,15 @@ public class DevoxxApplication extends MobileApplication {
 
         // Check if conference is set and switch to Sessions view
         Services.get(SettingsService.class).ifPresent(settingsService -> {
-            String configuredConference = settingsService.retrieve(DevoxxSettings.SAVED_CONFERENCE_ID);
-            if (configuredConference != null) {
-                DevoxxView.SESSIONS.switchView();
+            String conferenceId = settingsService.retrieve(DevoxxSettings.SAVED_CONFERENCE_ID);
+            String conferenceName = settingsService.retrieve(DevoxxSettings.SAVED_CONFERENCE_NAME);
+            String conferenceType = settingsService.retrieve(DevoxxSettings.SAVED_CONFERENCE_TYPE);
+            if (conferenceId != null && conferenceName != null && conferenceType != null) {
+                Conference conference = new Conference();
+                conference.setId(conferenceId);
+                conference.setName(conferenceName);
+                conference.setEventType(conferenceType);
+                ConferenceLoadingLayer.show(service, conference);
             }
         });
 

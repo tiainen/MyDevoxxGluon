@@ -34,21 +34,25 @@ import com.gluonhq.charm.glisten.application.GlassPane;
 import com.gluonhq.charm.glisten.application.MobileApplication;
 import com.gluonhq.charm.glisten.control.ProgressIndicator;
 import com.gluonhq.charm.glisten.layout.Layer;
+import javafx.animation.PauseTransition;
 import javafx.beans.InvalidationListener;
 import javafx.css.PseudoClass;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Region;
+import javafx.util.Duration;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
 import static com.devoxx.views.helper.Util.*;
+import static javafx.animation.Animation.Status.STOPPED;
 
 public class ConferenceLoadingLayer extends Layer {
 
-    private static final PseudoClass PSEUDO_CLASS_VOXXED = PseudoClass.getPseudoClass("voxxed");
+    private static final Duration TIMEOUT = Duration.seconds(15);
     private static final Map<Conference, ConferenceLoadingLayer> map = new HashMap<>();
+    private static final PseudoClass PSEUDO_CLASS_VOXXED = PseudoClass.getPseudoClass("voxxed");
 
     private final Service service;
     private final GlassPane glassPane;
@@ -57,6 +61,8 @@ public class ConferenceLoadingLayer extends Layer {
     private final Label conferenceLabel;
     private final Region background;
     private final ProgressIndicator progressIndicator;
+
+    private final PauseTransition timeout;
     private final InvalidationListener sessionsListener;
 
     private ConferenceLoadingLayer(Service service, Conference conference) {
@@ -76,6 +82,8 @@ public class ConferenceLoadingLayer extends Layer {
         getStyleClass().add("conf-layer");
         getChildren().addAll(background, progressIndicator, conferenceLabel);
 
+        timeout = new PauseTransition(TIMEOUT);
+        timeout.setOnFinished(e -> hide());
         // Listener helps for quick response in cases where data has been cached
         sessionsListener = o -> {
             if (service.retrieveSessions().size() > 0) {
@@ -99,15 +107,18 @@ public class ConferenceLoadingLayer extends Layer {
 
     @Override
     public void show() {
+        timeout.playFromStart();
         service.retrieveSessions().addListener(sessionsListener);
         super.show();
     }
 
     @Override
     public void hide() {
+        if (timeout.getStatus() != STOPPED) timeout.stop();
         service.retrieveSessions().removeListener(sessionsListener);
+        if (!isShowing()) return;
         DevoxxView.SESSIONS.switchView();
-        if (isConferenceFromPast(service.getConference())) {
+        if (service.getConference() != null && isConferenceFromPast(service.getConference())) {
             showPastConferenceMessage();
         } else {
             hidePastConferenceMessage();

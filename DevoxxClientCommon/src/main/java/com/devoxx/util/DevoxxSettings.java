@@ -34,7 +34,7 @@ import java.time.format.FormatStyle;
 import java.util.*;
 
 public class DevoxxSettings {
-    public static final String BUILD_NUMBER = "304"  ;
+    public static final String BUILD_NUMBER = "305"   ;
 
     /**
      * boolean option to switch on/off automatic authentication by using a self generated random UUID

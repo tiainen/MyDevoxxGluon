@@ -45,6 +45,7 @@ import javafx.scene.layout.VBox;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -61,6 +62,7 @@ public class ConferenceCell extends CharmListCell<Conference> {
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("MMMM dd, yyyy");
     private static final int PHONE_HEIGHT = 222;
     private static final int TABLET_HEIGHT = 333;
+    private static final String CONFERENCE_TAG = "conference_";
     
     private static final ExecutorService executor = Executors.newSingleThreadExecutor(r -> {
         Thread thread = Executors.defaultThreadFactory().newThread(r);
@@ -78,11 +80,13 @@ public class ConferenceCell extends CharmListCell<Conference> {
     private final VBox top;
     private final BorderPane content;
     private final StackPane root;
-    private final double maxH;
+    private final double maxH, padding;
     private final Rectangle clip;
+    private final Map<String, Image> imagesMap;
 
-    public ConferenceCell(Service service) {
+    public ConferenceCell(Service service, Map<String, Image> imagesMap) {
         this.service = service;
+        this.imagesMap = imagesMap;
 
         name = new Label();
         name.getStyleClass().add("name");
@@ -110,9 +114,12 @@ public class ConferenceCell extends CharmListCell<Conference> {
         root = new StackPane(new Group(background), content);
         getStyleClass().add("conference-cell"); 
         
-        maxH = Services.get(DisplayService.class)
-                .map(s -> s.isTablet() ? TABLET_HEIGHT : PHONE_HEIGHT)
-                .orElse(PHONE_HEIGHT);
+        final boolean isTablet = Services.get(DisplayService.class)
+                .map(DisplayService::isTablet)
+                .orElse(false);
+                
+        maxH = isTablet ? TABLET_HEIGHT : PHONE_HEIGHT;
+        padding = isTablet ? 30 : 20;
     }
 
     private ETagImageTask imageTask;
@@ -141,20 +148,30 @@ public class ConferenceCell extends CharmListCell<Conference> {
             if (imageTask != null) {
                 imageTask.cancel();
             }
-
-            imageTask = new ETagImageTask("conference_" + item.getId(), item.getImageURL());
-            imageTask.setOnSucceeded(e -> {
-                background.setImage(imageTask.getValue());
-                fitImage();
-            });
-            imageTask.exceptionProperty().addListener((o, ov, nv) -> {
-                LOG.log(Level.SEVERE, nv.getMessage());
-            });
-            executor.submit(imageTask);
-            imageTask.image().ifPresent(image -> {
+            
+            final String imageId = CONFERENCE_TAG + item.getId();
+            Image image = imagesMap.get(imageId);
+            if (image == null) {
+                imageTask = new ETagImageTask(imageId, item.getImageURL());
+                imageTask.setOnSucceeded(e -> {
+                    final Image value = imageTask.getValue();
+                    imagesMap.put(imageId, value);
+                    background.setImage(value);
+                    fitImage();
+                });
+                imageTask.exceptionProperty().addListener((o, ov, nv) -> {
+                    LOG.log(Level.SEVERE, nv.getMessage());
+                });
+                executor.submit(imageTask);
+                imageTask.image().ifPresent(value -> {
+                    imagesMap.put(imageId, value);
+                    background.setImage(value);
+                    fitImage();
+                });
+            } else {
                 background.setImage(image);
                 fitImage();
-            });
+            }
 
             content.setOnMouseReleased(e -> {
                 if (!item.equals(service.getConference())) {
@@ -179,7 +196,7 @@ public class ConferenceCell extends CharmListCell<Conference> {
         Image image = background.getImage();
         if (image != null) {
             double factor = image.getHeight() / image.getWidth();
-            final double maxW = MobileApplication.getInstance().getGlassPane().getWidth() - 30;
+            final double maxW = MobileApplication.getInstance().getGlassPane().getWidth() - padding;
             if (factor < maxH / maxW) {
                 background.setFitWidth(10000);
                 background.setFitHeight(maxH);

@@ -58,14 +58,18 @@ import java.util.ResourceBundle;
 
 import static com.devoxx.views.helper.Util.hidePastConferenceMessage;
 import static com.gluonhq.charm.glisten.layout.layer.PopupView.PopupSide.RIGHT;
+import java.util.HashMap;
+import java.util.Map;
+import javafx.scene.image.Image;
 
 public class ConfSelectorPresenter extends GluonPresenter<DevoxxApplication> {
 
     private static final StatusBar STATUS_BAR = MobileApplication.getInstance().getStatusBar();
     private static final PseudoClass PSEUDO_CLASS_STATUS_VOXXED = PseudoClass.getPseudoClass("voxxed");
-
-    @FXML
-    private ResourceBundle bundle = ResourceBundle.getBundle("com/devoxx/views/confselector");
+    
+    private final Map<String, Image> imagesMap = new HashMap<>();
+    
+    private final ResourceBundle bundle = ResourceBundle.getBundle("com/devoxx/views/confselector");
 
     @FXML
     private CharmListView<Conference, LocalDateTime> selector;
@@ -102,7 +106,7 @@ public class ConfSelectorPresenter extends GluonPresenter<DevoxxApplication> {
         ProgressIndicator placeholder = new ProgressIndicator();
         placeholder.setRadius(20);
         selector.setPlaceholder(placeholder);
-        selector.setCellFactory(p -> new ConferenceCell(service));
+        selector.setCellFactory(p -> new ConferenceCell(service, imagesMap));
         selector.setComparator(futureConferenceComparator);
 
         confSelectorView.setOnShowing(event -> {
@@ -112,6 +116,7 @@ public class ConfSelectorPresenter extends GluonPresenter<DevoxxApplication> {
             }
             hidePastConferenceMessage();
         });
+        confSelectorView.setOnHiding(event -> imagesMap.clear());
 
         final Button filter = MaterialDesignIcon.FILTER_LIST.button();
         MenuPopupView popup = getMenuPopupView(filter);

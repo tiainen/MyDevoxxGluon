@@ -80,7 +80,7 @@ public class ConferenceCell extends CharmListCell<Conference> {
     private final VBox top;
     private final BorderPane content;
     private final StackPane root;
-    private final double maxH;
+    private final double maxH, padding;
     private final Rectangle clip;
     private final Map<String, Image> imagesMap;
 
@@ -114,9 +114,12 @@ public class ConferenceCell extends CharmListCell<Conference> {
         root = new StackPane(new Group(background), content);
         getStyleClass().add("conference-cell"); 
         
-        maxH = Services.get(DisplayService.class)
-                .map(s -> s.isTablet() ? TABLET_HEIGHT : PHONE_HEIGHT)
-                .orElse(PHONE_HEIGHT);
+        final boolean isTablet = Services.get(DisplayService.class)
+                .map(DisplayService::isTablet)
+                .orElse(false);
+                
+        maxH = isTablet ? TABLET_HEIGHT : PHONE_HEIGHT;
+        padding = isTablet ? 30 : 20;
     }
 
     private ETagImageTask imageTask;
@@ -193,7 +196,7 @@ public class ConferenceCell extends CharmListCell<Conference> {
         Image image = background.getImage();
         if (image != null) {
             double factor = image.getHeight() / image.getWidth();
-            final double maxW = MobileApplication.getInstance().getGlassPane().getWidth() - 30;
+            final double maxW = MobileApplication.getInstance().getGlassPane().getWidth() - padding;
             if (factor < maxH / maxW) {
                 background.setFitWidth(10000);
                 background.setFitHeight(maxH);

@@ -28,10 +28,7 @@ package com.devoxx.views;
 import com.devoxx.DevoxxApplication;
 import com.devoxx.model.Conference;
 import com.devoxx.service.Service;
-import com.devoxx.util.DevoxxSettings;
 import com.devoxx.views.cell.ConferenceCell;
-import com.gluonhq.charm.down.Services;
-import com.gluonhq.charm.down.plugins.SettingsService;
 import com.gluonhq.charm.glisten.afterburner.GluonPresenter;
 import com.gluonhq.charm.glisten.application.MobileApplication;
 import com.gluonhq.charm.glisten.application.StatusBar;
@@ -47,20 +44,19 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.image.Image;
 import javafx.scene.layout.StackPane;
 
 import javax.inject.Inject;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Comparator;
-import java.util.Optional;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 import static com.devoxx.views.helper.Util.hidePastConferenceMessage;
 import static com.gluonhq.charm.glisten.layout.layer.PopupView.PopupSide.RIGHT;
-import java.util.HashMap;
-import java.util.Map;
-import javafx.scene.image.Image;
 
 public class ConfSelectorPresenter extends GluonPresenter<DevoxxApplication> {
 
@@ -90,18 +86,7 @@ public class ConfSelectorPresenter extends GluonPresenter<DevoxxApplication> {
     private final Comparator<Conference> pastConferenceComparator = (s1, s2) -> LocalDate.parse(s2.getFromDate()).compareTo(LocalDate.parse(s1.getFromDate()));
 
     public void initialize() {
-        final Optional<SettingsService> settingsService = Services.get(SettingsService.class);
-        if (settingsService.isPresent()) {
-            final SettingsService settings = settingsService.get();
-            final String eventType = settings.retrieve(DevoxxSettings.SAVED_CONFERENCE_TYPE);
-            if (eventType == null || eventType.equals("")) {
-                selector.setItems(service.retrieveConferences(Conference.Type.DEVOXX));
-            } else {
-                selector.setItems(service.retrieveConferences(Conference.Type.valueOf(eventType)));
-            }
-        } else {
-            selector.setItems(service.retrieveConferences(Conference.Type.DEVOXX));
-        }
+        selector.setItems(service.retrieveConferences(Conference.Type.DEVOXX));
 
         ProgressIndicator placeholder = new ProgressIndicator();
         placeholder.setRadius(20);

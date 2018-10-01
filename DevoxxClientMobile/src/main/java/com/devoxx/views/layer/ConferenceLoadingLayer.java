@@ -87,7 +87,9 @@ public class ConferenceLoadingLayer extends Layer {
         // Listener helps for quick response in cases where data has been cached
         sessionsListener = o -> {
             if (service.retrieveSessions().size() > 0) {
-                hide();
+                PauseTransition pause = new PauseTransition(Duration.seconds(1));
+                pause.setOnFinished(f -> hide());
+                pause.playFromStart();
             }
         };
     }
@@ -102,7 +104,11 @@ public class ConferenceLoadingLayer extends Layer {
     }
 
     public static void hide(Conference conference) {
-        Optional.ofNullable(map.get(conference)).ifPresent(ConferenceLoadingLayer::hide);
+        Optional.ofNullable(map.get(conference)).ifPresent(c -> {
+            PauseTransition pause = new PauseTransition(Duration.seconds(1));
+            pause.setOnFinished(f -> c.hide());
+            pause.playFromStart();
+        });
     }
 
     @Override

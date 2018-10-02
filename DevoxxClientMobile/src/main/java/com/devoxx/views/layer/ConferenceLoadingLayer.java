@@ -46,7 +46,11 @@ import java.util.Map;
 import java.util.Optional;
 
 import static com.devoxx.views.helper.Util.*;
+import com.gluonhq.charm.glisten.control.LifecycleEvent;
 import static javafx.animation.Animation.Status.STOPPED;
+import javafx.beans.Observable;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 
 public class ConferenceLoadingLayer extends Layer {
 
@@ -64,6 +68,7 @@ public class ConferenceLoadingLayer extends Layer {
 
     private final PauseTransition timeout;
     private final InvalidationListener sessionsListener;
+    private final BooleanProperty shown;
 
     private ConferenceLoadingLayer(Service service, Conference conference) {
         this.service = service;
@@ -87,9 +92,12 @@ public class ConferenceLoadingLayer extends Layer {
         // Listener helps for quick response in cases where data has been cached
         sessionsListener = o -> {
             if (service.retrieveSessions().size() > 0) {
-                hide();
+                doHide();
             }
         };
+        
+        shown = new SimpleBooleanProperty();
+        addEventFilter(LifecycleEvent.SHOWN, e -> shown.set(true));
     }
     
     public static void show(Service service, Conference conference) {
@@ -102,16 +110,33 @@ public class ConferenceLoadingLayer extends Layer {
     }
 
     public static void hide(Conference conference) {
-        Optional.ofNullable(map.get(conference)).ifPresent(ConferenceLoadingLayer::hide);
+        Optional.ofNullable(map.get(conference)).ifPresent(c -> c.doHide());
     }
-
+    
     @Override
     public void show() {
+        shown.set(false);
         timeout.playFromStart();
         service.retrieveSessions().addListener(sessionsListener);
         super.show();
     }
 
+    private void doHide() {
+        if (shown.get()) {
+            hide();
+        } else {
+            shown.addListener(new InvalidationListener() {
+                @Override
+                public void invalidated(Observable o) {
+                    if (shown.get()) {
+                        shown.removeListener(this);
+                        hide();
+                    }
+                }
+            });
+        }
+    }
+    
     @Override
     public void hide() {
         if (timeout.getStatus() != STOPPED) timeout.stop();

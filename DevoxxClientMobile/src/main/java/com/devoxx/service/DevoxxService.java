@@ -242,9 +242,9 @@ public class DevoxxService implements Service {
         Services.get(SettingsService.class).ifPresent(settingsService -> {
             String configuredConferenceId = settingsService.retrieve(DevoxxSettings.SAVED_CONFERENCE_ID);
             if (configuredConferenceId != null) {
-                try {
+                if (isNumber(configuredConferenceId)) {
                     retrieveConference(configuredConferenceId);
-                } catch (NumberFormatException e) {
+                } else {
                     LOG.log(Level.WARNING, "Found old conference id format, removing it");
                     settingsService.remove(DevoxxSettings.SAVED_CONFERENCE_ID);
                 }
@@ -1026,5 +1026,15 @@ public class DevoxxService implements Service {
 
     private static ZonedDateTime timeToZonedDateTime(long time, ZoneId zoneId) {
         return ZonedDateTime.ofInstant(Instant.ofEpochMilli(time), zoneId);
+    }
+
+    private boolean isNumber(String string) {
+        try {
+            Integer.parseInt(string);
+            return true;
+        }
+        catch (NumberFormatException e) {
+            return false;
+        }
     }
 }

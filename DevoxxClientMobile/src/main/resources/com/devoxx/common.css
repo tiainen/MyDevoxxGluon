@@ -536,6 +536,46 @@
     -fx-text-fill: -primary-swatch-500;
 }
 
+.track-filter > .check-box > .track-color0 {
+    -fx-fill: -track-color0;
+}
+
+.track-filter > .check-box > .track-color1 {
+    -fx-fill: -track-color1;
+}
+
+.track-filter > .check-box > .track-color2 {
+    -fx-fill: -track-color2;
+}
+
+.track-filter > .check-box > .track-color3 {
+    -fx-fill: -track-color3;
+}
+
+.track-filter > .check-box > .track-color4 {
+    -fx-fill: -track-color4;
+}
+
+.track-filter > .check-box > .track-color5 {
+    -fx-fill: -track-color5;
+}
+
+.track-filter > .check-box > .track-color6 {
+    -fx-fill: -track-color6;
+}
+
+.track-filter > .check-box > .track-color7 {
+    -fx-fill: -track-color7;
+}
+
+.track-filter > .check-box > .track-color8 {
+    -fx-fill: -track-color8;
+}
+
+.track-filter > .check-box > .track-color9 {
+    -fx-fill: -track-color9;
+}
+
 /********************** Filter Button for Session View ***************************/
 
 .button.icon-toggle.filter-button:filter-enabled {

@@ -32,7 +32,6 @@ import com.devoxx.model.Favorite;
 import com.devoxx.model.Feedback;
 import com.devoxx.model.Floor;
 import com.devoxx.model.Note;
-import com.devoxx.model.ProposalType;
 import com.devoxx.model.Session;
 import com.devoxx.model.Speaker;
 import com.devoxx.model.Sponsor;
@@ -139,7 +138,7 @@ public interface Service {
      *
      * @return
      */
-    ReadOnlyListProperty<ProposalType> retrieveProposalTypes();
+    ReadOnlyListProperty<SessionType> retrieveSessionTypes();
 
     /**
      * Returns a list of exhibitors at the conference.

@@ -86,6 +86,7 @@ public class ScheduleCell extends CharmListCell<Session> {
         this.showSessionType = showSessionType;
         
         trackLabel = new Label();
+        Group trackLabelContainer = new Group(trackLabel);
         secondaryGraphic = new SecondaryGraphic();
 
         listTile = new ListTile() {
@@ -97,7 +98,9 @@ public class ScheduleCell extends CharmListCell<Session> {
 
             @Override
             protected double computePrefHeight(double width) {
-                return getCenter().prefHeight(width);
+                double trackLabelContainerWidth = trackLabelContainer.prefWidth(-1);
+                double secondaryGraphicWidth = secondaryGraphic.prefWidth(-1);
+                return getCenter().prefHeight(width - secondaryGraphicWidth - trackLabelContainerWidth);
             }
 
             @Override
@@ -106,7 +109,7 @@ public class ScheduleCell extends CharmListCell<Session> {
             }
         };
         listTile.setWrapText(true);
-        listTile.setPrimaryGraphic(new Group(trackLabel));
+        listTile.setPrimaryGraphic(trackLabelContainer);
         listTile.setSecondaryGraphic(secondaryGraphic);
 
         trackLabel.maxWidthProperty().bind(listTile.heightProperty());

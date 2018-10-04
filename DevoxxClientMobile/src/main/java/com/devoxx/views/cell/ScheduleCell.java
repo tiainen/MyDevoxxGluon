@@ -54,22 +54,14 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
+
+import static com.devoxx.views.helper.SessionTrack.fetchPseudoClassForTrack;
 
 public class ScheduleCell extends CharmListCell<Session> {
 
     private static final PseudoClass PSEUDO_CLASS_COLORED = PseudoClass.getPseudoClass("color");
-    private static Map<String, PseudoClass> trackPseudoClassMap = new HashMap<>();
-    private static List<String> pseudoClasses = Arrays.asList("track-color0",
-            "track-color1", "track-color2", "track-color3",
-            "track-color4", "track-color5", "track-color6",
-            "track-color7", "track-color8", "track-color9"
-    );
-    private static int index = 0;
     
     private final Service service;
     private final ListTile listTile;
@@ -94,12 +86,33 @@ public class ScheduleCell extends CharmListCell<Session> {
         this.showSessionType = showSessionType;
         
         trackLabel = new Label();
+        Group trackLabelContainer = new Group(trackLabel);
         secondaryGraphic = new SecondaryGraphic();
 
-        listTile = new ListTile();
+        listTile = new ListTile() {
+
+            @Override
+            protected double computeMinHeight(double width) {
+                return computePrefHeight(width);
+            }
+
+            @Override
+            protected double computePrefHeight(double width) {
+                double trackLabelContainerWidth = trackLabelContainer.prefWidth(-1);
+                double secondaryGraphicWidth = secondaryGraphic.prefWidth(-1);
+                return getCenter().prefHeight(width - secondaryGraphicWidth - trackLabelContainerWidth);
+            }
+
+            @Override
+            protected double computeMaxHeight(double width) {
+                return computePrefHeight(width);
+            }
+        };
         listTile.setWrapText(true);
-        listTile.setPrimaryGraphic(new Group(trackLabel));
+        listTile.setPrimaryGraphic(trackLabelContainer);
         listTile.setSecondaryGraphic(secondaryGraphic);
+
+        trackLabel.maxWidthProperty().bind(listTile.heightProperty());
 
         borderPane = new BorderPane(listTile);
         if (showSessionType) {
@@ -222,18 +235,6 @@ public class ScheduleCell extends CharmListCell<Session> {
             return speakerTitle.toString();
         }
         return "";
-    }
-    
-     private PseudoClass fetchPseudoClassForTrack(String trackId) {
-        PseudoClass pseudoClass = trackPseudoClassMap.get(trackId);
-        if (pseudoClass == null) {
-            if (index > pseudoClasses.size() - 1) {
-                index = 0; // exhausted all colors, re-use
-            }
-            pseudoClass = PseudoClass.getPseudoClass(pseudoClasses.get(index++));
-            trackPseudoClassMap.put(trackId, pseudoClass);
-        }
-        return pseudoClass;
     }
 
     private void changePseudoClass(PseudoClass pseudoClass) {

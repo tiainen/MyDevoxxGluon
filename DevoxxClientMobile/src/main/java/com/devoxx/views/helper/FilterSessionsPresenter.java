@@ -57,6 +57,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Rectangle;
 
 import javax.inject.Inject;
 import java.time.ZonedDateTime;
@@ -65,6 +66,7 @@ import java.util.Iterator;
 import java.util.function.Predicate;
 
 import static com.devoxx.DevoxxApplication.POPUP_FILTER_SESSIONS_MENU;
+import static com.devoxx.views.helper.SessionTrack.fetchStyleClassForTrack;
 
 public class FilterSessionsPresenter extends GluonPresenter<DevoxxApplication> {
 
@@ -274,6 +276,9 @@ public class FilterSessionsPresenter extends GluonPresenter<DevoxxApplication> {
 
     private void addTrackCheckBox(Track track) {
         CheckBox cbTrack = new CheckBox(track.getName());
+        Rectangle trackColor = new Rectangle(20, 20);
+        trackColor.getStyleClass().add(fetchStyleClassForTrack(track.getName().toUpperCase()));
+        cbTrack.setGraphic(trackColor);
         cbTrack.setUserData(track);
         cbTrack.setOnAction(this::addToFilter);
         trackFilter.getChildren().add(cbTrack);

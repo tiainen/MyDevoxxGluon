@@ -60,7 +60,6 @@ import javafx.scene.control.Button;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
-import javax.json.JsonString;
 import java.io.*;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -96,22 +95,13 @@ public class DevoxxService implements Service {
                 ras.addListener(RuntimeArgsService.LAUNCH_PUSH_NOTIFICATION_KEY, (f) -> {
                     LOG.log(Level.INFO, ">>> received a silent push notification with contents: " + f);
                     LOG.log(Level.INFO, "[DBG] writing reload file");
-                    File file = null;
-                    if (isReloadNotification(f)) {
-                        LOG.log(Level.INFO, "Reload notification found");
-                        file = new File (rootDir, DevoxxSettings.RELOAD);
-                    } else if (isRatingNotification(f)) {
-                        LOG.log(Level.INFO, "Rating notification found");
-                        file = new File (rootDir, DevoxxSettings.RATING);
-                    }
-                    if (file != null) {
-                        try (BufferedWriter br = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)))) {
-                            br.write(f);
-                            LOG.log(Level.INFO, "[DBG] writing silent notification file done");
-                        } catch (IOException ex) {
-                            LOG.log(Level.SEVERE, null, ex);
-                            LOG.log(Level.INFO, "[DBG] exception writing reload file " + ex);
-                        }
+                    File file = new File (rootDir, DevoxxSettings.RELOAD);
+                    try (BufferedWriter br = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)))) {
+                        br.write(f);
+                        LOG.log(Level.INFO, "[DBG] writing silent notification file done");
+                    } catch (IOException ex) {
+                        LOG.log(Level.SEVERE, null, ex);
+                        LOG.log(Level.INFO, "[DBG] exception writing reload file " + ex);
                     }
                 });
             });
@@ -379,15 +369,9 @@ public class DevoxxService implements Service {
             File reload = new File(rootDir, DevoxxSettings.RELOAD);
             LOG.log(Level.INFO, "Reload requested? " + reload.exists());
             if (reload.exists()) {
-                String conferenceIdForReload = readConferenceIdFromFile(reload);
-                LOG.log(Level.INFO, "Reload requested for conference: " + conferenceIdForReload + ", current conference: " + getConference().getId());
-                LOG.log(Level.INFO, "[DBB] reload exists for conference: '" + conferenceIdForReload + "', current conference: '" + getConference().getId()+"'");
-                if (!conferenceIdForReload.isEmpty() && conferenceIdForReload.equalsIgnoreCase(getConference().getId())) {
-                    reload.delete();
-                    retrieveSessionsInternal();
-                    retrieveSpeakersInternal();
-                    LOG.log(Level.INFO, "[DBB] data reloading for "+conferenceIdForReload);
-                }
+                reload.delete();
+                retrieveSessionsInternal();
+                retrieveSpeakersInternal();
             }
         }
     }
@@ -997,30 +981,6 @@ public class DevoxxService implements Service {
             e.printStackTrace();
         }
         return "";
-    }
-    
-    private static boolean isReloadNotification(String fileContent) {
-        // fileContent: {"id":"", "body":"test", "title":"reload"}
-        try {
-            JsonObject jsonObject = createJsonObject(fileContent);
-            JsonString title = (JsonString) jsonObject.get("title");
-            return title != null && title.getString().equalsIgnoreCase(DevoxxSettings.RELOAD);
-        } catch (Exception e) {
-            LOG.log(Level.SEVERE, e.getMessage());
-            return false;
-        }
-    }
-
-    private static boolean isRatingNotification(String fileContent) {
-        // fileContent: {"id":"", "body":"test", "title":"rating"}
-        try {
-            JsonObject jsonObject = createJsonObject(fileContent);
-            JsonString title = (JsonString) jsonObject.get("title");
-            return title != null && title.getString().equalsIgnoreCase(DevoxxSettings.RATING);
-        } catch (Exception e) {
-            LOG.log(Level.SEVERE, e.getMessage());
-            return false;
-        }
     }
 
     private static JsonObject createJsonObject(String fileContent) {

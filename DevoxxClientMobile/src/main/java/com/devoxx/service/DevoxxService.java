@@ -67,9 +67,12 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -141,7 +144,7 @@ public class DevoxxService implements Service {
     private final AtomicBoolean retrievingSpeakers = new AtomicBoolean(false);
 
     private ReadOnlyListWrapper<Track> tracks = new ReadOnlyListWrapper<>(FXCollections.observableArrayList());
-    private ReadOnlyListWrapper<ProposalType> proposalTypes = new ReadOnlyListWrapper<>(FXCollections.observableArrayList());
+    private ReadOnlyListWrapper<SessionType> sessionTypes = new ReadOnlyListWrapper<>(FXCollections.observableArrayList());
     private ReadOnlyListWrapper<Floor> exhibitionMaps = new ReadOnlyListWrapper<>(FXCollections.observableArrayList());
 
     // user specific data
@@ -225,7 +228,7 @@ public class DevoxxService implements Service {
                 retrieveSessionsInternal();
                 retrieveSpeakersInternal();
                 retrieveTracksInternal();
-                retrieveProposalTypesInternal();
+                retrieveSessionTypesInternal();
                 retrieveExhibitionMapsInternal();
 
                 favorites.clear();
@@ -578,19 +581,24 @@ public class DevoxxService implements Service {
     }
 
     @Override
-    public ReadOnlyListProperty<ProposalType> retrieveProposalTypes() {
-        return proposalTypes.getReadOnlyProperty();
+    public ReadOnlyListProperty<SessionType> retrieveSessionTypes() {
+        return sessionTypes.getReadOnlyProperty();
     }
 
-    private void retrieveProposalTypesInternal() {
-        RemoteFunctionObject fnProposalTypes = RemoteFunctionBuilder.create("proposalTypes")
-                .param("cfpEndpoint", getCfpURL())
-                .param("conferenceId", getConference().getCfpVersion())
-                .object();
-
-        GluonObservableObject<ProposalTypes> gluonProposalTypes = fnProposalTypes.call(ProposalTypes.class);
-        gluonProposalTypes.exceptionProperty().addListener(o -> LOG.log(Level.SEVERE, gluonProposalTypes.getException().getMessage()));
-        gluonProposalTypes.addListener((obs, ov, nv) -> proposalTypes.setAll(gluonProposalTypes.get().getProposalTypes()));
+    private void retrieveSessionTypesInternal() {
+        if (getConference() != null && getConference().getSessionTypes() != null) {
+            Set<String> dedup = new HashSet();
+            List<SessionType> types = new LinkedList<>();
+            for(SessionType t : getConference().getSessionTypes()) {
+                if (!dedup.contains(t.getName())) {
+                    dedup.add(t.getName());
+                    if (!t.isPause()) {
+                        types.add(t);
+                    }
+                }
+            }
+            sessionTypes.setAll(types);
+        }
     }
 
     @Override

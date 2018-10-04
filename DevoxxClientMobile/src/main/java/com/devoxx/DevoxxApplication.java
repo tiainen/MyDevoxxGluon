@@ -266,8 +266,8 @@ public class DevoxxApplication extends MobileApplication {
                     } catch (IOException ex) {
                         LOG.log(Level.WARNING, "Error writing csv file ", ex);
                     }
-                    s.share(DevoxxBundle.getString("OTN.BADGES.SHARE.SUBJECT"),
-                            DevoxxBundle.getString("OTN.BADGES.SHARE.MESSAGE", DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT).format(LocalDate.now())),
+                    s.share(DevoxxBundle.getString("OTN.BADGES.SHARE.SUBJECT", service.getConference().getName()),
+                            DevoxxBundle.getString("OTN.BADGES.SHARE.MESSAGE", service.getConference().getName(), DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT).format(LocalDate.now())),
                             "text/plain", file);
                 } else {
                     LOG.log(Level.WARNING, "Error accessing local storage");

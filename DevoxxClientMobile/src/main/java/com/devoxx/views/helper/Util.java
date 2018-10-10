@@ -76,6 +76,10 @@ public class Util {
 
     private Util() {}
 
+    public static boolean isEmptyString(String s) {
+        return s == null || s.equals("");
+    }
+
     public static ImageView getMediaBackgroundImageView() {
         final ImageView imageView = new ImageView(getMediaBackgroundImage());
         imageView.setPreserveRatio(true);

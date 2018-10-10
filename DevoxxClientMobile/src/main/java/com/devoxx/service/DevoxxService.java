@@ -49,6 +49,7 @@ import com.gluonhq.connect.ConnectState;
 import com.gluonhq.connect.GluonObservableList;
 import com.gluonhq.connect.GluonObservableObject;
 import com.gluonhq.connect.converter.JsonInputConverter;
+import com.gluonhq.connect.converter.JsonIterableInputConverter;
 import com.gluonhq.connect.provider.DataProvider;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
@@ -315,9 +316,8 @@ public class DevoxxService implements Service {
 
     @Override
     public GluonObservableList<Conference> retrievePastConferences() {
-        RemoteFunctionList fnConferences = RemoteFunctionBuilder.create("conferences")
+        RemoteFunctionList fnConferences = RemoteFunctionBuilder.create("pastConferences")
                 .param("time", "past")
-                .param("type", "")
                 .list();
         final GluonObservableList<Conference> conferences = fnConferences.call(Conference.class);
         conferences.setOnFailed(e -> LOG.log(
@@ -328,12 +328,10 @@ public class DevoxxService implements Service {
     }
     
     @Override
-    public GluonObservableList<Conference> retrieveConferences(Conference.Type type) {
+    public GluonObservableList<Conference> retrieveConferences() {
         RemoteFunctionList fnConferences = RemoteFunctionBuilder.create("conferences")
-                .param("time", "future")
-                .param("type", type.name())
                 .list();
-        final GluonObservableList<Conference> conferences = fnConferences.call(Conference.class);
+        final GluonObservableList<Conference> conferences = fnConferences.call(new JsonIterableInputConverter<>(Conference.class));
         conferences.setOnFailed(e -> LOG.log(Level.WARNING,
                 String.format(REMOTE_FUNCTION_FAILED_MSG, "conferences") + " in retrieveConferences()",
                 e.getSource().getException()));

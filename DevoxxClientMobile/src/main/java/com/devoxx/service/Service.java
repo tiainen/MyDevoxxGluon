@@ -66,12 +66,11 @@ public interface Service {
     GluonObservableList<Conference> retrievePastConferences();
 
     /**
-     * Returns a list of conferences.
+     * Returns a list of future conferences.
      * 
-     * @param type whether Devoxx or Voxxed
-     * @return List of Devoxx or Voxxed conferences
+     * @return List of Devoxx and Voxxed conferences
      */
-    GluonObservableList<Conference> retrieveConferences(Conference.Type type);
+    GluonObservableList<Conference> retrieveConferences();
 
     /**
      * Returns details about a conference.

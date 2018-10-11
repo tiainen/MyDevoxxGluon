@@ -316,8 +316,9 @@ public class DevoxxService implements Service {
 
     @Override
     public GluonObservableList<Conference> retrievePastConferences() {
-        RemoteFunctionList fnConferences = RemoteFunctionBuilder.create("pastConferences")
+        RemoteFunctionList fnConferences = RemoteFunctionBuilder.create("conferences")
                 .param("time", "past")
+                .param("type", "")
                 .list();
         final GluonObservableList<Conference> conferences = fnConferences.call(Conference.class);
         conferences.setOnFailed(e -> LOG.log(
@@ -329,7 +330,7 @@ public class DevoxxService implements Service {
     
     @Override
     public GluonObservableList<Conference> retrieveConferences() {
-        RemoteFunctionList fnConferences = RemoteFunctionBuilder.create("conferences")
+        RemoteFunctionList fnConferences = RemoteFunctionBuilder.create("allConferences")
                 .list();
         final GluonObservableList<Conference> conferences = fnConferences.call(new JsonIterableInputConverter<>(Conference.class));
         conferences.setOnFailed(e -> LOG.log(Level.WARNING,

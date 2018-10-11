@@ -134,11 +134,11 @@ public class ConfSelectorPresenter extends GluonPresenter<DevoxxApplication> {
         menu.getItems().addAll(devoxx, voxxed, futureEvents, pastEvents);
         
         devoxx.setOnAction(e -> {
-            updateFutureEvent(Conference.Type.DEVOXX.name());
+            updateFutureEvent(Conference.Type.DEVOXX);
             STATUS_BAR.pseudoClassStateChanged(PSEUDO_CLASS_STATUS_VOXXED, false);
         });
         voxxed.setOnAction(e -> {
-            updateFutureEvent(Conference.Type.VOXXED.name());
+            updateFutureEvent(Conference.Type.VOXXED);
             STATUS_BAR.pseudoClassStateChanged(PSEUDO_CLASS_STATUS_VOXXED, true);
         });
         futureEvents.setOnAction(e -> {
@@ -158,11 +158,10 @@ public class ConfSelectorPresenter extends GluonPresenter<DevoxxApplication> {
         return menuPopupView;
     }
 
-    private void updateFutureEvent(String eventName) {
+    private void updateFutureEvent(Conference.Type eventType) {
         selector.setItems(filteredList);
         selector.setComparator(futureConferenceComparator);
-        if (eventName != null) {
-            Conference.Type eventType = Conference.Type.valueOf(eventName);
+        if (eventType != null) {
             header.setText(eventType.getDisplayName());
             filteredList.setPredicate(conference -> !isEmptyString(conference.getCfpURL()) && conference.getEventType() == eventType);
         } else {

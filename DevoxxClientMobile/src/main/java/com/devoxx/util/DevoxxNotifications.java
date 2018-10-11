@@ -278,7 +278,7 @@ public class DevoxxNotifications {
             dateTimeStart = dateTimeStart.minus(DevoxxSettings.NOTIFICATION_OFFSET, SECONDS);
         }
         
-        if (dateTimeStart.isAfter(now)) {
+        if (dateTimeStart.isAfter(now) || startup) {
             if (!startSessionNotificationMap.containsKey(sessionId)) {
                 dummyNotificationMap.put(ID_START + sessionId, getStartNotification(session, null));
 

@@ -117,7 +117,7 @@ public class DevoxxSettings {
     public static final String BADGE_SPONSOR = "badge-sponsor";
     public static final String RELOAD = "reload";
     public static final String RATING = "rating";
-    public static final String NEW_VERSION = "newVersion";
+    public static final String VERSION_NO = "version_3_0_0";
 
     private static final String WEARABLE_DAY_PATTERN  = "MMMM dd, uuuu";
     private static final String TIME_PATTERN = "h:mma";

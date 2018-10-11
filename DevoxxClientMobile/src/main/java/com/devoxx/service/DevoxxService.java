@@ -1006,8 +1006,8 @@ public class DevoxxService implements Service {
     // This piece of code exists to enable backward compatibility and
     // should be safe to delete after the new version stabilizes
     private static void deleteOldFiles(File rootDir) {
-        File newVersionFile = new File(rootDir, DevoxxSettings.NEW_VERSION);
-        if (newVersionFile.exists()) return;
+        File versionFile = new File(rootDir, DevoxxSettings.VERSION_NO);
+        if (versionFile.exists()) return;
         File[] files = rootDir.listFiles();
         if (files != null) {
             for (File c : files) {
@@ -1015,7 +1015,7 @@ public class DevoxxService implements Service {
             }
         }
         try {
-            newVersionFile.createNewFile();
+            versionFile.createNewFile();
         } catch (IOException e) {
             e.printStackTrace();
         }

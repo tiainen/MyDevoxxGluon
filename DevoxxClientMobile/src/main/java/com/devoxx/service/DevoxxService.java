@@ -92,6 +92,7 @@ public class DevoxxService implements Service {
             rootDir = Services.get(StorageService.class)
                     .flatMap(StorageService::getPrivateStorage)
                     .orElseThrow(() -> new IOException("Private storage file not available"));
+            deleteOldFiles(rootDir);
             Services.get(RuntimeArgsService.class).ifPresent(ras -> {
                 ras.addListener(RuntimeArgsService.LAUNCH_PUSH_NOTIFICATION_KEY, (f) -> {
                     LOG.log(Level.INFO, ">>> received a silent push notification with contents: " + f);
@@ -998,6 +999,38 @@ public class DevoxxService implements Service {
         }
         catch (NumberFormatException e) {
             return false;
+        }
+    }
+
+    // This piece of code exists to enable backward compatibility and
+    // should be safe to delete after the new version stabilizes
+    private static void deleteOldFiles(File rootDir) {
+        File versionFile = new File(rootDir, DevoxxSettings.VERSION_NO);
+        if (versionFile.exists()) return;
+        File[] files = rootDir.listFiles();
+        if (files != null) {
+            for (File c : files) {
+                delete(c);
+            }
+        }
+        try {
+            versionFile.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void delete(File f) {
+        if (f.isDirectory()) {
+            File[] files = f.listFiles();
+            if (files != null) {
+                for (File c : files) {
+                    delete(c);
+                }
+            }
+        }
+        if (f.getName().endsWith(".cache") || f.getName().endsWith(".info")) {
+            f.delete();
         }
     }
 }

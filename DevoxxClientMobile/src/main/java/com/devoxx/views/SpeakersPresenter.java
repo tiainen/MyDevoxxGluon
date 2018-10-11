@@ -72,7 +72,7 @@ public class SpeakersPresenter extends GluonPresenter<DevoxxApplication> {
 
         speakersListView.setComparator(new SpeakerComparator());
            
-        speakersListView.setHeadersFunction(speaker -> speaker.getFirstName().substring(0, 1).toLowerCase());
+        speakersListView.setHeadersFunction(speaker -> (speaker.getFirstName() != null ? speaker.getFirstName().substring(0, 1).toLowerCase() : ""));
         
         speakersListView.setConverter(new StringConverter<String>() {
 

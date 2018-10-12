@@ -103,7 +103,7 @@ public class DevoxxSettings {
      * No. of days after which a conference can be considered as a past conference.
      */
     public static final int DAYS_PAST_END_DATE = 7;
-    
+
 
     public final static Locale LOCALE = Locale.getDefault();
     public static final String SKIP_VIDEO = "SKIP_VIDEO";
